@@ -18,6 +18,7 @@ A cross-platform lightweight tool designed by a Vietnamese developer to help use
 📁 File Types  
 -.bat, .ps1 → Windows tools  
 -.sh → Linux / macOS tools  
+Note:File Types has been removed in 1.0.1 version and later
   
 ⚙️ Versions  
 📌 Version 1 — MDT Core Engine  
