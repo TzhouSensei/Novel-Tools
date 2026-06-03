@@ -1,0 +1,110 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ TOOL HUB by TzhouSensei",
+    "home.subtitle": "Choose the tool you want to use",
+
+    "tool.reader.title": "Reader",
+    "tool.reader.desc": "Read novels",
+
+    "tool.editor.title": "Editor",
+    "tool.editor.desc": "Create/Edit stories",
+
+    "tool.converter.title": "Converter",
+    "tool.converter.desc": "Convert EPUB -> TXT",
+
+    "converter.title": "Converter EPUB ➜ TXT",
+    "lang.option": "Language",
+
+    "mdt.reader": "Reader",
+    "mdt.editor": "Editor",
+
+    "appearance.opt": "🎨 Appearance",
+    "new.novel": "➕ Create new novel",
+
+    "reset.novel": "🔄 Reset",
+    "appearance.opt.default": "Default",
+
+    "appearance.opt.ruby": "Ruby Blue",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Khaki",
+    "appearance.opt.dark": "🌙 Dark",
+
+    "appearance.opt.deep": "🕳 Deep",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Import a .txt file",
+    "subtitle.editor": "📖 EDITOR",
+
+    "note.1": "When importing a .txt file, the content must follow this structure:",
+
+    "note.2": "1. STRUCTURE TAGS \n <>...</> → Title (novel title)\n <info> ... </info> → Novel information (author, description, genre, etc.)\n[ ... ] → Character list\n<list> ... </list> → Chapter list\n{ ... } → Chapter content\n • → System checker / marker (do not remove, chapter content must be inside this marker)",
+
+    "note.3": "2. RULES (MANDATORY)\nDo not edit, delete, or modify any MDT tags.\nAll file content must keep the original structure.\nSystem tags are required.\nIf format is incorrect, the tool may fail to read the content.",
+
+    "note.4": "3. FILE REQUIREMENT\nThe tool works completely offline\nUsers must prepare a properly formatted .txt file themselves\nThe tool only supports files converted using MDT standard format",
+
+    "note.5": "4. DISCLAIMER\nIf the file breaks due to incorrect formatting, the tool is not responsible\nThe tool does not guarantee reading files from non-MDT sources\nOnly files created by the tool or properly designed MDT-compliant files are recommended",
+
+    "noscript.tools": "Your browser needs JavaScript enabled to use this feature.",
+    "download.txt": "Download TXT",
+
+    "opf_not_found": "OPF file not found",
+    "book.no_author": "Author not found",
+
+    "book.no_title": "Title not found",
+    "chapter": "Chapter",
+
+    "author": "Author",
+    "genre": "Genre",
+
+    "chapter.count": "Chapter Counted",
+    "description": "Description",
+
+    "charlist": "Character list",
+    "edit.opt.replace": "Replace",
+
+    "edit.opt.match.all": "Match all",
+    "edit.opt.match.around": "Match around",
+
+    "edit.opt.regex": "Regular Expression",
+    "edit.opt.prev": "Previous",
+
+    "edit.opt.next": "Next",
+    "edit.opt.replace.all": "Replace all",
+
+    "edit.opt.cancel": "Cancel",
+    "edit.title": "Find & Replace",
+
+    "download.all": "⬇ Download all",
+    "download.changed": "⬇ Changed only",
+
+    "export.epub": "📚 Export EPUB",
+    "epub": {
+        "toc_title": "Table of Contents",
+        "toc": "Contents",
+        "description_title": "Story Description",
+        "characters": "Characters",
+        "appendix": "APPENDIX",
+        "total_chapters": "Total Chapters",
+        "default_title": "Story",
+        "characters_title": "Characters",
+        "desc_title": "Description"
+    },
+    "ui": {
+        "description": "Description",
+        "characters": "Characters",
+        "chapters": "Chapter List",
+        "add_chapter": "Add Chapter",
+        "edit": "Edit",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "not_updated": "Not updated",
+        "confirm_delete_chapter": "Are you sure you want to delete this chapter?"
+    },
+    "prompt": {
+        "title": "Enter story title:",
+        "description": "Enter story description:",
+        "characters": "Enter characters (one per line):"
+    }
+}

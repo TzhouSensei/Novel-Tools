@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="converter.title">Converter EPUB ➜ TXT</title>
+        <script src="jszip.min.js"></script>
+        <style>
+            body {
+                margin: 0;
+                font-family: system-ui, sans-serif;
+                padding: 24px;
+                background: radial-gradient(circle at top, #1a1a2e, #0f0f0f);
+                color: #eee;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                display: flex;
+            }
+            button {
+                padding: 10px 18px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+            textarea {
+                width: 100%;
+                height: 420px;
+                margin-top: 20px;
+                background: #000;
+                color: #0f0;
+                padding: 12px;
+                font-family: monospace;
+            }
+            .lang-wrapper {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                padding: 10px 12px;
+                border-radius: 12px;
+
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+
+                color: white;
+                font-family: system-ui, sans-serif;
+            }
+
+            .lang-label {
+                font-size: 12px;
+                opacity: 0.7;
+            }
+
+            .lang-select {
+                background: rgba(0, 0, 0, 0.4);
+                color: white;
+
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+
+                padding: 6px 10px;
+
+                outline: none;
+                cursor: pointer;
+
+                transition: 0.2s;
+            }
+
+            .lang-select:hover {
+                border-color: rgba(0, 255, 255, 0.5);
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            }
+
+            .lang-select option {
+                background: #111;
+                color: white;
+            }
+        </style>
+    </head>
+
+    <body>
+        <a
+            href="../index.html"
+            style="
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                padding: 10px 14px;
+                background: rgba(0, 0, 0, 0.6);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(6px);
+                z-index: 9999;
+            "
+        >
+            ⬅ Home
+        </a>
+        <h2>EPUB ➜ TXT</h2>
+        <div class="lang-wrapper">
+            <label class="lang-label" data-i18n="lang.option"></label>
+
+            <select onchange="setLang(this.value)">
+                <option value="vi-vn">🇻🇳 Tiếng Việt</option>
+                <option value="en-us">🇺🇸 English</option>
+                <option value="ja-jp">🇯🇵 日本語</option>
+                <option value="ko-kr">🇰🇷 한국어</option>
+                <option value="zh-cn">🇨🇳 简体中文</option>
+                <option value="zh-tw">🇹🇼 繁體中文</option>
+                <option value="th-th">🇹🇭 ไทย</option>
+                <option value="id-id">🇮🇩 Indonesia</option>
+                <option value="de-de">🇩🇪 Deutsch</option>
+                <option value="fr-fr">🇫🇷 Français</option>
+                <option value="es-es">🇪🇸 Español</option>
+            </select>
+        </div>
+        <input type="file" id="file" accept=".epub" />
+        <br />
+        <button
+            id="download"
+            style="display: none"
+            data-i18n="download.txt"
+        ></button>
+
+        <textarea id="output"></textarea>
+        <noscript>
+            <div
+                style="text-align: center; color: red; margin: 20px 0"
+                data-i18n="noscript.tools"
+            ></div>
+        </noscript>
+        <input type="radio" name="ver" onclick="switchVersion('v1')" /> V1
+        <input type="radio" name="ver" onclick="switchVersion('v2')" /> V2
+        <script src="asciiBox.js"></script>
+        <script id="converter-script">
+            const SCRIPT_MAP = {
+                v1: "converter.js",
+                v2: "converter-v2.js",
+            };
+            function loadSavedVersion() {
+                let version = localStorage.getItem("converterVersion");
+
+                if (!version) {
+                    version = "v1";
+                    localStorage.setItem("converterVersion", version);
+                }
+
+                loadScript(version);
+            }
+            function loadScript(version) {
+                const old = document.getElementById("converter-script");
+                if (old) old.remove();
+
+                const script = document.createElement("script");
+                script.id = "converter-script";
+                script.src = SCRIPT_MAP[version];
+
+                script.onload = () => {
+                    console.log("Loaded:", version);
+                };
+
+                document.body.appendChild(script);
+            }
+            function switchVersion(version) {
+                localStorage.setItem("converterVersion", version);
+                location.reload();
+            }
+            document.addEventListener("DOMContentLoaded", () => {
+                loadSavedVersion();
+            });
+        </script>
+        <script src="../i18n-2.js"></script>
+    </body>
+</html>

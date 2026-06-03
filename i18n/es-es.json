@@ -1,0 +1,110 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ CENTRO DE HERRAMIENTAS by TzhouSensei",
+    "home.subtitle": "Elige la herramienta que quieres usar",
+
+    "tool.reader.title": "Lector",
+    "tool.reader.desc": "Leer novelas",
+
+    "tool.editor.title": "Editor",
+    "tool.editor.desc": "Crear/Editar historias",
+
+    "tool.converter.title": "Convertidor",
+    "tool.converter.desc": "Convertir EPUB -> TXT",
+
+    "converter.title": "Convertidor EPUB ➜ TXT",
+    "lang.option": "Idioma",
+
+    "mdt.reader": "Lector",
+    "mdt.editor": "Editor",
+
+    "appearance.opt": "🎨 Apariencia",
+    "new.novel": "➕ Crear nueva novela",
+
+    "reset.novel": "🔄 Reiniciar",
+    "appearance.opt.default": "Predeterminado",
+
+    "appearance.opt.ruby": "Azul rubí",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Caqui",
+    "appearance.opt.dark": "🌙 Oscuro",
+
+    "appearance.opt.deep": "🕳 Profundo",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Importar un archivo .txt",
+    "subtitle.editor": "📖 EDITOR",
+
+    "note.1": "Al importar un archivo .txt, el contenido debe seguir esta estructura:",
+
+    "note.2": "1. ETIQUETAS DE ESTRUCTURA \n <>...</> → Título (nombre de la novela)\n <info> ... </info> → Información de la novela (autor, descripción, género, etc.)\n[ ... ] → Lista de personajes\n<list> ... </list> → Lista de capítulos\n{ ... } → Contenido del capítulo\n • → Marcador del sistema (no eliminar, el contenido del capítulo debe estar dentro de este marcador)",
+
+    "note.3": "2. REGLAS (OBLIGATORIAS)\nNo editar, eliminar ni modificar ninguna etiqueta MDT.\nTodo el contenido del archivo debe mantener la estructura original.\nLas etiquetas del sistema son obligatorias.\nSi el formato es incorrecto, la herramienta puede fallar al leer el contenido.",
+
+    "note.4": "3. REQUISITOS DEL ARCHIVO\nLa herramienta funciona completamente sin conexión\nLos usuarios deben preparar un archivo .txt correctamente formateado\nSolo se admiten archivos convertidos con el formato estándar MDT",
+
+    "note.5": "4. AVISO\nSi el archivo se rompe por un formato incorrecto, la herramienta no se hace responsable\nNo se garantiza la lectura de archivos que no sean MDT\nSolo se recomiendan archivos creados o compatibles con MDT",
+
+    "noscript.tools": "Tu navegador necesita JavaScript activado para usar esta función.",
+    "download.txt": "Descargar TXT",
+
+    "opf_not_found": "Archivo OPF no encontrado",
+    "book.no_author": "Autor no encontrado",
+
+    "book.no_title": "Título no encontrado",
+    "chapter": "Capítulo",
+
+    "author": "Autor",
+    "genre": "Género",
+
+    "chapter.count": "Capítulos contados",
+    "description": "Descripción",
+
+    "charlist": "Lista de personajes",
+    "edit.opt.replace": "Reemplazar",
+
+    "edit.opt.match.all": "Coincidir todo",
+    "edit.opt.match.around": "Coincidencia alrededor",
+
+    "edit.opt.regex": "Expresión regular",
+    "edit.opt.prev": "Anterior",
+
+    "edit.opt.next": "Siguiente",
+    "edit.opt.replace.all": "Reemplazar todo",
+
+    "edit.opt.cancel": "Cancelar",
+    "edit.title": "Buscar y reemplazar",
+
+    "download.all": "⬇ Descargar todo",
+    "download.changed": "⬇ Solo cambios",
+
+    "export.epub": "📚 Exportar EPUB",
+    "epub": {
+        "toc_title": "Tabla de contenido",
+        "toc": "Contenido",
+        "description_title": "Descripción de la historia",
+        "characters": "Personajes",
+        "appendix": "APÉNDICE",
+        "total_chapters": "Total de capítulos",
+        "default_title": "Historia",
+        "characters_title": "Personajes",
+        "desc_title": "Descripción"
+    },
+    "ui": {
+        "description": "Descripción",
+        "characters": "Personajes",
+        "chapters": "Lista de capítulos",
+        "add_chapter": "Añadir capítulo",
+        "edit": "Editar",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "not_updated": "No actualizado",
+        "confirm_delete_chapter": "¿Seguro que quieres eliminar este capítulo?"
+    },
+    "prompt": {
+        "title": "Introduce el título de la historia:",
+        "description": "Introduce la descripción de la historia:",
+        "characters": "Introduce los personajes (uno por línea):"
+    }
+}

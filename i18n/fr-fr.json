@@ -1,0 +1,110 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ CENTRE D'OUTILS by TzhouSensei",
+    "home.subtitle": "Choisis l'outil que tu veux utiliser",
+
+    "tool.reader.title": "Lecteur",
+    "tool.reader.desc": "Lire des romans",
+
+    "tool.editor.title": "Éditeur",
+    "tool.editor.desc": "Créer/Modifier des histoires",
+
+    "tool.converter.title": "Convertisseur",
+    "tool.converter.desc": "Convertir EPUB -> TXT",
+
+    "converter.title": "Convertisseur EPUB ➜ TXT",
+    "lang.option": "Langue",
+
+    "mdt.reader": "Lecteur",
+    "mdt.editor": "Éditeur",
+
+    "appearance.opt": "🎨 Apparence",
+    "new.novel": "➕ Créer un nouveau roman",
+
+    "reset.novel": "🔄 Réinitialiser",
+    "appearance.opt.default": "Par défaut",
+
+    "appearance.opt.ruby": "Bleu rubis",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Kaki",
+    "appearance.opt.dark": "🌙 Sombre",
+
+    "appearance.opt.deep": "🕳 Profond",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Importer un fichier .txt",
+    "subtitle.editor": "📖 ÉDITEUR",
+
+    "note.1": "Lors de l'import d'un fichier .txt, le contenu doit suivre cette structure :",
+
+    "note.2": "1. BALISES DE STRUCTURE \n <>...</> → Titre (nom du roman)\n <info> ... </info> → Informations sur le roman (auteur, description, genre, etc.)\n[ ... ] → Liste des personnages\n<list> ... </list> → Liste des chapitres\n{ ... } → Contenu du chapitre\n • → Marqueur système (ne pas supprimer, le contenu du chapitre doit être dans ce marqueur)",
+
+    "note.3": "2. RÈGLES (OBLIGATOIRES)\nNe pas modifier, supprimer ou éditer les balises MDT.\nTout le contenu du fichier doit conserver la structure originale.\nLes balises système sont obligatoires.\nSi le format est incorrect, l'outil peut échouer à lire le contenu.",
+
+    "note.4": "3. EXIGENCES DU FICHIER\nL'outil fonctionne entièrement hors ligne\nLes utilisateurs doivent préparer un fichier .txt correctement formaté\nSeuls les fichiers conformes au standard MDT sont pris en charge",
+
+    "note.5": "4. AVERTISSEMENT\nSi le fichier est cassé à cause d'un mauvais format, l'outil n'est pas responsable\nLa lecture des fichiers non MDT n'est pas garantie\nSeuls les fichiers créés ou compatibles MDT sont recommandés",
+
+    "noscript.tools": "Votre navigateur doit activer JavaScript pour utiliser cette fonctionnalité.",
+    "download.txt": "Télécharger TXT",
+
+    "opf_not_found": "Fichier OPF introuvable",
+    "book.no_author": "Auteur introuvable",
+
+    "book.no_title": "Titre introuvable",
+    "chapter": "Chapitre",
+
+    "author": "Auteur",
+    "genre": "Genre",
+
+    "chapter.count": "Nombre de chapitres",
+    "description": "Description",
+
+    "charlist": "Liste des personnages",
+    "edit.opt.replace": "Remplacer",
+
+    "edit.opt.match.all": "Tout correspondre",
+    "edit.opt.match.around": "Correspondance contextuelle",
+
+    "edit.opt.regex": "Expression régulière",
+    "edit.opt.prev": "Précédent",
+
+    "edit.opt.next": "Suivant",
+    "edit.opt.replace.all": "Tout remplacer",
+
+    "edit.opt.cancel": "Annuler",
+    "edit.title": "Rechercher et remplacer",
+
+    "download.all": "⬇ Tout télécharger",
+    "download.changed": "⬇ Modifications uniquement",
+
+    "export.epub": "📚 Exporter EPUB",
+    "epub": {
+        "toc_title": "Table des matières",
+        "toc": "Contenu",
+        "description_title": "Description de l'histoire",
+        "characters": "Personnages",
+        "appendix": "ANNEXE",
+        "total_chapters": "Nombre total de chapitres",
+        "default_title": "Histoire",
+        "characters_title": "Personnages",
+        "desc_title": "Description"
+    },
+    "ui": {
+        "description": "Description",
+        "characters": "Personnages",
+        "chapters": "Liste des chapitres",
+        "add_chapter": "Ajouter un chapitre",
+        "edit": "Modifier",
+        "confirm": "Confirmer",
+        "cancel": "Annuler",
+        "not_updated": "Non mis à jour",
+        "confirm_delete_chapter": "Voulez-vous vraiment supprimer ce chapitre ?"
+    },
+    "prompt": {
+        "title": "Entrez le titre de l'histoire :",
+        "description": "Entrez la description de l'histoire :",
+        "characters": "Entrez les personnages (un par ligne) :"
+    }
+}

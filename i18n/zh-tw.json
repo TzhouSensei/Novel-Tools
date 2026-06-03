@@ -1,0 +1,110 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ 工具中心 by TzhouSensei",
+    "home.subtitle": "選擇你想使用的工具",
+
+    "tool.reader.title": "閱讀器",
+    "tool.reader.desc": "閱讀小說",
+
+    "tool.editor.title": "編輯器",
+    "tool.editor.desc": "創建/編輯故事",
+
+    "tool.converter.title": "轉換器",
+    "tool.converter.desc": "轉換 EPUB -> TXT",
+
+    "converter.title": "EPUB ➜ TXT 轉換器",
+    "lang.option": "語言",
+
+    "mdt.reader": "閱讀器",
+    "mdt.editor": "編輯器",
+
+    "appearance.opt": "🎨 外觀",
+    "new.novel": "➕ 建立新小說",
+
+    "reset.novel": "🔄 重置",
+    "appearance.opt.default": "預設",
+
+    "appearance.opt.ruby": "紅寶石藍",
+    "appearance.opt.navajo": "納瓦荷",
+
+    "appearance.khaki": "卡其色",
+    "appearance.opt.dark": "🌙 深色",
+
+    "appearance.opt.deep": "🕳 深邃",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "匯入 .txt 檔案",
+    "subtitle.editor": "📖 編輯器",
+
+    "note.1": "匯入 .txt 檔案時，內容必須符合以下結構：",
+
+    "note.2": "1. 結構標籤 \n <>...</> → 標題（小說名稱）\n <info> ... </info> → 作品資訊（作者、簡介、類型等）\n[ ... ] → 角色列表\n<list> ... </list> → 章節列表\n{ ... } → 章節內容\n • → 系統標記（請勿刪除，章節內容必須包含在此標記內）",
+
+    "note.3": "2. 規則（必須遵守）\n禁止編輯、刪除或修改任何 MDT 標籤。\n所有檔案內容必須保持原始結構。\n系統標籤為必要項。\n若格式錯誤，工具可能無法讀取內容。",
+
+    "note.4": "3. 檔案要求\n此工具完全離線運作\n使用者需自行準備正確格式的 .txt 檔案\n僅支援使用 MDT 標準格式轉換的檔案",
+
+    "note.5": "4. 免責聲明\n若因格式錯誤導致檔案損壞，工具不負責\n不保證可讀取非 MDT 檔案\n僅建議使用工具生成或符合 MDT 的檔案",
+
+    "noscript.tools": "你的瀏覽器需要啟用 JavaScript 才能使用此功能。",
+    "download.txt": "下載 TXT",
+
+    "opf_not_found": "找不到 OPF 檔案",
+    "book.no_author": "找不到作者",
+
+    "book.no_title": "找不到標題",
+    "chapter": "章節",
+
+    "author": "作者",
+    "genre": "類型",
+
+    "chapter.count": "章節數量",
+    "description": "簡介",
+
+    "charlist": "角色列表",
+    "edit.opt.replace": "取代",
+
+    "edit.opt.match.all": "全部匹配",
+    "edit.opt.match.around": "上下文匹配",
+
+    "edit.opt.regex": "正規表示式",
+    "edit.opt.prev": "上一個",
+
+    "edit.opt.next": "下一個",
+    "edit.opt.replace.all": "全部取代",
+
+    "edit.opt.cancel": "取消",
+    "edit.title": "搜尋與取代",
+
+    "download.all": "⬇ 下載全部",
+    "download.changed": "⬇ 僅變更",
+
+    "export.epub": "📚 匯出 EPUB",
+    "epub": {
+        "toc_title": "目錄",
+        "toc": "內容",
+        "description_title": "故事簡介",
+        "characters": "角色",
+        "appendix": "附錄",
+        "total_chapters": "總章節數",
+        "default_title": "故事",
+        "characters_title": "角色",
+        "desc_title": "簡介"
+    },
+    "ui": {
+        "description": "簡介",
+        "characters": "角色",
+        "chapters": "章節列表",
+        "add_chapter": "新增章節",
+        "edit": "編輯",
+        "confirm": "確認",
+        "cancel": "取消",
+        "not_updated": "未更新",
+        "confirm_delete_chapter": "確定要刪除這個章節嗎？"
+    },
+    "prompt": {
+        "title": "輸入故事標題：",
+        "description": "輸入故事簡介：",
+        "characters": "輸入角色（每行一個）："
+    }
+}

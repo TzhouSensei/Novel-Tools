@@ -1,0 +1,113 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ Instrumentum Hub by TzhouSensei",
+    "home.subtitle": "Elige instrumentum quod vis uti",
+
+    "tool.reader.title": "Lectorem",
+    "tool.reader.desc": "Legere novelas",
+
+    "tool.editor.title": "Editor",
+    "tool.editor.desc": "Creare/Editare fabulas",
+
+    "tool.converter.title": "Convertor",
+    "tool.converter.desc": "Convertere EPUB -> TXT",
+
+    "converter.title": "Convertor EPUB ➜ TXT",
+    "lang.option": "Lingua",
+
+    "mdt.reader": "Lectorem",
+    "mdt.editor": "Editor",
+
+    "appearance.opt": "🎨 Aspectus",
+    "new.novel": "➕ Novam novellam creare",
+
+    "reset.novel": "🔄 Resetare",
+    "appearance.opt.default": "Default",
+
+    "appearance.opt.ruby": "Caeruleus Ruby",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Khaki",
+    "appearance.opt.dark": "🌙 Obscurus",
+
+    "appearance.opt.deep": "🕳 Profundus",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Importare file .txt",
+    "subtitle.editor": "📖 EDITOR",
+
+    "note.1": "Cum importas file .txt, contentum hanc structuram sequi debet:",
+
+    "note.2": "1. STRUCTURA TAGS \n <>...</> → Titulus (nomen novelli)\n <info> ... </info> → Informationes (auctor, descriptio, genus, etc.)\n[ ... ] → Index characterum\n<list> ... </list> → Index capitum\n{ ... } → Contentum capituli\n • → Systema marker (non delere, contentum intra hoc debet esse)",
+
+    "note.3": "2. REGULAE (MANDATORIAE)\nMDT tags non mutare, delere aut editare.\nOmnia contenta structuram originalem servare debent.\nSystema tags requiruntur.\nSi forma falsa est, instrumentum legere non potest.",
+
+    "note.4": "3. REQUISITA FILE\nInstrumentum plene offline operatur\nUsor debet parare file .txt recte formatum\nSolum MDT standard files sustinentur",
+
+    "note.5": "4. DISCLAIMER\nSi file frangitur propter formatum falsum, non responsabile sumus\nFiles non-MDT non garantitur legibilitas\nSolum MDT-compliant files suadentur",
+
+    "noscript.tools": "Navigator JavaScript activare debet ut hoc utatur.",
+    "download.txt": "Download TXT",
+
+    "opf_not_found": "File OPF non inventum",
+    "book.no_author": "Auctor non inventus",
+
+    "book.no_title": "Titulus non inventus",
+    "chapter": "Capitulum",
+
+    "author": "Auctor",
+    "genre": "Genus",
+
+    "chapter.count": "Numerus capitum",
+    "description": "Descriptio",
+
+    "charlist": "Index characterum",
+    "edit.opt.replace": "Substituere",
+
+    "edit.opt.match.all": "Omnia congruere",
+    "edit.opt.match.around": "Contextus congruens",
+
+    "edit.opt.regex": "Expressio regularis",
+    "edit.opt.prev": "Praevius",
+
+    "edit.opt.next": "Proximum",
+    "edit.opt.replace.all": "Omnia substituere",
+
+    "edit.opt.cancel": "Cancel",
+    "edit.title": "Invenire & Substituere",
+
+    "download.all": "⬇ Omnia download",
+    "download.changed": "⬇ Tantum mutata",
+
+    "export.epub": "📚 Exportare EPUB",
+
+    "epub": {
+        "toc_title": "Index contentorum",
+        "toc": "Contenta",
+        "description_title": "Descriptio fabulae",
+        "characters": "Characteres",
+        "appendix": "Appendix",
+        "total_chapters": "Total capitum",
+        "default_title": "Fabula",
+        "characters_title": "Characteres",
+        "desc_title": "Descriptio"
+    },
+
+    "ui": {
+        "description": "Descriptio",
+        "characters": "Characteres",
+        "chapters": "Index capitum",
+        "add_chapter": "Addere capitulum",
+        "edit": "Editare",
+        "confirm": "Confirmare",
+        "cancel": "Cancel",
+        "not_updated": "Non renovatum",
+        "confirm_delete_chapter": "Certusne es te hoc capitulum delere?"
+    },
+
+    "prompt": {
+        "title": "Inscribe titulum fabulae:",
+        "description": "Inscribe descriptionem fabulae:",
+        "characters": "Inscribe characteres (unum per lineam):"
+    }
+}

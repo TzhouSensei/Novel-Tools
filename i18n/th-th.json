@@ -1,0 +1,113 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ ศูนย์เครื่องมือ by TzhouSensei",
+    "home.subtitle": "เลือกเครื่องมือที่คุณต้องการใช้",
+
+    "tool.reader.title": "ตัวอ่าน",
+    "tool.reader.desc": "อ่านนิยาย",
+
+    "tool.editor.title": "ตัวแก้ไข",
+    "tool.editor.desc": "สร้าง/แก้ไขเรื่องราว",
+
+    "tool.converter.title": "ตัวแปลง",
+    "tool.converter.desc": "แปลง EPUB -> TXT",
+
+    "converter.title": "ตัวแปลง EPUB ➜ TXT",
+    "lang.option": "ภาษา",
+
+    "mdt.reader": "ตัวอ่าน",
+    "mdt.editor": "ตัวแก้ไข",
+
+    "appearance.opt": "🎨 รูปลักษณ์",
+    "new.novel": "➕ สร้างนิยายใหม่",
+
+    "reset.novel": "🔄 รีเซ็ต",
+    "appearance.opt.default": "ค่าเริ่มต้น",
+
+    "appearance.opt.ruby": "รูบี้บลู",
+    "appearance.opt.navajo": "นาวาโฮ",
+
+    "appearance.khaki": "กากี",
+    "appearance.opt.dark": "🌙 มืด",
+
+    "appearance.opt.deep": "🕳 ลึก",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "นำเข้าไฟล์ .txt",
+    "subtitle.editor": "📖 ตัวแก้ไข",
+
+    "note.1": "เมื่อคุณนำเข้าไฟล์ .txt เนื้อหาต้องเป็นไปตามโครงสร้างดังนี้:",
+
+    "note.2": "1. โครงสร้างแท็ก \n <>...</> → ชื่อเรื่อง (ชื่อนิยาย)\n <info> ... </info> → ข้อมูลนิยาย (ผู้เขียน คำอธิบาย ประเภท ฯลฯ)\n[ ... ] → รายชื่อตัวละคร\n<list> ... </list> → รายชื่อบท\n{ ... } → เนื้อหาบท\n • → ตัวมาร์กเกอร์ระบบ (ห้ามลบ เนื้อหาบทต้องอยู่ในนี้)",
+
+    "note.3": "2. กฎ (บังคับ)\nห้ามแก้ไข ลบ หรือเปลี่ยนแท็ก MDT\nเนื้อหาทั้งหมดต้องคงโครงสร้างเดิม\nแท็กระบบจำเป็นต้องมี\nหากรูปแบบผิด เครื่องมืออาจอ่านไฟล์ไม่ได้",
+
+    "note.4": "3. ข้อกำหนดไฟล์\nเครื่องมือนี้ทำงานแบบออฟไลน์ทั้งหมด\nผู้ใช้ต้องเตรียมไฟล์ .txt ที่ถูกต้องเอง\nรองรับเฉพาะไฟล์มาตรฐาน MDT เท่านั้น",
+
+    "note.5": "4. ข้อจำกัดความรับผิดชอบ\nหากไฟล์เสียหายจากรูปแบบผิด เครื่องมือไม่รับผิดชอบ\nไม่รับประกันไฟล์ที่ไม่ใช่ MDT\nแนะนำเฉพาะไฟล์ที่สร้างจากเครื่องมือหรือเข้ากันได้กับ MDT",
+
+    "noscript.tools": "เบราว์เซอร์ของคุณต้องเปิดใช้งาน JavaScript เพื่อใช้ฟีเจอร์นี้",
+    "download.txt": "ดาวน์โหลด TXT",
+
+    "opf_not_found": "ไม่พบไฟล์ OPF",
+    "book.no_author": "ไม่พบผู้เขียน",
+
+    "book.no_title": "ไม่พบนิยาย",
+    "chapter": "บท",
+
+    "author": "ผู้เขียน",
+    "genre": "ประเภท",
+
+    "chapter.count": "จำนวนบท",
+    "description": "คำอธิบาย",
+
+    "charlist": "รายชื่อตัวละคร",
+    "edit.opt.replace": "แทนที่",
+
+    "edit.opt.match.all": "จับคู่ทั้งหมด",
+    "edit.opt.match.around": "จับคู่บริบทใกล้เคียง",
+
+    "edit.opt.regex": "นิพจน์ปกติ",
+    "edit.opt.prev": "ก่อนหน้า",
+
+    "edit.opt.next": "ถัดไป",
+    "edit.opt.replace.all": "แทนที่ทั้งหมด",
+
+    "edit.opt.cancel": "ยกเลิก",
+    "edit.title": "ค้นหาและแทนที่",
+
+    "download.all": "⬇ ดาวน์โหลดทั้งหมด",
+    "download.changed": "⬇ เฉพาะที่เปลี่ยนแปลง",
+
+    "export.epub": "📚 ส่งออก EPUB",
+
+    "epub": {
+        "toc_title": "สารบัญ",
+        "toc": "เนื้อหา",
+        "description_title": "คำอธิบายเรื่อง",
+        "characters": "ตัวละคร",
+        "appendix": "ภาคผนวก",
+        "total_chapters": "จำนวนบททั้งหมด",
+        "default_title": "เรื่องราว",
+        "characters_title": "ตัวละคร",
+        "desc_title": "คำอธิบาย"
+    },
+
+    "ui": {
+        "description": "คำอธิบาย",
+        "characters": "ตัวละคร",
+        "chapters": "รายการบท",
+        "add_chapter": "เพิ่มบท",
+        "edit": "แก้ไข",
+        "confirm": "ยืนยัน",
+        "cancel": "ยกเลิก",
+        "not_updated": "ยังไม่อัปเดต",
+        "confirm_delete_chapter": "คุณแน่ใจหรือไม่ว่าต้องการลบบทนี้?"
+    },
+
+    "prompt": {
+        "title": "กรอกชื่อนิยาย:",
+        "description": "กรอกคำอธิบายนิยาย:",
+        "characters": "กรอกตัวละคร (หนึ่งบรรทัดต่อหนึ่งคน):"
+    }
+}
