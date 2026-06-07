@@ -512,9 +512,8 @@ function parseText(text) {
     if (listMatch) {
         const content = listMatch[1];
 
-        // 1. Định nghĩa danh sách các cặp ký tự bao đóng giống hệt bên Converter
         const delimiters = [
-            { open: "\\{", close: "\\}" }, // Cần escape ký tự đặc biệt của Regex
+            { open: "\\{", close: "\\}" },
             { open: "⟨", close: "⟩" },
             { open: "⟦", close: "⟧" },
             { open: "⟪", close: "⟫" },

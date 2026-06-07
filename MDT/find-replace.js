@@ -40,7 +40,6 @@
         updateHistoryDropdown(type);
     }
 
-    // YÊU CẦU 1: Xuất lịch sử tìm kiếm dưới dạng file JSON cấu trúc {"find": "replace"}
     function exportHistoryJSON() {
         let exportObj = {};
         history.find.forEach((findVal, index) => {
@@ -64,7 +63,6 @@
         downloadAnchor.remove();
     }
 
-    // YÊU CẦU 2: Nhập dữ liệu từ file JSON hỗ trợ Overwrite và Add (Xử lý trùng lặp)
     function importHistoryJSON(fileEvent) {
         const file = fileEvent.target.files[0];
         if (!file) return;
@@ -82,13 +80,11 @@
                     return;
                 }
 
-                // Lựa chọn Mode Import bằng hộp thoại xác nhận trực quan
                 const modeChoice = window.confirm(
                     "Bấm [OK] để chọn chế độ OVERWRITE (Xoá toàn bộ lịch sử cũ).\nBấm [Cancel] để chọn chế độ ADD (Chỉ thêm mới hoặc cập nhật).",
                 );
 
                 if (modeChoice) {
-                    // CHẾ ĐỘ OVERWRITE
                     history.find = [];
                     history.replace = [];
                     for (const [findVal, replaceVal] of Object.entries(
@@ -100,7 +96,6 @@
                         }
                     }
                 } else {
-                    // CHẾ ĐỘ ADD
                     let askDuplicate = true;
                     let overwriteAllDuplicates = false;
 
@@ -113,34 +108,28 @@
                         const cleanReplaceVal = replaceVal || "";
 
                         if (existingIndex !== -1) {
-                            // Xử lý khi phát hiện trùng dòng cũ
                             if (askDuplicate) {
                                 const confirmOverwrite = window.confirm(
                                     `Phát hiện từ khoá trùng lặp: "${findVal}"\n\nBấm [OK] để Ghi đè (Overwrite) giá trị mới.\nBấm [Cancel] để Giữ nguyên (Keep) giá trị cũ.`,
                                 );
                                 overwriteAllDuplicates = confirmOverwrite;
-                                // Nếu muốn tối ưu không hỏi lại nhiều lần, có thể bỏ comment dòng dưới:
-                                // askDuplicate = false;
                             }
                             if (overwriteAllDuplicates) {
                                 history.replace[existingIndex] =
                                     cleanReplaceVal;
                             }
                         } else {
-                            // Nếu chưa có thì chèn thẳng vào đầu danh sách
                             history.find.unshift(findVal);
                             history.replace.unshift(cleanReplaceVal);
                         }
                     }
                 }
 
-                // Giới hạn dung lượng lưu trữ tối đa 50 phần tử
                 if (history.find.length > 50)
                     history.find = history.find.slice(0, 50);
                 if (history.replace.length > 50)
                     history.replace = history.replace.slice(0, 50);
 
-                // Lưu lại vào bộ nhớ trình duyệt và cập nhật UI
                 localStorage.setItem(
                     STORAGE_KEY_FIND,
                     JSON.stringify(history.find),
@@ -157,7 +146,7 @@
             }
         };
         reader.readAsText(file);
-        fileEvent.target.value = ""; // Reset input file để có thể chọn lại cùng 1 file
+        fileEvent.target.value = "";
     }
 
     function saveStateForUndo() {
@@ -599,7 +588,6 @@
             .getElementById("fnr-replace-all-btn")
             .addEventListener("click", replaceAll);
 
-        // Gắn sự kiện cho các nút xuất nhập dữ liệu mới
         document
             .getElementById("fnr-export-btn")
             .addEventListener("click", exportHistoryJSON);
