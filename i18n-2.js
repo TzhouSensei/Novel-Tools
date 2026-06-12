@@ -12,6 +12,9 @@ async function loadLang(lang) {
     langReady = true;
 
     applyI18n();
+
+    syncLangSelect(lang);
+
     i18nListeners.forEach((fn) => fn(lang, translations));
 }
 
@@ -44,4 +47,10 @@ loadLang(localStorage.getItem("lang") || "vi-vn");
 
 function onI18nChange(fn) {
     i18nListeners.push(fn);
+}
+function syncLangSelect(lang) {
+    const select = document.querySelector("select");
+    if (select) {
+        select.value = lang;
+    }
 }

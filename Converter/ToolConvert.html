@@ -202,7 +202,12 @@
         </a>
         <h2>EPUB ➜ TXT</h2>
         <div class="lang-wrapper">
-            <label class="lang-label" data-i18n="lang.option"></label>
+            <label
+                class="lang-label"
+                data-i18n="lang.option"
+                id="lang-select"
+                onchange="setLang(this.value)"
+            ></label>
 
             <select onchange="setLang(this.value)">
                 <option value="vi-vn">🇻🇳 Tiếng Việt</option>

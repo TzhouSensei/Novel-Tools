@@ -542,11 +542,36 @@
                 gap: 10px;
                 padding: 15px;
             }
+            @media (max-width: 600px) {
+                .lang-wrapper,
+                .home-btn {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    pointer-events: none;
+                    transition: 0.3s ease;
+                }
+
+                .ui-visible .lang-wrapper,
+                .ui-visible .home-btn {
+                    opacity: 1;
+                    transform: translateY(0);
+                    pointer-events: auto;
+                }
+
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+            }
         </style>
     </head>
     <body class="mode-single">
         <div class="lang-wrapper">
-            <label class="lang-label" data-i18n="lang.option"></label>
+            <label
+                class="lang-label"
+                data-i18n="lang.option"
+                id="lang-select"
+                onchange="setLang(this.value)"
+            ></label>
 
             <select onchange="setLang(this.value)">
                 <option value="vi-vn">🇻🇳 Tiếng Việt</option>
@@ -566,6 +591,7 @@
         <a
             href="index.html"
             onclick="sessionStorage.setItem('reloaded_once', '1')"
+            class="home-btn"
             style="
                 position: fixed;
                 top: 15px;
@@ -876,5 +902,25 @@
 
         <script src="reader.js"></script>
         <script src="../i18n-2.js"></script>
+        <script>
+            let uiVisible = false;
+
+            function toggleUI(show) {
+                uiVisible = show;
+                document.body.classList.toggle("ui-visible", uiVisible);
+            }
+
+            document.addEventListener("click", function (e) {
+                if (window.innerWidth > 600) return;
+
+                const main = document.getElementById("main-container");
+
+                if (main && main.contains(e.target)) {
+                    return;
+                }
+
+                toggleUI(!uiVisible);
+            });
+        </script>
     </body>
 </html>
