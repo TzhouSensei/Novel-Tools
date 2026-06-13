@@ -27,5 +27,5 @@ jobs:
       - name: Upload build files
         uses: actions/upload-artifact@v4
         with:
-          name: electron-build
+          name: NovelTools-MacOS-Universal
           path: dist
