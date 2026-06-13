@@ -758,7 +758,7 @@ function debounceTilt(callback) {
     if (tiltCooldown) return;
     tiltCooldown = true;
     callback();
-    setTimeout(() => (tiltCooldown = false), 1500);
+    setTimeout(() => (tiltCooldown = false), 1000);
 }
 
 function toggleSettingsMenu() {
@@ -1076,7 +1076,6 @@ async function searchFullTextInBook(keyword) {
     const cleanKeyword = keyword.toLowerCase().trim();
     const results = [];
 
-    // Hiển thị loading UI nếu cần
     console.log("Đang tìm kiếm toàn văn...");
 
     for (let i = 0; i < state.spine.length; i++) {
@@ -1193,3 +1192,42 @@ function clearI18n(el) {
     if (!el) return;
     el.removeAttribute("data-i18n");
 }
+function enableTilt() {
+    if (state.orientationHandler) return;
+
+    state.orientationHandler = (e) => {
+        if (!state.tiltFlip) return;
+
+        const gamma = e.gamma || 0;
+
+        if (gamma > 18) {
+            debounceTilt(() => navigatePage(-1));
+        } else if (gamma < -18) {
+            debounceTilt(() => navigatePage(1));
+        }
+    };
+
+    window.addEventListener("deviceorientation", state.orientationHandler);
+}
+async function toggleTiltFlip(value) {
+    state.tiltFlip = value;
+
+    if (value) {
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+            const res = await DeviceOrientationEvent.requestPermission();
+            if (res !== "granted") return;
+        }
+
+        enableTilt();
+    } else {
+        cleanupListeners();
+    }
+}
+const savedTilt = localStorage.getItem("epub_tilt_flip");
+if (savedTilt !== null) {
+    state.tiltFlip = JSON.parse(savedTilt);
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const el = document.getElementById("cfg-tilt");
+    if (el) el.checked = state.tiltFlip;
+});
