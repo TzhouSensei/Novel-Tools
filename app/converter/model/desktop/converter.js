@@ -24,12 +24,14 @@ const modes = [
 const container = document.createElement("div");
 document.body.insertBefore(container, fileInput);
 
+const modeContainer = document.createElement("div");
+container.appendChild(modeContainer);
+
 function renderModeUI() {
     modeContainer.innerHTML = "";
-    delimiterModes.forEach((mode, idx) => {
+
+    modes.forEach((mode, idx) => {
         const label = document.createElement("label");
-        label.style.marginRight = "10px";
-        label.style.cursor = "pointer";
 
         const radio = document.createElement("input");
         radio.type = "radio";
@@ -44,16 +46,19 @@ function renderModeUI() {
             renderMode.open = mode.open;
             renderMode.close = mode.close;
 
-            if (window.__lastRender) {
-                output.value = render(state.characters);
+            if (cached) {
+                render();
             }
         });
 
         label.appendChild(radio);
         label.appendChild(document.createTextNode(" " + mode.name));
+
         modeContainer.appendChild(label);
     });
 }
+
+renderModeUI();
 
 function render() {
     let out = "";

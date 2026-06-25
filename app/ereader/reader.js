@@ -504,7 +504,7 @@ function clearBlobUrls() {
     state.blobUrls.forEach((url) => URL.revokeObjectURL(url));
     state.blobUrls = [];
 }
-async function loadChapter(index, preservePage = false) {
+async function loadChapter(index, preservePage = false, initialPage = 0) {
     if (index < 0 || index >= state.spine.length) return;
 
     console.log("[CHAPTER] 👉 loadChapter index:", index);
@@ -547,13 +547,17 @@ async function loadChapter(index, preservePage = false) {
         hydrateImages(contentEl, fullPath);
     }, 0);
 
-    if (!preservePage) state.currentPageIndex = 0;
+    state.currentPageIndex = preservePage
+        ? state.currentPageIndex
+        : initialPage === Infinity
+          ? state.maxPagesInChapter - 1
+          : initialPage;
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         recalculatePagination();
         renderCurrentPagePosition();
         updateStatusBar();
-    }, 150);
+    });
 }
 
 async function resolveEmbeddedAssets(htmlContent, currentChapterFullPath) {
@@ -592,19 +596,15 @@ async function resolveEmbeddedAssets(htmlContent, currentChapterFullPath) {
             continue;
         }
 
-        // STEP 1: resolve relative path
         let resolvedPath = resolveRelativePath(currentDir, rawSrc);
         console.log("[IMG] resolved relative path:", resolvedPath);
 
-        // STEP 2: normalize path
         let absoluteImgPath = normalizeAssetPath(resolvedPath);
         console.log("[IMG] normalized path:", absoluteImgPath);
 
-        // STEP 3: try IndexedDB
         let blobUrl = await getAssetBlobUrl(absoluteImgPath);
         console.log("[IMG] IndexedDB result:", blobUrl ? "HIT ✅" : "MISS ❌");
 
-        // STEP 4: fallback ZIP
         if (!blobUrl) {
             console.log("[IMG] fallback -> zip lookup:", absoluteImgPath);
 
@@ -622,7 +622,6 @@ async function resolveEmbeddedAssets(htmlContent, currentChapterFullPath) {
             state.blobUrls.push(blobUrl);
         }
 
-        // STEP 5: inject into DOM
         if (blobUrl) {
             console.log("[IMG] ✅ inject image");
 
@@ -673,18 +672,23 @@ function navigatePage(direction) {
 
     if (targetPage < 0) {
         if (state.currentChapterIndex > 0) {
-            state.currentChapterIndex--;
-            // clear any object URLs immediately when leaving the chapter
+            const prevChapter = state.currentChapterIndex - 1;
+
             clearBlobUrls();
-            loadChapter(state.currentChapterIndex).then(() => {
-                state.currentPageIndex = state.maxPagesInChapter - 1;
-                renderCurrentPagePosition();
+
+            loadChapter(prevChapter, true, Infinity).then(() => {
+                state.currentChapterIndex = prevChapter;
+
+                requestAnimationFrame(() => {
+                    state.currentPageIndex = state.maxPagesInChapter - 1;
+                    renderCurrentPagePosition();
+                    saveBookProgress();
+                });
             });
         }
         return;
     } else if (targetPage >= state.maxPagesInChapter) {
         if (state.currentChapterIndex < state.spine.length - 1) {
-            // navigateChapter will also clear cache, but ensure clean-up here
             clearBlobUrls();
             navigateChapter(1);
         }
@@ -711,7 +715,6 @@ function navigateChapter(direction) {
     let targetChapter = state.currentChapterIndex + direction;
     if (targetChapter >= 0 && targetChapter < state.spine.length) {
         state.currentPageIndex = 0;
-        // revoke any created object URLs before leaving current chapter
         clearBlobUrls();
         loadChapter(targetChapter);
     }
@@ -1387,7 +1390,6 @@ async function hydrateImages(contentEl, chapterFullPath) {
         img.style.margin = "12px auto";
         img.style.borderRadius = "8px";
 
-        // 🔥 KEY PART
         img.style.maxHeight = `${maxH}px`;
         img.style.width = "auto";
         img.style.height = "auto";
@@ -1440,7 +1442,6 @@ async function hydrateImages(contentEl, chapterFullPath) {
             state.blobUrls.push(blobUrl);
         }
 
-        // 🔥 convert SVG → IMG luôn
         const img = document.createElement("img");
         img.src = blobUrl;
 
@@ -1448,7 +1449,6 @@ async function hydrateImages(contentEl, chapterFullPath) {
         img.style.margin = "12px auto";
         img.style.borderRadius = "8px";
 
-        // 🔥 KEY PART
         img.style.maxHeight = `${maxH}px`;
         img.style.width = "auto";
         img.style.height = "auto";
