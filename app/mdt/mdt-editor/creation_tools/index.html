@@ -185,6 +185,25 @@
     <body>
         <h1 data-i18n="home.title"></h1>
         <p data-i18n="home.subtitle"></p>
+            <a
+            href="../index.html"
+            onclick="sessionStorage.setItem('reloaded_once', '1')"
+            style="
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                padding: 10px 14px;
+                background: rgba(0, 0, 0, 0.6);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(6px);
+                z-index: 9999;
+            "
+        >
+            ⬅ Back
+        </a>
         <div class="lang-wrapper">
             <label
                 class="lang-label"
@@ -209,36 +228,23 @@
             </select>
         </div>
         <div class="container">
-            <a class="card" href="app/mdt/mdt/index.html">
+            <a class="card" href="configuration/index.html">
                 <div class="icon">📖</div>
-                <h3 data-i18n="tool.reader.title"></h3>
-                <p data-i18n="tool.reader.desc"></p>
+                <h3 data-i18n="tool.configuration"></h3>
+                <p data-i18n="tool.configuration.desc"></p>
             </a>
 
-            <a class="card" href="app/ereader/index.html">
+            <a class="card" href="parser/index.html">
                 <div class="icon">📖</div>
-                <h3 data-i18n="tool.epub.reader"></h3>
-                <p data-i18n="tool.epub.reader.desc"></p>
+                <h3 data-i18n="tool.parser"></h3>
+                <p data-i18n="tool.parser.desc"></p>
             </a>
-
-            <a class="card" href="app/mdt/mdt-editor/index.html">
-                <div class="icon">✍️</div>
-                <h3 data-i18n="tool.editor.title"></h3>
-                <p data-i18n="tool.editor.desc"></p>
-            </a>
-
-            <a class="card" href="app/converter/index.html">
-                <div class="icon">🔁</div>
-                <h3 data-i18n="tool.converter.title"></h3>
-                <p data-i18n="tool.converter.desc"></p>
-            </a>
-        </div>
         <noscript>
             <div
                 style="text-align: center; color: red; margin: 20px 0"
                 data-i18n="noscript.mdt"
             ></div>
         </noscript>
-        <script src="libs/i18n/i18n.js"></script>
+        <script src="../../../../libs/i18n/i18n.js"></script>
     </body>
 </html>

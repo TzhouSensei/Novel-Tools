@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.reader">Reader</title>
+
         <style>
             body.dark {
                 background: radial-gradient(
@@ -393,12 +394,11 @@
                 max-height: 550px;
                 overflow: auto;
             }
-
         </style>
     </head>
     <body>
         <a
-            href="/index.html"
+            href="../../../index.html"
             onclick="sessionStorage.setItem('reloaded_once', '1')"
             style="
                 position: fixed;
@@ -497,7 +497,7 @@
                 data-i18n="noscript.tools"
             ></div>
         </noscript>
-        <script src="/libs/epub/jszip.min.js"></script>
+        <script src="../../../libs/epub/jszip.min.js"></script>
         <script>
             const APP_MAP = {
                 md: "mdtrender.js",
@@ -551,7 +551,7 @@
                 loadSavedApp();
             });
         </script>
-        <script src="/libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/i18n.js"></script>
         <script src="introscr.js"></script>
         <script src="loadscr.js"></script>
         <script src="../theme/themescr.js"></script>

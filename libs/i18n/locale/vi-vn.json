@@ -170,5 +170,11 @@
     "reader.character_list": "Danh sách nhân vật",
     "reader.chapter_list": "Danh sách chương",
     "reader.chapter_loading": "Đang tải chương...",
-    "reader.chapter_prefix": "Chương"
+    "reader.chapter_prefix": "Chương",
+    "import.txt": "Import file TXT",
+    "epub_create": "Công cụ tạo EPUB",
+    "tool.configuration": "Cấu hình",
+    "tool.configuration.desc": "Cấu hình công cụ tạo EPUB",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "Chuyển đổi file EPUB sang định dạng MDT"
 }

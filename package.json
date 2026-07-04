@@ -30,7 +30,17 @@
         }
     },
     "description": "A tool hub for txt and epub novel",
-    "keywords": ["noveltools","mdt","electron","linux","android","windows","macOS","ereader","tzhousensei"],
+    "keywords": [
+        "noveltools",
+        "mdt",
+        "electron",
+        "linux",
+        "android",
+        "windows",
+        "macOS",
+        "ereader",
+        "tzhousensei"
+    ],
     "artifactName": "NovelTools-${version}-${os}-universal.${ext}",
     "author": "Tzhou Sensei",
     "license": "ISC"

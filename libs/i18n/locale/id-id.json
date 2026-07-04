@@ -170,5 +170,11 @@
     "reader.character_list": "Daftar karakter",
     "reader.chapter_list": "Daftar bab",
     "reader.chapter_loading": "Memuat bab...",
-    "reader.chapter_prefix": "Bab"
+    "reader.chapter_prefix": "Bab",
+    "import.txt": "Impor file TXT",
+    "epub_create": "Alat Pembuatan EPUB",
+    "tool.configuration": "Konfigurasi",
+    "tool.configuration.desc": "Alat konfigurasi EPUB",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "Alat parser EPUB"
 }

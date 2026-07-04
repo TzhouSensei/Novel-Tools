@@ -170,5 +170,11 @@
     "reader.character_list": "Character list",
     "reader.chapter_list": "Chapter list",
     "reader.chapter_loading": "Loading chapter...",
-    "reader.chapter_prefix": "Chapter"
+    "reader.chapter_prefix": "Chapter",
+    "import.txt": "Import TXT file",
+    "epub_create": "EPUB Creation Tools",
+    "tool.configuration": "Configuration",
+    "tool.configuration.desc": "EPUB configuration tools",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "EPUB parser tools"
 }

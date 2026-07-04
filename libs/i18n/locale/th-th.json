@@ -172,5 +172,11 @@
     "reader.character_list": "รายชื่อตัวละคร",
     "reader.chapter_list": "รายชื่อตอน",
     "reader.chapter_loading": "กำลังโหลดตอน...",
-    "reader.chapter_prefix": "ตอนที่"
+    "reader.chapter_prefix": "ตอนที่",
+    "import.txt": "นำเข้าไฟล์ TXT",
+    "epub_create": "เครื่องมือสร้าง EPUB",
+    "tool.configuration": "การตั้งค่า",
+    "tool.configuration.desc": "การตั้งค่าเครื่องมือสร้าง EPUB",
+    "tool.parser": "ตัวแยกวิเคราะห์",
+    "tool.parser.desc": "แปลงไฟล์ EPUB เป็นรูปแบบ MDT"
 }

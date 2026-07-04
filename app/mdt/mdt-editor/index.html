@@ -4,7 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.editor">Editor</title>
-        <script src="/libs/epub/jszip.min.js"></script>
+
+        <script src="../../../libs/epub/jszip.min.js"></script>
         <style>
             body.dark {
                 background: radial-gradient(
@@ -306,7 +307,7 @@
 
     <body>
         <a
-            href="/index.html"
+            href="../../../index.html"
             onclick="sessionStorage.setItem('reloaded_once', '1')"
             style="
                 position: fixed;
@@ -368,6 +369,20 @@
         <h2 data-i18n="import.txt.notify"></h2>
         <div style="margin-bottom: 16px; text-align: center">
             <button
+                id="epub_create"
+                style="
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background: #2e8b57;
+                    color: #fff;
+                    font-weight: bold;
+                "
+                data-i18n="epub_create"
+                onclick="location.href = 'creation_tools/'"
+            ></button>
+            <button
                 id="createStoryBtn"
                 style="
                     padding: 8px 16px;
@@ -383,8 +398,21 @@
             <button id="resetBtn" data-i18n="reset.novel"></button>
         </div>
 
-        <input type="file" id="file" accept=".txt" />
-        <input type="file" id="coverFile" accept="image/*" />
+        <input type="file" id="file" accept=".txt" hidden />
+        <button
+            id="importBtn"
+            style="
+                padding: 8px 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background: #2e8b57;
+                color: #fff;
+                font-weight: bold;
+            "
+            data-i18n="import.txt"
+            onclick="document.getElementById('file').click()"
+        ></button>
         <div id="app"></div>
         <div
             id="textModal"
@@ -424,7 +452,7 @@
         </noscript>
         <script type="module" src="editor-main.js"></script>
         <script src="../theme/themescr.js"></script>
-        <script src="/libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/i18n.js"></script>
         <script type="module" src="find-replace.js"></script>
         <script type="module" src="epub.js"></script>
     </body>

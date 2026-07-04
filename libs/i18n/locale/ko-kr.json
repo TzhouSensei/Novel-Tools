@@ -173,5 +173,11 @@
     "reader.character_list": "등장인물 목록",
     "reader.chapter_list": "챕터 목록",
     "reader.chapter_loading": "챕터 로딩 중...",
-    "reader.chapter_prefix": "챕터"
+    "reader.chapter_prefix": "챕터",
+    "import.txt": "TXT 파일 가져오기",
+    "epub_create": "EPUB 생성 도구",
+    "tool.configuration": "설정",
+    "tool.configuration.desc": "EPUB 생성 도구 설정",
+    "tool.parser": "파서",
+    "tool.parser.desc": "EPUB 파일을 MDT 형식으로 변환"
 }

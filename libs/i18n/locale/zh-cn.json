@@ -173,5 +173,11 @@
     "reader.character_list": "人物列表",
     "reader.chapter_list": "章节列表",
     "reader.chapter_loading": "正在加载章节...",
-    "reader.chapter_prefix": "第X章"
+    "reader.chapter_prefix": "第X章",
+    "import.txt": "导入 TXT 文件",
+    "epub_create": "EPUB 创建工具",
+    "tool.configuration": "配置",
+    "tool.configuration.desc": "EPUB 创建工具配置",
+    "tool.parser": "解析器",
+    "tool.parser.desc": "将 EPUB 文件转换为 MDT 格式"
 }

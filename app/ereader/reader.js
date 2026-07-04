@@ -44,6 +44,13 @@ const state = {
     },
     bookmarks: [],
     highlights: [],
+    bookmarkLines: [],
+    search: {
+        keyword: "",
+        results: [],
+        lastIndex: -1,
+        activeMarks: [],
+    },
 };
 
 function getBookProgress(bookId) {
@@ -83,9 +90,13 @@ function clearBookProgress(bookId) {
 document
     .getElementById("file-input")
     .addEventListener("change", handleFileSelect);
+
 window.addEventListener("resize", handleResize);
+
 setupGlobalInteractions();
+
 updateFontScale(100);
+
 window.addEventListener("DOMContentLoaded", async () => {
     const localBookId = localStorage.getItem("selected_local_book_id");
     if (!localBookId) {
@@ -129,6 +140,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
+
 function cleanupListeners() {
     if (state.orientationHandler) {
         window.removeEventListener(
@@ -138,6 +150,7 @@ function cleanupListeners() {
         state.orientationHandler = null;
     }
 }
+
 async function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -350,13 +363,6 @@ function parseManifestAndSpine(xml) {
     if (tocItem) {
         state.tocFile = tocItem.getAttribute("href");
     }
-    state.spine.forEach((href, idx) => {
-        state.toc.push({
-            title: `${t("ereader.chapter")} ${idx + 1}: ${href.split("/").pop()}`,
-            href: href,
-            index: idx,
-        });
-    });
 }
 
 async function parseNCX(href) {
@@ -400,6 +406,7 @@ async function parseNavXhtml(href) {
 
 async function buildTOCFromContent() {
     const result = [];
+    let idx = 0;
 
     for (const href of state.spine) {
         const path = resolveRelativePath(state.basePath, href);
@@ -416,16 +423,18 @@ async function buildTOCFromContent() {
             doc.querySelector("h1")?.textContent ||
             doc.querySelector("h2")?.textContent ||
             doc.querySelector("title")?.textContent ||
-            href.split("/").pop();
+            `${t("ereader.chapter")} ${idx + 1}`;
 
         result.push({
             title: title.trim(),
             href,
+            index: idx++,
         });
     }
 
     return result;
 }
+
 function normalizeAssetPath(path) {
     return (path || "")
         .replace(/\\/g, "/")
@@ -504,6 +513,7 @@ function clearBlobUrls() {
     state.blobUrls.forEach((url) => URL.revokeObjectURL(url));
     state.blobUrls = [];
 }
+
 async function loadChapter(index, preservePage = false, initialPage = 0) {
     if (index < 0 || index >= state.spine.length) return;
 
@@ -791,6 +801,44 @@ function setupGlobalInteractions() {
             if (e.key === "VolumeUp") navigatePage(-1);
             if (e.key === "VolumeDown") navigatePage(1);
         }
+        if (e.altKey && e.key.toLowerCase() == "m") {
+            e.preventDefault();
+
+            toggleBookmark();
+        }
+
+        if (e.altKey && e.key.toLowerCase() == "a") {
+            e.preventDefault();
+
+            createHighlight("yellow");
+        }
+
+        if (e.altKey && e.key.toLowerCase() == "h") {
+            e.preventDefault();
+
+            openSearchDialog();
+        }
+        switch (e.key) {
+            case "ArrowLeft":
+                e.preventDefault();
+                navigatePage(-1);
+                break;
+
+            case "ArrowRight":
+                e.preventDefault();
+                navigatePage(1);
+                break;
+
+            case "ArrowUp":
+                e.preventDefault();
+                navigateChapter(-1);
+                break;
+
+            case "ArrowDown":
+                e.preventDefault();
+                navigateChapter(1);
+                break;
+        }
     });
 
     viewEl.addEventListener("mousedown", (e) => {
@@ -957,6 +1005,7 @@ function adjustFontSize(delta) {
         renderCurrentPagePosition();
     }, 100);
 }
+
 function updateFontScale(percent) {
     state.fontPercent = parseInt(percent);
 
@@ -974,6 +1023,7 @@ function updateFontScale(percent) {
         renderCurrentPagePosition();
     }, 100);
 }
+
 function changeCustomStyle(type, value) {
     const content = document.getElementById("chapter-content");
     if (type === "bg")
@@ -1051,6 +1101,7 @@ function speakText(text) {
 
     state.tts.enabled = true;
 }
+
 function initTTS() {
     if (!("speechSynthesis" in window)) return;
 
@@ -1073,10 +1124,12 @@ function initTTS() {
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
 }
+
 document.getElementById("tts-voice").addEventListener("change", (e) => {
     const name = e.target.value;
     state.tts.voice = state.tts.voices.find((v) => v.name === name);
 });
+
 function toggleTTS() {
     const text = document.getElementById("chapter-content").innerText;
 
@@ -1087,6 +1140,7 @@ function toggleTTS() {
         state.tts.enabled = false;
     }
 }
+
 document.getElementById("tts-volume").addEventListener("input", (e) => {
     state.tts.volume = parseFloat(e.target.value);
 });
@@ -1094,6 +1148,7 @@ document.getElementById("tts-volume").addEventListener("input", (e) => {
 document.getElementById("tts-speed").addEventListener("input", (e) => {
     state.tts.rate = parseFloat(e.target.value);
 });
+
 function changeUXSetting(key, value) {
     state.ux[key] = value;
     const contentEl = document.getElementById("chapter-content");
@@ -1154,108 +1209,244 @@ function applyTextureTheme(textureType) {
     if (textureType !== "none") {
         viewEl.classList.add(`texture-${textureType}`);
     }
-    function createHighlight(color = "yellow", hasNote = false) {
-        const selection = window.getSelection();
-        if (selection.isCollapsed || !selection.toString().trim()) return;
+}
 
-        const text = selection.toString();
-        let note = "";
-        if (hasNote) {
-            note = prompt("Nhập ghi chú cho đoạn text này:", "") || "";
-        }
+function createHighlight(color = "yellow", hasNote = false) {
+    const selection = window.getSelection();
+    if (selection.isCollapsed) return;
 
-        const highlightItem = {
-            id: Date.now(),
-            chapterIndex: state.currentChapterIndex,
-            text: text,
-            color: color,
-            note: note,
-            createdAt: Date.now(),
-        };
+    const text = selection.toString().trim();
+    if (!text) return;
 
-        state.highlights.push(highlightItem);
-        saveUserData();
+    let note = "";
 
-        const range = selection.getRangeAt(0);
-        const span = document.createElement("span");
-        span.className = `epub-hl hl-${color}`;
-        span.style.backgroundColor = color === "sepia" ? "#dfd491" : color;
-        span.setAttribute("data-id", highlightItem.id);
-        if (note) span.title = `Ghi chú: ${note}`;
-        range.surroundContents(span);
-
-        selection.removeAllRanges();
+    if (hasNote) {
+        note = prompt("Ghi chú:", "") || "";
     }
+
+    state.highlights.push({
+        id: Date.now(),
+        chapterIndex: state.currentChapterIndex,
+        pageIndex: state.currentPageIndex,
+        text,
+        color,
+        note,
+        createdAt: Date.now(),
+    });
+
+    saveUserData();
+
+    selection.removeAllRanges();
+
+    pushReaderDown();
+
+    activateCompactUI(); // 👈 NEW
 }
 
 function toggleBookmark() {
     if (!state.bookId) return;
-    const contentEl = document.getElementById("chapter-content");
-    const textSnippet =
-        contentEl.innerText.substring(0, 60).replace(/\n/g, " ") + "...";
 
-    const existingIdx = state.bookmarks.findIndex(
+    const idx = state.bookmarks.findIndex(
         (b) =>
             b.chapterIndex === state.currentChapterIndex &&
             b.pageIndex === state.currentPageIndex,
     );
 
-    if (existingIdx >= 0) {
-        state.bookmarks.splice(existingIdx, 1);
+    if (idx >= 0) {
+        state.bookmarks.splice(idx, 1);
     } else {
         state.bookmarks.push({
+            id: Date.now(),
             chapterIndex: state.currentChapterIndex,
             pageIndex: state.currentPageIndex,
-            textSnippet: textSnippet,
-            time: Date.now(),
+            createdAt: Date.now(),
         });
     }
+
     saveUserData();
     renderBookmarksList();
+    pushReaderDown();
+
+    activateCompactUI(); // 👈 NEW
 }
+
 async function searchFullTextInBook(keyword) {
-    if (!keyword || keyword.trim().length < 2) return [];
-    const cleanKeyword = keyword.toLowerCase().trim();
+    keyword = keyword.trim().toLowerCase();
+
+    if (keyword.length < 2) return [];
+
     const results = [];
 
-    console.log("Đang tìm kiếm toàn văn...");
-
-    for (let i = 0; i < state.spine.length; i++) {
+    for (let i = state.currentChapterIndex; i < state.spine.length; i++) {
         const href = state.spine[i];
+
         const path = resolveRelativePath(state.basePath, href);
-        const fileEntry = state.zip.file(path);
-        if (!fileEntry) continue;
 
-        const htmlStr = await fileEntry.async("string");
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlStr, "text/html");
-        const textContent = doc.body
-            ? doc.body.textContent
-            : doc.documentElement.textContent;
+        const file = state.zip.file(path);
 
-        let index = textContent.toLowerCase().indexOf(cleanKeyword);
-        while (index !== -1) {
-            const start = Math.max(0, index - 40);
-            const end = Math.min(
-                textContent.length,
-                index + cleanKeyword.length + 40,
-            );
-            const snippet = textContent
-                .substring(start, end)
-                .replace(/\s+/g, " ")
-                .trim();
+        if (!file) continue;
 
+        const html = await file.async("string");
+
+        const doc = new DOMParser().parseFromString(html, "text/html");
+
+        const text =
+            doc.body?.textContent || doc.documentElement.textContent || "";
+
+        let pos = text.toLowerCase().indexOf(keyword);
+
+        while (pos !== -1) {
             results.push({
                 chapterIndex: i,
                 chapterTitle: state.toc[i]?.title || `Chương ${i + 1}`,
-                snippet: `...${snippet}...`,
-                charOffset: index,
+                charOffset: pos,
+                keyword,
+                snippet:
+                    "..." +
+                    text.substring(
+                        Math.max(0, pos - 40),
+                        Math.min(text.length, pos + keyword.length + 40),
+                    ) +
+                    "...",
             });
 
-            index = textContent.toLowerCase().indexOf(cleanKeyword, index + 1);
+            pos = text.toLowerCase().indexOf(keyword, pos + keyword.length);
         }
     }
+
+    state.search.keyword = keyword;
+    state.search.results = results;
+    state.search.lastIndex = results.length ? 0 : -1;
+
     return results;
+}
+
+function openSearchDialog() {
+    if (document.getElementById("search-bar")) return;
+
+    const bar = document.createElement("div");
+    bar.id = "search-bar";
+    bar.innerHTML = `
+        <input id="search-input" placeholder="Search..." />
+        <button onclick="searchPrev()">▲</button>
+        <button onclick="searchNext()">▼</button>
+        <span id="search-count">0/0</span>
+        <button onclick="closeSearch()">✕</button>
+    `;
+
+    document.body.appendChild(bar);
+
+    document.getElementById("search-input").addEventListener("input", (e) => {
+        runSearch(e.target.value);
+    });
+}
+
+function runSearch(keyword) {
+    clearSearchMarks();
+
+    keyword = keyword.trim();
+    if (!keyword) return;
+
+    state.searchUI.keyword = keyword;
+    state.searchUI.currentIndex = 0;
+
+    const root = document.getElementById("chapter-content");
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+
+    const matches = [];
+
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        const text = node.nodeValue;
+
+        const lower = text.toLowerCase();
+        const kw = keyword.toLowerCase();
+
+        let idx = lower.indexOf(kw);
+
+        if (idx !== -1) {
+            const range = document.createRange();
+            range.setStart(node, idx);
+            range.setEnd(node, idx + keyword.length);
+
+            const mark = document.createElement("mark");
+            mark.className = "search-hit";
+
+            range.surroundContents(mark);
+
+            matches.push(mark);
+        }
+    }
+
+    state.searchUI.results = matches;
+
+    updateSearchUI();
+
+    focusMatch(0);
+}
+
+function focusMatch(index) {
+    const hits = state.searchUI.results;
+    if (!hits.length) return;
+
+    index = (index + hits.length) % hits.length;
+    state.searchUI.currentIndex = index;
+
+    hits.forEach((h, i) => {
+        h.classList.toggle("active-hit", i === index);
+    });
+
+    hits[index].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+    });
+
+    updateSearchUI();
+}
+
+function searchNext() {
+    focusMatch(state.searchUI.currentIndex + 1);
+}
+
+function searchPrev() {
+    focusMatch(state.searchUI.currentIndex - 1);
+}
+
+function clearSearchMarks() {
+    document.querySelectorAll("mark.search-hit").forEach((m) => {
+        const parent = m.parentNode;
+        parent.replaceChild(document.createTextNode(m.textContent), m);
+        parent.normalize();
+    });
+
+    state.searchUI.results = [];
+}
+
+function closeSearch() {
+    clearSearchMarks();
+    document.getElementById("search-bar")?.remove();
+}
+
+function updateSearchUI() {
+    const el = document.getElementById("search-count");
+    if (!el) return;
+
+    const total = state.searchUI.results.length;
+    const current = state.searchUI.currentIndex + 1;
+
+    el.textContent = total ? `${current}/${total}` : "0/0";
+}
+
+function activateCompactUI() {
+    const center = document.getElementById("reader-center");
+
+    center.classList.add("reader-compact");
+
+    clearTimeout(state._compactTimer);
+
+    state._compactTimer = setTimeout(() => {
+        center.classList.remove("reader-compact");
+    }, 4000);
 }
 function exportUserDataBackup() {
     const allProgress = JSON.parse(
@@ -1330,10 +1521,12 @@ function saveUserData() {
         JSON.stringify(state.highlights),
     );
 }
+
 function clearI18n(el) {
     if (!el) return;
     el.removeAttribute("data-i18n");
 }
+
 function enableTilt() {
     if (state.orientationHandler) return;
 
@@ -1351,6 +1544,7 @@ function enableTilt() {
 
     window.addEventListener("deviceorientation", state.orientationHandler);
 }
+
 async function toggleTiltFlip(value) {
     state.tiltFlip = value;
 
@@ -1365,14 +1559,17 @@ async function toggleTiltFlip(value) {
         cleanupListeners();
     }
 }
+
 const savedTilt = localStorage.getItem("epub_tilt_flip");
 if (savedTilt !== null) {
     state.tiltFlip = JSON.parse(savedTilt);
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("cfg-tilt");
     if (el) el.checked = state.tiltFlip;
 });
+
 async function hydrateImages(contentEl, chapterFullPath) {
     const images = contentEl.querySelectorAll("img, image");
 
@@ -1455,5 +1652,207 @@ async function hydrateImages(contentEl, chapterFullPath) {
         img.style.objectFit = "contain";
 
         svgImg.closest("svg")?.replaceWith(img);
+    }
+}
+
+function toggleToolMenu() {
+    console.log("click");
+
+    const menu = document.getElementById("tool-menu");
+
+    console.log(menu);
+
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    const box = document.getElementById("floating-tools");
+    const handle = document.getElementById("tool-toggle");
+
+    if (!box || !handle) return;
+
+    let dragging = false;
+    let moved = false;
+
+    let startX = 0;
+    let startY = 0;
+
+    let offsetX = 0;
+    let offsetY = 0;
+
+    const DRAG_THRESHOLD = 8; // px
+
+    handle.style.cursor = "grab";
+    handle.style.touchAction = "none"; // Quan trọng trên mobile
+
+    handle.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        moved = false;
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        offsetX = e.clientX - box.offsetLeft;
+        offsetY = e.clientY - box.offsetTop;
+
+        handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+
+        const distance = Math.hypot(e.clientX - startX, e.clientY - startY);
+
+        if (distance > DRAG_THRESHOLD) {
+            moved = true;
+        }
+
+        if (!moved) return;
+
+        let left = e.clientX - offsetX;
+        let top = e.clientY - offsetY;
+
+        // Không cho kéo ra ngoài màn hình
+        left = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, left));
+
+        top = Math.max(0, Math.min(window.innerHeight - box.offsetHeight, top));
+
+        box.style.position = "fixed";
+        box.style.left = left + "px";
+        box.style.top = top + "px";
+        box.style.right = "unset";
+        box.style.bottom = "unset";
+    });
+
+    function endDrag(e) {
+        if (!dragging) return;
+
+        dragging = false;
+
+        try {
+            handle.releasePointerCapture(e.pointerId);
+        } catch {}
+
+        if (moved) {
+            box.dataset.suppressClick = "1";
+
+            setTimeout(() => {
+                delete box.dataset.suppressClick;
+            }, 100);
+        }
+    }
+
+    handle.addEventListener("pointerup", endDrag);
+    handle.addEventListener("pointercancel", endDrag);
+});
+
+window.addEventListener(
+    "click",
+    (e) => {
+        const box = document.getElementById("floating-tools");
+
+        if (box?.dataset.suppressClick) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }
+    },
+    true,
+);
+
+function pushReaderDown() {
+    [
+        "zone-left",
+        "zone-right",
+        "zone-center",
+        "btn-tl",
+        "btn-tr",
+        "btn-bl",
+        "btn-br",
+    ].forEach((id) => {
+        const el = document.getElementById(id);
+
+        if (el) {
+            el.style.transition = ".25s";
+
+            el.style.transform = "translateY(70px)";
+        }
+    });
+
+    setTimeout(() => {
+        [
+            "zone-left",
+            "zone-right",
+            "zone-center",
+            "btn-tl",
+            "btn-tr",
+            "btn-bl",
+            "btn-br",
+        ].forEach((id) => {
+            const el = document.getElementById(id);
+
+            if (el) el.style.transform = "";
+        });
+    }, 2500);
+}
+
+async function openSearchDialog() {
+    const kw = prompt("Search");
+    if (!kw) return;
+
+    const results = await searchFullTextInBook(kw);
+
+    if (!results.length) {
+        alert("Không tìm thấy.");
+        return;
+    }
+
+    state.searchUI.results = results;
+    state.searchUI.currentIndex = 0;
+
+    await goToSearchResult(0);
+}
+
+async function goToSearchResult(index) {
+    const results = state.searchUI.results;
+    if (!results.length) return;
+
+    index = (index + results.length) % results.length;
+    state.searchUI.currentIndex = index;
+
+    const r = results[index];
+
+    await loadChapter(r.chapterIndex);
+
+    // đợi render ổn định (an toàn hơn setTimeout)
+    requestAnimationFrame(() => {
+        highlightSearchResult(r.keyword);
+        scrollToKeyword(r.keyword);
+    });
+}
+
+function scrollToKeyword(keyword) {
+    const el = document.getElementById("chapter-content");
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+
+    const kw = keyword.toLowerCase();
+
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        const idx = node.nodeValue.toLowerCase().indexOf(kw);
+
+        if (idx !== -1) {
+            const range = document.createRange();
+            range.setStart(node, idx);
+            range.setEnd(node, idx + keyword.length);
+
+            const rect = range.getBoundingClientRect();
+
+            window.scrollBy({
+                top: rect.top - window.innerHeight / 2,
+                behavior: "smooth",
+            });
+
+            break;
+        }
     }
 }

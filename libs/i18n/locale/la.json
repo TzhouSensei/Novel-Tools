@@ -173,5 +173,11 @@
     "reader.character_list": "Index personarum",
     "reader.chapter_list": "Index capitulorum",
     "reader.chapter_loading": "Capitulum oneratur...",
-    "reader.chapter_prefix": "Capitulum"
+    "reader.chapter_prefix": "Capitulum",
+    "import.txt": "Importare fasciculum TXT",
+    "epub_create": "Instrumenta creationis EPUB",
+    "tool.configuration": "Configuratio",
+    "tool.configuration.desc": "Configuratio instrumenti creationis EPUB",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "Convertere fasciculos EPUB in formam MDT"
 }

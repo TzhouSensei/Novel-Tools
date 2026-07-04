@@ -100,26 +100,7 @@ function restoreDetailsState(state) {
         if (state[i]) d.open = true;
     });
 }
-export async function getEPUBMetadata() {
-    const author = await openTextModal(uiT("epub.author", "Nhập tác giả:"), "");
 
-    if (author === null) return null;
-
-    const subjects = await openTextModal(
-        uiT("epub.subject", "Nhập thể loại (mỗi dòng 1 thể loại):"),
-        "",
-    );
-
-    if (subjects === null) return null;
-
-    return {
-        author: author.trim(),
-        subjects: subjects
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean),
-    };
-}
 function openTextModal(title, defaultValue = "") {
     return new Promise((resolve) => {
         const modal = document.getElementById("textModal");
@@ -243,26 +224,24 @@ export function renderStory() {
                 .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
                 .replace(/\s+/g, "_");
         }
-         if (Filesystem !== null) {
-             if (!output) {
-                 alert("Không có nội dung để lưu!");
-                 return;
-             }
+        if (Filesystem !== null) {
+            if (!output) {
+                alert("Không có nội dung để lưu!");
+                return;
+            }
 
-             const defaultFileName = fileName(STORY_DATA.title) + "_full.txt";
+            const defaultFileName = fileName(STORY_DATA.title) + "_full.txt";
 
-
-
-             await Filesystem.writeFile({
-                 path: defaultFileName,
-                 data: output,
-                 directory: "Documents",
-                 encoding: "utf8",
-             });
-             alert(`Đã lưu file thành công vào:\nDocuments/${defaultFileName}`);
-         } else {
-             downloadFile(fileName(STORY_DATA.title) + "_full.txt", output);
-         }
+            await Filesystem.writeFile({
+                path: defaultFileName,
+                data: output,
+                directory: "Documents",
+                encoding: "utf8",
+            });
+            alert(`Đã lưu file thành công vào:\nDocuments/${defaultFileName}`);
+        } else {
+            downloadFile(fileName(STORY_DATA.title) + "_full.txt", output);
+        }
     };
 
     const editedBtn = document.createElement("button");
@@ -310,7 +289,6 @@ export function renderStory() {
         } else {
             downloadFile(fileName(STORY_DATA.title) + "_edited.txt", output);
         }
-
     };
 
     top.appendChild(fullBtn);

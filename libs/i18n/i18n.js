@@ -3,21 +3,37 @@ let translations = {};
 let langReady = false;
 
 async function loadLang(lang) {
-    const res = await fetch(`/libs/i18n/locale/${lang}.json`);
-    translations = await res.json();
+    let path = `libs/i18n/locale/${lang}.json`;
 
-    currentLang = lang;
-    document.documentElement.lang = lang;
+    for (let i = 0; i < 7; i++) {
+        try {
+            const res = await fetch(path);
 
-    langReady = true;
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
 
-    applyI18n();
+            translations = await res.json();
 
-    syncLangSelect(lang);
+            currentLang = lang;
+            document.documentElement.lang = lang;
 
-    i18nListeners.forEach((fn) => fn(lang, translations));
+            langReady = true;
+
+            applyI18n();
+
+            syncLangSelect(lang);
+
+            i18nListeners.forEach((fn) => fn(lang, translations));
+
+            return;
+        } catch (err) {
+            path = "../" + path;
+        }
+    }
+
+    console.error(`Không thể tải file ngôn ngữ: ${lang}.json sau 7 lần thử.`);
 }
-
 function t(key, fallback = key) {
     if (translations[key] !== undefined) {
         return translations[key];

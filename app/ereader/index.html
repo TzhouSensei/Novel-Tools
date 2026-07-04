@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="library.page_title">Thư viện Sách ePub Cục Bộ</title>
+
         <style>
             :root {
                 --primary: #4a90e2;
@@ -183,7 +184,8 @@
                     margin-bottom: 30px;
                 }
 
-                header > h1,header > .upload-btn-wrapper {
+                header > h1,
+                header > .upload-btn-wrapper {
                     margin: 0 auto;
                 }
 
@@ -201,7 +203,7 @@
                 }
             }
         </style>
-        <script src="/libs/epub/jszip.min.js"></script>
+        <script src="../../libs/epub/jszip.min.js"></script>
     </head>
     <body>
         <div class="container">
@@ -228,7 +230,7 @@
                 </select>
             </div>
             <a
-                href="/index.html"
+                href="../../index.html"
                 class="home-btn"
                 onclick="sessionStorage.setItem('reloaded_once', '1')"
                 style="
@@ -294,7 +296,7 @@
             </header>
             <div class="grid-library" id="library-grid"></div>
         </div>
-        <script src="/libs/i18n/i18n.js"></script>
+        <script src="../../libs/i18n/i18n.js"></script>
         <script>
             const DB_NAME = "EpubReaderLocalDB";
             const DB_VERSION = 2;

@@ -7,8 +7,9 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <script src="domer.js"></script>
+
         <title>Advanced EPUB Reader</title>
-        <script src="/libs/epub/jszip.min.js"></script>
+        <script src="../../libs/epub/jszip.min.js"></script>
         <style>
             :root {
                 --bg-color: #f7f4ed;
@@ -235,7 +236,7 @@
 
             #btn-tr {
                 position: absolute;
-                top: 0;
+                top: 40px;
                 right: 0;
 
                 flex-direction: row;
@@ -558,6 +559,93 @@
                     -webkit-tap-highlight-color: transparent;
                 }
             }
+
+            #floating-tools {
+                position: fixed;
+                top: 120px;
+                right: 20px;
+                z-index: 999999;
+            }
+
+            .tool-menu {
+                position: absolute;
+                top: 60px;
+                left: 0;
+
+                display: none;
+                flex-direction: column;
+                gap: 8px;
+
+                background: rgba(30, 30, 30, 0.9);
+                padding: 8px;
+                border-radius: 10px;
+
+                z-index: 10000;
+            }
+
+            #tool-toggle {
+                width: 54px;
+                height: 54px;
+                border-radius: 50%;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 1000;
+            }
+
+            .tool-menu button {
+                border: none;
+                background: #333;
+                color: white;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                text-align: left;
+            }
+            .reader-compact #zone-left,
+            .reader-compact #zone-right,
+            .reader-compact #zone-center {
+                top: auto !important;
+                bottom: 0 !important;
+                height: 80px !important;
+            }
+
+            .reader-compact #btn-bl,
+            .reader-compact #btn-br,
+            .reader-compact #btn-tl,
+            .reader-compact #btn-tr {
+                position: fixed !important;
+                bottom: 60px !important;
+                top: auto !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            #search-bar {
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 6px;
+                padding: 8px;
+                background: var(--panel-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                z-index: 9999;
+            }
+
+            #search-bar input {
+                width: 220px;
+                padding: 4px 8px;
+            }
+
+            mark.search-hit {
+                background: #ffd54f;
+            }
+
+            mark.search-hit.active-hit {
+                background: #ff9800;
+                font-weight: bold;
+            }
         </style>
     </head>
     <body class="mode-single">
@@ -604,6 +692,7 @@
         >
             ⬅ Home
         </a>
+
         <header id="top-bar">
             <input
                 type="file"
@@ -611,14 +700,10 @@
                 accept=".epub"
                 style="display: none"
             />
-            <button
-                class="import-btn"
-                onclick="document.getElementById('file-input').click()"
-                data-i18n="ereader.import_epub"
-            ></button>
             <div id="book-title" data-i18n="ereader.no_book_loaded"></div>
             <button
                 class="btn"
+                id="toc"
                 onclick="toggleOverlay('toc-overlay', true)"
                 data-i18n="ereader.toc"
             ></button>
@@ -897,7 +982,7 @@
         </div>
 
         <script src="reader.js"></script>
-        <script src="/libs/i18n/i18n.js"></script>
+        <script src="../../libs/i18n/i18n.js"></script>
         <script>
             let uiVisible = false;
 
@@ -908,9 +993,15 @@
 
             document.addEventListener("click", function (e) {
                 const main = document.getElementById("main-container");
+                const toc = document.getElementById("toc");
+                const tocpanel = document.getElementById("toc-overlay");
+                const tools = document.getElementById("floating-tools");
                 const lang = document.querySelector(".lang-wrapper");
                 if (main && main.contains(e.target)) return;
                 if (lang && lang.contains(e.target)) return;
+                if (tools && tools.contains(e.target)) return;
+                if (toc && toc.contains(e.target)) return;
+                if (tocpanel && tocpanel.contains(e.target)) return;
 
                 toggleUI(!uiVisible);
             });
