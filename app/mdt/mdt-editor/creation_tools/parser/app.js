@@ -49,8 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function log(msg) {
     const logBox = document.getElementById("logBox");
-    logBox.textContent += `\n[${new Date().toLocaleTimeString()}] ${msg}`;
-    logBox.scrollTop = logBox.scrollHeight;
+    if (logBox) {
+        logBox.textContent += `\n[${new Date().toLocaleTimeString()}] ${msg}`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
 }
 
 function updateProgress(percent, statusMsg) {
@@ -140,16 +142,6 @@ function cleanAndOptimizeHtml(rawHtml, title, lang = "vi") {
         )
             return;
 
-        let textLen = node.cloneNode(false).textContent
-            ? node.cloneNode(false).textContent.trim().length
-            : 0;
-        let directTextLen = 0;
-        node.childNodes.forEach((child) => {
-            if (child.nodeType === Node.TEXT_NODE) {
-                directTextLen += child.textContent.trim().length;
-            }
-        });
-
         const totalLen = node.textContent ? node.textContent.trim().length : 0;
         if (totalLen > maxLen) {
             maxLen = totalLen;
@@ -164,9 +156,8 @@ function cleanAndOptimizeHtml(rawHtml, title, lang = "vi") {
     walk(doc.body);
 
     let finalBodyContent = "";
-
     const hasBlockElements = bestNode.querySelector(
-        "p, div, pre, li, table, p, h1, h2, h3, h4, h5, h6",
+        "p, div, pre, li, table, h1, h2, h3, h4, h5, h6",
     );
 
     if (!hasBlockElements) {
@@ -303,51 +294,70 @@ async function processConfiguration(cfg) {
         return match && match[1] ? match[1].trim() : fallback;
     };
 
+    // --- XỬ LÝ CUSTOM TOC THEO CẤU TRÚC MỚI ---
     if (cfg.custom_toc && cfg.custom_toc.enabled) {
-        log("Custom TOC enabled, đang sắp xếp lại thứ tự...");
-        const sortedKeys = Object.keys(cfg.custom_toc)
-            .filter(
-                (key) => key !== "enabled" && key !== "comment" && !isNaN(key),
-            )
-            .sort((a, b) => parseInt(a) - parseInt(b));
+        log(
+            "Custom TOC enabled, đang sắp xếp lại thứ tự theo cấu trúc thư mục mới...",
+        );
 
-        for (let key of sortedKeys) {
-            const item = cfg.custom_toc[key];
-            let fileLoc = "";
-            if (item.chapter_id) {
-                fileLoc =
-                    Object.keys(item.chapter_id).find((k) => k !== "comment") ||
-                    "";
-            }
+        // Lấy danh sách các Key đại diện cho Folder (bỏ enabled, comment và check xem có phải số/chuỗi không)
+        const sortedFolderKeys = Object.keys(cfg.custom_toc)
+            .filter((key) => key !== "enabled" && key !== "comment")
+            .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
 
-            if (fileLoc && zipData.file(fileLoc)) {
-                const content = await zipData.file(fileLoc).async("string");
-                const pathParts = fileLoc.split("/");
-                const folder = pathParts.length > 1 ? pathParts[0] : "";
+        let chapterVirtualIndex = 1;
 
-                let title = getHtmlTitle(content, "");
-                if (!title) {
-                    title =
-                        tocNames[folder] ||
-                        (folder ? `Mục ${folder}` : `Chương ${key}`);
+        for (let folderKey of sortedFolderKeys) {
+            const folderObj = cfg.custom_toc[folderKey];
+            if (!folderObj || typeof folderObj !== "object") continue;
+
+            // Lấy ID tùy chỉnh hiển thị cho tập/chương này, fallback về folderKey nếu trống
+            const customDisplayId = folderObj.id || folderKey;
+
+            if (folderObj.chapter_id) {
+                // Lấy tất cả key chương trong tập và sắp xếp theo thứ tự tăng dần
+                const sortedChKeys = Object.keys(folderObj.chapter_id)
+                    .filter((k) => k !== "comment")
+                    .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+
+                for (let chKey of sortedChKeys) {
+                    const fileLoc = folderObj.chapter_id[chKey];
+
+                    if (fileLoc && zipData.file(fileLoc)) {
+                        const content = await zipData
+                            .file(fileLoc)
+                            .async("string");
+                        const pathParts = fileLoc.split("/");
+                        const folder = pathParts.length > 1 ? pathParts[0] : "";
+
+                        let title = getHtmlTitle(content, "");
+                        if (!title) {
+                            title =
+                                tocNames[folder] ||
+                                (folder
+                                    ? `Mục ${folder}`
+                                    : `Chương ${customDisplayId}_${chKey}`);
+                        }
+
+                        const optimizedContent = cleanAndOptimizeHtml(
+                            content,
+                            title,
+                            lang,
+                        );
+
+                        parsedChapters.push({
+                            id: `ch_${customDisplayId}_${chKey}`, // Sử dụng ID cấu trúc mới làm định danh duy nhất
+                            title: title,
+                            href: fileLoc,
+                            content: optimizedContent,
+                            folder: folderKey, // Giữ tên của nhóm folder này
+                        });
+                    }
                 }
-
-                const optimizedContent = cleanAndOptimizeHtml(
-                    content,
-                    title,
-                    lang,
-                );
-
-                parsedChapters.push({
-                    id: `ch_${key}`,
-                    title: title,
-                    href: fileLoc,
-                    content: optimizedContent,
-                    folder: folder,
-                });
             }
         }
     } else {
+        // --- XỬ LÝ THEO MẶC ĐỊNH (KHI CUSTOM_TOC DISABLED) ---
         log("Render TOC theo mặc định (tên file chứa số tăng dần)");
         let fileOrderPairs = [];
         xhtmlFiles.forEach((path) => {
