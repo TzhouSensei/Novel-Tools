@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EPUB Generator</title>
+
+        <link rel="stylesheet" href="style.css" />
+
+        <link href="bootstrap.min.css" rel="stylesheet" />
+
+        <link href="bootstrap-icons.min.css" rel="stylesheet" />
+
+        <script src="jszip.min.js"></script>
+
+        <script src="FileSaver.min.js"></script>
+    </head>
+
+    <body>
+        <div class="container py-5">
+            <a
+                href="../index.html"
+                onclick="sessionStorage.setItem('reloaded_once', '1')"
+                style="
+                    position: fixed;
+                    top: 15px;
+                    left: 15px;
+                    padding: 10px 14px;
+                    background: rgba(0, 0, 0, 0.6);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    backdrop-filter: blur(6px);
+                    z-index: 9999;
+                "
+            >
+                ⬅ Back
+            </a>
+            <div class="text-center mb-5">
+                <h1 class="fw-bold">
+                    <i class="bi bi-book-half"></i>
+                    EPUB Generator
+                </h1>
+
+                <p class="text-secondary">
+                    Import file ZIP → Parse configuration.json → Generate EPUB
+                </p>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">Import ZIP</div>
+
+                <div class="card-body">
+                    <div id="dropZone">
+                        <div class="display-5 mb-3">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+
+                        <h4>Kéo file ZIP vào đây</h4>
+
+                        <p class="text-secondary">hoặc</p>
+
+                        <input type="file" id="zipInput" accept=".zip" hidden />
+
+                        <button class="btn btn-primary" id="selectZipBtn">
+                            Chọn File ZIP
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress -->
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">Progress</div>
+
+                <div class="card-body">
+                    <div class="progress">
+                        <div
+                            id="progressBar"
+                            class="progress-bar progress-bar-striped progress-bar-animated"
+                            style="width: 0%"
+                        >
+                            0%
+                        </div>
+                    </div>
+
+                    <div class="mt-3" id="statusText">Chưa có dữ liệu</div>
+                </div>
+            </div>
+
+            <!-- Information -->
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">Metadata</div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <img
+                                id="coverPreview"
+                                class="img-fluid rounded border"
+                                src=""
+                                style="display: none"
+                            />
+                        </div>
+
+                        <div class="col-md-9">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th width="180">Title</th>
+                                        <td id="titleCell">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th width="180">Author</th>
+                                        <td id="authorCell">-</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>Language</th>
+                                        <td id="languageCell">-</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>Genre</th>
+                                        <td id="genreCell">-</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>Cover</th>
+                                        <td id="coverCell">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5>Description</h5>
+
+                    <div
+                        id="descriptionBox"
+                        class="border rounded p-3 bg-light"
+                        style="min-height: 120px; white-space: pre-wrap"
+                    ></div>
+                </div>
+            </div>
+
+            <!-- TOC -->
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">Table of Contents</div>
+
+                <div class="card-body">
+                    <div id="tocTree"></div>
+                </div>
+            </div>
+
+            <!-- Files -->
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">XHTML Files</div>
+
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th width="80">#</th>
+
+                                <th>File</th>
+
+                                <th width="150">Images</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="chapterTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Images -->
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">Images</div>
+
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="80">#</th>
+
+                                <th>File</th>
+
+                                <th width="150">MIME</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="imageTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Output -->
+
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Output</div>
+
+                <div class="card-body">
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button
+                            id="generateBtn"
+                            class="btn btn-success"
+                            disabled
+                        >
+                            <i class="bi bi-gear-fill"></i>
+
+                            Generate EPUB
+                        </button>
+
+                        <button
+                            id="downloadBtn"
+                            class="btn btn-primary"
+                            disabled
+                        >
+                            <i class="bi bi-download"></i>
+
+                            Download EPUB
+                        </button>
+                    </div>
+
+                    <hr />
+
+                    <pre
+                        id="logBox"
+                        class="bg-dark text-white rounded p-3"
+                        style="height: 250px; overflow: auto"
+                    >
+Ready.
+            </pre
+                    >
+                </div>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
+    </body>
+</html>

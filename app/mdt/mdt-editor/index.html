@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="mdt.editor">Editor</title>
+
+        <script src="../../../libs/epub/jszip.min.js"></script>
+        <style>
+            body.dark {
+                background: radial-gradient(
+                    circle at top left,
+                    #444 0%,
+                    #2e2e2e 40%,
+                    #1b1b1b 100%
+                );
+                color: #fff;
+            }
+
+            body.dark > #app > details {
+                color: #1a1a1a;
+            }
+
+            body.dark > #app > summary {
+                color: #1a1a1a;
+            }
+
+            body.deep {
+                background: radial-gradient(
+                    circle at top,
+                    #1a1a1a 0%,
+                    #000 70%
+                );
+                color: #fff;
+            }
+
+            body.deep > #app > details {
+                color: #1a1a1a;
+            }
+
+            body.deep > #app > summary {
+                color: #1a1a1a;
+            }
+
+            body.anias {
+                background: linear-gradient(
+                    135deg,
+                    hsl(34, 44%, 75%),
+                    hsl(34, 44%, 60%)
+                );
+                color: #111;
+            }
+
+            body.ruby {
+                background: linear-gradient(135deg, #18324b, #112435, #0b1722);
+                color: #fff;
+            }
+
+            body.navajo {
+                background: linear-gradient(135deg, #c8ab8f, #ba9c80);
+                color: #111;
+            }
+
+            body.khaki {
+                background: linear-gradient(135deg, #e3e3c1, #d7d7af);
+                color: #7b6517;
+            }
+
+            body {
+                --bg: rgba(255, 255, 255, 0.65);
+                --fg: #111;
+
+                background-color: var(--bg);
+                color: var(--fg);
+
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    sans-serif;
+
+                max-width: 900px;
+                margin: auto;
+                padding: 24px;
+
+                line-height: 1.8;
+                letter-spacing: 0.2px;
+
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+                transition:
+                    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+                min-height: 100vh;
+                background-attachment: fixed;
+            }
+
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+            }
+
+            ::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: rgba(127, 127, 127, 0.35);
+                border-radius: 999px;
+                border: 2px solid transparent;
+                background-clip: padding-box;
+                backdrop-filter: blur(12px);
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(127, 127, 127, 0.55);
+            }
+
+            ::selection {
+                background: rgba(100, 149, 237, 0.25);
+            }
+
+            * {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            .edit-btn {
+                margin-left: 8px;
+                padding: 3px 8px;
+                font-size: 12px;
+                cursor: pointer;
+                border-radius: 6px;
+                border: none;
+                background: #888;
+                color: #fff;
+            }
+            .edit-btn:hover {
+                background: #555;
+            }
+
+            .edit-area {
+                width: 100%;
+                min-height: 120px;
+                margin-top: 8px;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                font-family: inherit;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .edit-controls {
+                margin-top: 8px;
+            }
+
+            .edit-controls button {
+                margin-right: 8px;
+                padding: 4px 10px;
+                border-radius: 6px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .confirm-btn {
+                background: #2e8b57;
+                color: #fff;
+            }
+            .cancel-btn {
+                background: #b22222;
+                color: #fff;
+            }
+
+            .top-actions {
+                text-align: center;
+                margin-bottom: 12px;
+            }
+
+            .top-actions button {
+                margin: 0 6px;
+                padding: 6px 12px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background: #333;
+                color: #fff;
+            }
+
+            .top-actions button:hover {
+                background: #000;
+            }
+
+            details {
+                margin-bottom: 16px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                background: rgb(236, 231, 231);
+                padding: 10px 14px;
+            }
+            summary {
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 1.1em;
+                list-style: none;
+            }
+            summary::-webkit-details-marker {
+                display: none;
+            }
+            summary::before {
+                content: "▶ ";
+            }
+            details[open] > summary::before {
+                content: "▼ ";
+            }
+
+            .content {
+                white-space: pre-wrap;
+                margin-top: 10px;
+            }
+
+            .bullet {
+                display: block;
+                text-align: center;
+                font-size: 1.4em;
+                margin: 2px 0;
+            }
+            .empty-text {
+                display: block;
+                text-align: center;
+                opacity: 0.7;
+                font-style: italic;
+            }
+
+            .lang-wrapper {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                padding: 10px 12px;
+                border-radius: 12px;
+
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+
+                color: white;
+                font-family: system-ui, sans-serif;
+            }
+
+            .lang-label {
+                font-size: 12px;
+                opacity: 0.7;
+            }
+
+            .lang-select {
+                background: rgba(0, 0, 0, 0.4);
+                color: white;
+
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+
+                padding: 6px 10px;
+
+                outline: none;
+                cursor: pointer;
+
+                transition: 0.2s;
+            }
+
+            .lang-select:hover {
+                border-color: rgba(0, 255, 255, 0.5);
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            }
+
+            .lang-select option {
+                background: #111;
+                color: white;
+            }
+            .fnr-match {
+                background: rgba(255, 230, 0, 0.4);
+                border-radius: 2px;
+            }
+
+            .fnr-active {
+                background: rgba(255, 140, 0, 0.6);
+            }
+            details[data-index] {
+                content-visibility: auto;
+                contain-intrinsic-size: 0 500px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <a
+            href="../../../index.html"
+            onclick="sessionStorage.setItem('reloaded_once', '1')"
+            style="
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                padding: 10px 14px;
+                background: rgba(0, 0, 0, 0.6);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(6px);
+                z-index: 9999;
+            "
+        >
+            ⬅ Home
+        </a>
+        <div class="lang-wrapper">
+            <label
+                class="lang-label"
+                data-i18n="lang.option"
+                id="lang-select"
+                onchange="setLang(this.value)"
+            ></label>
+
+            <select onchange="setLang(this.value)">
+                <option value="vi-vn">🇻🇳 Tiếng Việt</option>
+                <option value="en-us">🇺🇸 English</option>
+                <option value="ja-jp">🇯🇵 日本語</option>
+                <option value="ko-kr">🇰🇷 한국어</option>
+                <option value="zh-cn">🇨🇳 简体中文</option>
+                <option value="zh-tw">🇹🇼 繁體中文</option>
+                <option value="th-th">🇹🇭 ไทย</option>
+                <option value="id-id">🇮🇩 Indonesia</option>
+                <option value="de-de">🇩🇪 Deutsch</option>
+                <option value="fr-fr">🇫🇷 Français</option>
+                <option value="es-es">🇪🇸 Español</option>
+                <option value="la">🏛️Latina</option>
+            </select>
+        </div>
+        <h1 style="text-align: center" data-i18n="subtitle.editor"></h1>
+
+        <div id="modes" style="text-align: center; margin-bottom: 16px">
+            <label data-i18n="appearance.opt"></label>
+            <select id="themeSelect">
+                <option value="" data-i18n="appearance.opt.default"></option>
+                <option value="ruby" data-i18n="appearance.opt.ruby"></option>
+                <option
+                    value="navajo"
+                    data-i18n="appearance.opt.navajo"
+                ></option>
+                <option value="khaki" data-i18n="appearance.khaki"></option>
+                <option value="dark" data-i18n="appearance.opt.dark"></option>
+                <option value="deep" data-i18n="appearance.opt.deep"></option>
+                <option value="anias" data-i18n="appearance.opt.anias"></option>
+            </select>
+        </div>
+
+        <h2 data-i18n="import.txt.notify"></h2>
+        <div style="margin-bottom: 16px; text-align: center">
+            <button
+                id="epub_create"
+                style="
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background: #2e8b57;
+                    color: #fff;
+                    font-weight: bold;
+                "
+                data-i18n="epub_create"
+                onclick="location.href = './creation_tools/index.html'"
+            ></button>
+            <button
+                id="createStoryBtn"
+                style="
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background: #2e8b57;
+                    color: #fff;
+                    font-weight: bold;
+                "
+                data-i18n="new.novel"
+            ></button>
+            <button id="resetBtn" data-i18n="reset.novel"></button>
+        </div>
+
+        <input type="file" id="file" accept=".txt" hidden />
+        <button
+            id="importBtn"
+            style="
+                padding: 8px 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background: #2e8b57;
+                color: #fff;
+                font-weight: bold;
+            "
+            data-i18n="import.txt"
+            onclick="document.getElementById('file').click()"
+        ></button>
+        <div id="app"></div>
+        <div
+            id="textModal"
+            style="
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+            "
+        >
+            <div
+                style="
+                    background: #fff;
+                    width: 400px;
+                    margin: 10% auto;
+                    padding: 20px;
+                "
+            >
+                <h3 id="modalTitle"></h3>
+
+                <textarea
+                    id="modalInput"
+                    style="width: 100%; height: 150px"
+                ></textarea>
+
+                <div style="margin-top: 10px; text-align: right">
+                    <button id="modalCancel">Cancel</button>
+                    <button id="modalOk">OK</button>
+                </div>
+            </div>
+        </div>
+        <noscript>
+            <div
+                style="text-align: center; color: red; margin: 20px 0"
+                data-i18n="noscript.tools"
+            ></div>
+        </noscript>
+        <script type="module" src="editor-main.js"></script>
+        <script src="../theme/themescr.js"></script>
+        <script src="../../../libs/i18n/i18n.js"></script>
+        <script type="module" src="find-replace.js"></script>
+        <script type="module" src="epub.js"></script>
+    </body>
+</html>

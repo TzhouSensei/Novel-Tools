@@ -1,0 +1,180 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ CENTRE D'OUTILS by TzhouSensei",
+    "home.subtitle": "Choisis l'outil que tu veux utiliser",
+
+    "tool.reader.title": "Lecteur",
+    "tool.reader.desc": "Lire des romans",
+
+    "tool.editor.title": "Éditeur",
+    "tool.editor.desc": "Créer/Modifier des histoires",
+
+    "tool.converter.title": "Convertisseur",
+    "tool.converter.desc": "Convertir EPUB -> TXT",
+
+    "converter.title": "Convertisseur EPUB ➜ TXT",
+    "lang.option": "Langue",
+
+    "mdt.reader": "Lecteur",
+    "mdt.editor": "Éditeur",
+
+    "appearance.opt": "🎨 Apparence",
+    "new.novel": "➕ Créer un nouveau roman",
+
+    "reset.novel": "🔄 Réinitialiser",
+    "appearance.opt.default": "Par défaut",
+
+    "appearance.opt.ruby": "Bleu rubis",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Kaki",
+    "appearance.opt.dark": "🌙 Sombre",
+
+    "appearance.opt.deep": "🕳 Profond",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Importer un fichier .txt",
+    "subtitle.editor": "📖 ÉDITEUR",
+    "subtitle.reader": "📖 Lecteur d’Histoires",
+    "footer.mdt": "Lecteur d’Histoires par TzhouSensei",
+
+    "note.1": "Lors de l'import d'un fichier .txt, le contenu doit suivre cette structure :",
+
+    "note.2": "1. BALISES DE STRUCTURE \n <>...</> → Titre (nom du roman)\n <info> ... </info> → Informations sur le roman (auteur, description, genre, etc.)\n[ ... ] → Liste des personnages\n<list> ... </list> → Liste des chapitres\n{ ... } → Contenu du chapitre\n • → Marqueur système (ne pas supprimer, le contenu du chapitre doit être dans ce marqueur)",
+
+    "note.3": "2. RÈGLES (OBLIGATOIRES)\nNe pas modifier, supprimer ou éditer les balises MDT.\nTout le contenu du fichier doit conserver la structure originale.\nLes balises système sont obligatoires.\nSi le format est incorrect, l'outil peut échouer à lire le contenu.",
+
+    "note.4": "3. EXIGENCES DU FICHIER\nL'outil fonctionne entièrement hors ligne\nLes utilisateurs doivent préparer un fichier .txt correctement formaté\nSeuls les fichiers conformes au standard MDT sont pris en charge",
+
+    "note.5": "4. AVERTISSEMENT\nSi le fichier est cassé à cause d'un mauvais format, l'outil n'est pas responsable\nLa lecture des fichiers non MDT n'est pas garantie\nSeuls les fichiers créés ou compatibles MDT sont recommandés",
+
+    "noscript.tools": "Votre navigateur doit activer JavaScript pour utiliser cette fonctionnalité.",
+    "download.txt": "Télécharger TXT",
+
+    "opf_not_found": "Fichier OPF introuvable",
+    "book.no_author": "Auteur introuvable",
+
+    "book.no_title": "Titre introuvable",
+    "chapter": "Chapitre",
+
+    "author": "Auteur",
+    "genre": "Genre",
+
+    "chapter.count": "Nombre de chapitres",
+    "description": "Description",
+
+    "charlist": "Liste des personnages",
+    "edit.opt.replace": "Remplacer",
+
+    "edit.opt.match.all": "Tout correspondre",
+    "edit.opt.match.around": "Correspondance contextuelle",
+
+    "edit.opt.regex": "Expression régulière",
+    "edit.opt.prev": "Précédent",
+
+    "edit.opt.next": "Suivant",
+    "edit.opt.replace.all": "Tout remplacer",
+
+    "edit.opt.cancel": "Annuler",
+    "edit.title": "Rechercher et remplacer",
+
+    "download.all": "⬇ Tout télécharger",
+    "download.changed": "⬇ Modifications uniquement",
+
+    "export.epub": "📚 Exporter EPUB",
+    "epub": {
+        "toc_title": "Table des matières",
+        "toc": "Contenu",
+        "description_title": "Description de l'histoire",
+        "characters": "Personnages",
+        "appendix": "ANNEXE",
+        "total_chapters": "Nombre total de chapitres",
+        "default_title": "Histoire",
+        "characters_title": "Personnages",
+        "desc_title": "Description"
+    },
+    "ui": {
+        "description": "Description",
+        "characters": "Personnages",
+        "chapters": "Liste des chapitres",
+        "add_chapter": "Ajouter un chapitre",
+        "edit": "Modifier",
+        "confirm": "Confirmer",
+        "cancel": "Annuler",
+        "not_updated": "Non mis à jour",
+        "confirm_delete_chapter": "Voulez-vous vraiment supprimer ce chapitre ?"
+    },
+    "prompt": {
+        "title": "Entrez le titre de l'histoire :",
+        "description": "Entrez la description de l'histoire :",
+        "characters": "Entrez les personnages (un par ligne) :"
+    },
+    "tool.epub.reader": "Lecteur EPUB",
+    "tool.epub.reader.desc": "Lire des EPUB avec une interface claire et intuitive",
+
+    "ereader.import_epub": "Importer EPUB",
+    "ereader.no_book_loaded": "Aucun livre chargé",
+    "ereader.toc": "Table des matières",
+    "ereader.metadata": "Métadonnées",
+    "ereader.no_cover": "Pas de couverture",
+    "ereader.author": "Auteur",
+    "ereader.subject": "Sujet",
+    "ereader.description": "Description",
+    "ereader.style": "Style",
+    "ereader.background_color": "Couleur de fond",
+    "ereader.text_color": "Couleur du texte",
+    "ereader.font": "Police",
+    "ereader.previous_chapter": "Chapitre précédent",
+    "ereader.next_chapter": "Chapitre suivant",
+    "ereader.import_to_start": "Importez un fichier EPUB pour commencer...",
+    "ereader.chapter_status_default": "Chapitre 0/0",
+    "ereader.table_of_contents": "Table des matières",
+    "ereader.toggle_theme": "Clair/Sombre",
+    "ereader.toggle_page_mode": "Page simple/double",
+    "ereader.font_size": "Taille du texte",
+    "ereader.auto_scroll": "Défilement auto (sec/page)",
+    "ereader.tilt_page_turn": "Retourner en inclinant",
+    "ereader.volume_key_navigation": "Navigation volume",
+    "ereader.tts": "TTS (Lecture)",
+    "ereader.volume": "Volume",
+    "ereader.speed": "Vitesse",
+    "ereader.read_stop": "Lire / Arrêter",
+    "ereader.processing_epub": "Traitement du fichier...",
+    "ereader.file_processing_error": "Erreur de fichier.",
+    "ereader.epub_parse_error": "Erreur EPUB : ",
+    "ereader.unknown_title": "Titre inconnu",
+    "ereader.unknown_author": "Auteur inconnu",
+    "ereader.general_subject": "Général",
+    "ereader.no_description": "Aucune description.",
+    "ereader.chapter_not_found": "Chapitre introuvable.",
+    "ereader.chapter": "Chapitre",
+    "ereader.page": "Page",
+    "ereader.tts_not_supported": "TTS non supporté.",
+
+    "library.page_title": "Bibliothèque ePub locale",
+    "library.heading": "Ma bibliothèque",
+    "library.btn_add": "+ Ajouter un nouveau livre EPUB",
+    "library.empty_state": "Votre bibliothèque est vide. Veuillez importer vos fichiers .epub !",
+    "library.no_cover": "Pas de couverture",
+    "library.unknown_author": "Auteur inconnu",
+    "library.confirm_delete": "Êtes-vous sûr de vouloir supprimer ce livre du stockage local ?",
+    "library.error_import": "Erreur lors de l’analyse et de l’import du livre : ",
+    "reader.status_loading": "📂 Chargement du fichier EPUB...",
+    "reader.status_success": "✅ Chargé avec succès",
+    "reader.status_error": "❌ Fichier invalide ou non EPUB",
+    "reader.untitled_story": "Histoire sans titre",
+    "reader.not_updated": "Non mis à jour",
+    "reader.description_title": "Description",
+    "reader.meta_author": "Auteur:",
+    "reader.meta_genres": "Genres:",
+    "reader.character_list": "Liste des personnages",
+    "reader.chapter_list": "Liste des chapitres",
+    "reader.chapter_loading": "Chargement du chapitre...",
+    "reader.chapter_prefix": "Chapitre",
+    "import.txt": "Importer un fichier TXT",
+    "epub_create": "Outils de création EPUB",
+    "tool.configuration": "Configuration",
+    "tool.configuration.desc": "Outils de configuration EPUB",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "Outils de parsing EPUB"
+}

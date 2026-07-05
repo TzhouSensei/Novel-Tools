@@ -1,0 +1,423 @@
+/* ===========================================================
+   Global
+=========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #f5f6fa;
+    font-family:
+        Segoe UI,
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif;
+    color: #222;
+}
+
+h1 {
+    font-weight: 700;
+}
+
+.card {
+    border: none;
+    border-radius: 14px;
+}
+
+.card-header {
+    font-weight: 600;
+    background: #ffffff;
+    border-bottom: 1px solid #ececec;
+}
+
+.card-body {
+    background: #ffffff;
+}
+
+/* ===========================================================
+   Drop Zone
+=========================================================== */
+
+#dropZone {
+    border: 3px dashed #0d6efd;
+
+    border-radius: 16px;
+
+    padding: 60px 30px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: 0.25s;
+
+    background: #fafcff;
+
+    user-select: none;
+}
+
+#dropZone:hover {
+    background: #eef5ff;
+}
+
+#dropZone.dragover {
+    background: #dcecff;
+
+    border-color: #198754;
+
+    transform: scale(1.02);
+}
+
+#dropZone i {
+    color: #0d6efd;
+
+    transition: 0.2s;
+}
+
+#dropZone.dragover i {
+    color: #198754;
+
+    transform: scale(1.15);
+}
+
+/* ===========================================================
+   Progress
+=========================================================== */
+
+.progress {
+    height: 28px;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    background: #e5e5e5;
+}
+
+.progress-bar {
+    font-weight: bold;
+
+    transition: width 0.3s;
+}
+
+/* ===========================================================
+   Cover
+=========================================================== */
+
+#coverPreview {
+    width: 100%;
+
+    max-height: 360px;
+
+    object-fit: contain;
+
+    background: white;
+
+    padding: 10px;
+}
+
+/* ===========================================================
+   Tables
+=========================================================== */
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead {
+    background: #f1f3f7;
+}
+
+.table th {
+    vertical-align: middle;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* ===========================================================
+   Description
+=========================================================== */
+
+#descriptionBox {
+    min-height: 120px;
+
+    max-height: 250px;
+
+    overflow: auto;
+
+    background: #fafafa;
+
+    white-space: pre-wrap;
+
+    line-height: 1.6;
+}
+
+/* ===========================================================
+   TOC
+=========================================================== */
+
+#tocTree {
+    font-size: 15px;
+}
+
+.toc-folder {
+    margin-bottom: 12px;
+}
+
+.toc-folder-title {
+    font-weight: 700;
+
+    color: #0d6efd;
+
+    margin-bottom: 8px;
+}
+
+.toc-folder ul {
+    margin: 0;
+
+    padding-left: 22px;
+}
+
+.toc-folder li {
+    margin-bottom: 6px;
+}
+
+.toc-item {
+    padding: 5px 10px;
+
+    border-radius: 6px;
+
+    transition: 0.2s;
+}
+
+.toc-item:hover {
+    background: #eef4ff;
+}
+
+/* ===========================================================
+   Log
+=========================================================== */
+
+#logBox {
+    background: #1f1f1f;
+
+    color: #6dff8c;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    border: none;
+
+    border-radius: 10px;
+
+    overflow: auto;
+
+    white-space: pre-wrap;
+}
+
+/* ===========================================================
+   Status
+=========================================================== */
+
+#statusText {
+    font-weight: 600;
+
+    color: #555;
+}
+
+/* ===========================================================
+   Buttons
+=========================================================== */
+
+button {
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+/* ===========================================================
+   Metadata
+=========================================================== */
+
+.table-bordered td {
+    word-break: break-word;
+}
+
+.table-bordered th {
+    background: #f8f9fa;
+}
+
+/* ===========================================================
+   Image Table
+=========================================================== */
+
+.mime-image {
+    color: #198754;
+
+    font-weight: 600;
+}
+
+.mime-xhtml {
+    color: #0d6efd;
+
+    font-weight: 600;
+}
+
+.mime-unknown {
+    color: #dc3545;
+
+    font-weight: 600;
+}
+
+/* ===========================================================
+   Scrollbar
+=========================================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #b5b5b5;
+
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #8d8d8d;
+}
+
+::-webkit-scrollbar-track {
+    background: #efefef;
+}
+
+/* ===========================================================
+   Loading Animation
+=========================================================== */
+
+.loading {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.4;
+    }
+}
+
+/* ===========================================================
+   Success Animation
+=========================================================== */
+
+.success-flash {
+    animation: successFlash 0.7s;
+}
+
+@keyframes successFlash {
+    0% {
+        background: #d1ffd8;
+    }
+
+    100% {
+        background: white;
+    }
+}
+
+/* ===========================================================
+   Error
+=========================================================== */
+
+.error {
+    color: #dc3545;
+
+    font-weight: bold;
+}
+
+.success {
+    color: #198754;
+
+    font-weight: bold;
+}
+
+.warning {
+    color: #fd7e14;
+
+    font-weight: bold;
+}
+
+/* ===========================================================
+   Responsive
+=========================================================== */
+
+@media (max-width: 992px) {
+    #coverPreview {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 30px;
+    }
+
+    #dropZone {
+        padding: 45px 20px;
+    }
+
+    .table {
+        font-size: 14px;
+    }
+
+    #logBox {
+        height: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    #dropZone {
+        padding: 35px 15px;
+    }
+
+    #dropZone h4 {
+        font-size: 20px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .d-flex {
+        flex-direction: column;
+    }
+}

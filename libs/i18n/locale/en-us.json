@@ -1,0 +1,180 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ TOOL HUB by TzhouSensei",
+    "home.subtitle": "Choose the tool you want to use",
+
+    "tool.reader.title": "Reader",
+    "tool.reader.desc": "Read novels",
+
+    "tool.editor.title": "Editor",
+    "tool.editor.desc": "Create/Edit stories",
+
+    "tool.converter.title": "Converter",
+    "tool.converter.desc": "Convert EPUB -> TXT",
+
+    "converter.title": "Converter EPUB ➜ TXT",
+    "lang.option": "Language",
+
+    "mdt.reader": "Reader",
+    "mdt.editor": "Editor",
+
+    "appearance.opt": "🎨 Appearance",
+    "new.novel": "➕ Create new novel",
+
+    "reset.novel": "🔄 Reset",
+    "appearance.opt.default": "Default",
+
+    "appearance.opt.ruby": "Ruby Blue",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Khaki",
+    "appearance.opt.dark": "🌙 Dark",
+
+    "appearance.opt.deep": "🕳 Deep",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Import a .txt file",
+    "subtitle.editor": "📖 EDITOR",
+    "subtitle.reader": "📖 READER",
+    "footer.mdt": "Story Reader by TzhouSensei",
+
+    "note.1": "When importing a .txt file, the content must follow this structure:",
+
+    "note.2": "1. STRUCTURE TAGS \n <>...</> → Title (novel title)\n <info> ... </info> → Novel information (author, description, genre, etc.)\n[ ... ] → Character list\n<list> ... </list> → Chapter list\n{ ... } → Chapter content\n • → System checker / marker (do not remove, chapter content must be inside this marker)",
+
+    "note.3": "2. RULES (MANDATORY)\nDo not edit, delete, or modify any MDT tags.\nAll file content must keep the original structure.\nSystem tags are required.\nIf format is incorrect, the tool may fail to read the content.",
+
+    "note.4": "3. FILE REQUIREMENT\nThe tool works completely offline\nUsers must prepare a properly formatted .txt file themselves\nThe tool only supports files converted using MDT standard format",
+
+    "note.5": "4. DISCLAIMER\nIf the file breaks due to incorrect formatting, the tool is not responsible\nThe tool does not guarantee reading files from non-MDT sources\nOnly files created by the tool or properly designed MDT-compliant files are recommended",
+
+    "noscript.tools": "Your browser needs JavaScript enabled to use this feature.",
+    "download.txt": "Download TXT",
+
+    "opf_not_found": "OPF file not found",
+    "book.no_author": "Author not found",
+
+    "book.no_title": "Title not found",
+    "chapter": "Chapter",
+
+    "author": "Author",
+    "genre": "Genre",
+
+    "chapter.count": "Chapter Counted",
+    "description": "Description",
+
+    "charlist": "Character list",
+    "edit.opt.replace": "Replace",
+
+    "edit.opt.match.all": "Match all",
+    "edit.opt.match.around": "Match around",
+
+    "edit.opt.regex": "Regular Expression",
+    "edit.opt.prev": "Previous",
+
+    "edit.opt.next": "Next",
+    "edit.opt.replace.all": "Replace all",
+
+    "edit.opt.cancel": "Cancel",
+    "edit.title": "Find & Replace",
+
+    "download.all": "⬇ Download all",
+    "download.changed": "⬇ Changed only",
+
+    "export.epub": "📚 Export EPUB",
+    "epub": {
+        "toc_title": "Table of Contents",
+        "toc": "Contents",
+        "description_title": "Story Description",
+        "characters": "Characters",
+        "appendix": "APPENDIX",
+        "total_chapters": "Total Chapters",
+        "default_title": "Story",
+        "characters_title": "Characters",
+        "desc_title": "Description"
+    },
+    "ui": {
+        "description": "Description",
+        "characters": "Characters",
+        "chapters": "Chapter List",
+        "add_chapter": "Add Chapter",
+        "edit": "Edit",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "not_updated": "Not updated",
+        "confirm_delete_chapter": "Are you sure you want to delete this chapter?"
+    },
+    "prompt": {
+        "title": "Enter story title:",
+        "description": "Enter story description:",
+        "characters": "Enter characters (one per line):"
+    },
+    "tool.epub.reader": "EPUB Reader",
+    "tool.epub.reader.desc": "Read EPUB with a clean and intuitive interface",
+
+    "ereader.import_epub": "Import EPUB",
+    "ereader.no_book_loaded": "No book loaded",
+    "ereader.toc": "Table of Contents",
+    "ereader.metadata": "Metadata",
+    "ereader.no_cover": "No Cover",
+    "ereader.author": "Author",
+    "ereader.subject": "Subject",
+    "ereader.description": "Description",
+    "ereader.style": "Style",
+    "ereader.background_color": "Background Color",
+    "ereader.text_color": "Text Color",
+    "ereader.font": "Font",
+    "ereader.previous_chapter": "Previous Chapter",
+    "ereader.next_chapter": "Next Chapter",
+    "ereader.import_to_start": "Please import an EPUB file to start reading...",
+    "ereader.chapter_status_default": "Chapter 0/0",
+    "ereader.table_of_contents": "Table of Contents",
+    "ereader.toggle_theme": "Light/Dark",
+    "ereader.toggle_page_mode": "Single/Double Page",
+    "ereader.font_size": "Font Size",
+    "ereader.auto_scroll": "Auto scroll (sec/page)",
+    "ereader.tilt_page_turn": "Tilt to turn page",
+    "ereader.volume_key_navigation": "Volume key navigation",
+    "ereader.tts": "TTS (Read)",
+    "ereader.volume": "Volume",
+    "ereader.speed": "Speed",
+    "ereader.read_stop": "Read / Stop",
+    "ereader.processing_epub": "Processing file...",
+    "ereader.file_processing_error": "File processing error.",
+    "ereader.epub_parse_error": "EPUB parse error: ",
+    "ereader.unknown_title": "Unknown Title",
+    "ereader.unknown_author": "Unknown Author",
+    "ereader.general_subject": "General",
+    "ereader.no_description": "No description available.",
+    "ereader.chapter_not_found": "Chapter not found.",
+    "ereader.chapter": "Chapter",
+    "ereader.page": "Page",
+    "ereader.tts_not_supported": "Your browser does not support TTS.",
+
+    "library.page_title": "Local ePub Library",
+    "library.heading": "My Bookshelf",
+    "library.btn_add": "+ Add new EPUB book",
+    "library.empty_state": "Your bookshelf is empty. Please upload your .epub files!",
+    "library.no_cover": "No cover available",
+    "library.unknown_author": "Unknown author",
+    "library.confirm_delete": "Are you sure you want to remove this book from local storage?",
+    "library.error_import": "Error parsing and importing book: ",
+    "reader.status_loading": "📂 Loading EPUB file...",
+    "reader.status_success": "✅ Successfully loaded",
+    "reader.status_error": "❌ Invalid file or not an EPUB",
+    "reader.untitled_story": "Untitled story",
+    "reader.not_updated": "Not updated",
+    "reader.description_title": "Description",
+    "reader.meta_author": "Author:",
+    "reader.meta_genres": "Genres:",
+    "reader.character_list": "Character list",
+    "reader.chapter_list": "Chapter list",
+    "reader.chapter_loading": "Loading chapter...",
+    "reader.chapter_prefix": "Chapter",
+    "import.txt": "Import TXT file",
+    "epub_create": "EPUB Creation Tools",
+    "tool.configuration": "Configuration",
+    "tool.configuration.desc": "EPUB configuration tools",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "EPUB parser tools"
+}

@@ -1,0 +1,183 @@
+{
+    "app.title": "NovelTool by TzhouSensei",
+    "home.title": "⚡ Instrumentum Hub by TzhouSensei",
+    "home.subtitle": "Elige instrumentum quod vis uti",
+
+    "tool.reader.title": "Lectorem",
+    "tool.reader.desc": "Legere novelas",
+
+    "tool.editor.title": "Editor",
+    "tool.editor.desc": "Creare/Editare fabulas",
+
+    "tool.converter.title": "Convertor",
+    "tool.converter.desc": "Convertere EPUB -> TXT",
+
+    "converter.title": "Convertor EPUB ➜ TXT",
+    "lang.option": "Lingua",
+
+    "mdt.reader": "Lectorem",
+    "mdt.editor": "Editor",
+
+    "appearance.opt": "🎨 Aspectus",
+    "new.novel": "➕ Novam novellam creare",
+
+    "reset.novel": "🔄 Resetare",
+    "appearance.opt.default": "Default",
+
+    "appearance.opt.ruby": "Caeruleus Ruby",
+    "appearance.opt.navajo": "Navajo",
+
+    "appearance.khaki": "Khaki",
+    "appearance.opt.dark": "🌙 Obscurus",
+
+    "appearance.opt.deep": "🕳 Profundus",
+    "appearance.opt.anias": "🍂 Anias",
+
+    "import.txt.notify": "Importare file .txt",
+    "subtitle.editor": "📖 EDITOR",
+    "subtitle.reader": "📖 Lector Fabularum",
+    "footer.mdt": "Lector Fabularum a TzhouSensei",
+
+    "note.1": "Cum importas file .txt, contentum hanc structuram sequi debet:",
+
+    "note.2": "1. STRUCTURA TAGS \n <>...</> → Titulus (nomen novelli)\n <info> ... </info> → Informationes (auctor, descriptio, genus, etc.)\n[ ... ] → Index characterum\n<list> ... </list> → Index capitum\n{ ... } → Contentum capituli\n • → Systema marker (non delere, contentum intra hoc debet esse)",
+
+    "note.3": "2. REGULAE (MANDATORIAE)\nMDT tags non mutare, delere aut editare.\nOmnia contenta structuram originalem servare debent.\nSystema tags requiruntur.\nSi forma falsa est, instrumentum legere non potest.",
+
+    "note.4": "3. REQUISITA FILE\nInstrumentum plene offline operatur\nUsor debet parare file .txt recte formatum\nSolum MDT standard files sustinentur",
+
+    "note.5": "4. DISCLAIMER\nSi file frangitur propter formatum falsum, non responsabile sumus\nFiles non-MDT non garantitur legibilitas\nSolum MDT-compliant files suadentur",
+
+    "noscript.tools": "Navigator JavaScript activare debet ut hoc utatur.",
+    "download.txt": "Download TXT",
+
+    "opf_not_found": "File OPF non inventum",
+    "book.no_author": "Auctor non inventus",
+
+    "book.no_title": "Titulus non inventus",
+    "chapter": "Capitulum",
+
+    "author": "Auctor",
+    "genre": "Genus",
+
+    "chapter.count": "Numerus capitum",
+    "description": "Descriptio",
+
+    "charlist": "Index characterum",
+    "edit.opt.replace": "Substituere",
+
+    "edit.opt.match.all": "Omnia congruere",
+    "edit.opt.match.around": "Contextus congruens",
+
+    "edit.opt.regex": "Expressio regularis",
+    "edit.opt.prev": "Praevius",
+
+    "edit.opt.next": "Proximum",
+    "edit.opt.replace.all": "Omnia substituere",
+
+    "edit.opt.cancel": "Cancel",
+    "edit.title": "Invenire & Substituere",
+
+    "download.all": "⬇ Omnia download",
+    "download.changed": "⬇ Tantum mutata",
+
+    "export.epub": "📚 Exportare EPUB",
+
+    "epub": {
+        "toc_title": "Index contentorum",
+        "toc": "Contenta",
+        "description_title": "Descriptio fabulae",
+        "characters": "Characteres",
+        "appendix": "Appendix",
+        "total_chapters": "Total capitum",
+        "default_title": "Fabula",
+        "characters_title": "Characteres",
+        "desc_title": "Descriptio"
+    },
+
+    "ui": {
+        "description": "Descriptio",
+        "characters": "Characteres",
+        "chapters": "Index capitum",
+        "add_chapter": "Addere capitulum",
+        "edit": "Editare",
+        "confirm": "Confirmare",
+        "cancel": "Cancel",
+        "not_updated": "Non renovatum",
+        "confirm_delete_chapter": "Certusne es te hoc capitulum delere?"
+    },
+
+    "prompt": {
+        "title": "Inscribe titulum fabulae:",
+        "description": "Inscribe descriptionem fabulae:",
+        "characters": "Inscribe characteres (unum per lineam):"
+    },
+    "tool.epub.reader": "Lectorem EPUB",
+    "tool.epub.reader.desc": "EPUB legere cum interface clara et intuitiva",
+
+    "ereader.import_epub": "EPUB importare",
+    "ereader.no_book_loaded": "Liber non oneratus",
+    "ereader.toc": "Index capitulorum",
+    "ereader.metadata": "Metadata",
+    "ereader.no_cover": "Nulla tegumentum",
+    "ereader.author": "Auctor",
+    "ereader.subject": "Subiectum",
+    "ereader.description": "Descriptio",
+    "ereader.style": "Stylus",
+    "ereader.background_color": "Color subiecti",
+    "ereader.text_color": "Color textus",
+    "ereader.font": "Typus litterarum",
+    "ereader.previous_chapter": "Capitulum prius",
+    "ereader.next_chapter": "Capitulum proximum",
+    "ereader.import_to_start": "Importa fasciculum EPUB ad legendum...",
+    "ereader.chapter_status_default": "Capitulum 0/0",
+    "ereader.table_of_contents": "Index capitulorum",
+    "ereader.toggle_theme": "Lux/Obscurus",
+    "ereader.toggle_page_mode": "Pagina una/duplex",
+    "ereader.font_size": "Magnitudo litterarum",
+    "ereader.auto_scroll": "Auto volvere (sec/page)",
+    "ereader.tilt_page_turn": "Inclinatio paginae",
+    "ereader.volume_key_navigation": "Claves voluminis",
+    "ereader.tts": "TTS (Lectio)",
+    "ereader.volume": "Volumen",
+    "ereader.speed": "Celeritas",
+    "ereader.read_stop": "Legere / Sistere",
+    "ereader.processing_epub": "Processus fasciculi...",
+    "ereader.file_processing_error": "Error fasciculi.",
+    "ereader.epub_parse_error": "Error EPUB: ",
+    "ereader.unknown_title": "Titulus ignotus",
+    "ereader.unknown_author": "Auctor ignotus",
+    "ereader.general_subject": "Generale",
+    "ereader.no_description": "Nulla descriptio.",
+    "ereader.chapter_not_found": "Capitulum non inventum",
+    "ereader.chapter": "Capitulum",
+    "ereader.page": "Pagina",
+    "ereader.tts_not_supported": "TTS non sustentatur.",
+
+    "library.page_title": "Bibliotheca ePub localis",
+    "library.heading": "Mea bibliotheca",
+    "library.btn_add": "+ Novum librum EPUB addere",
+    "library.empty_state": "Bibliotheca vacua est. Fasciculos .epub imponere quaeso!",
+    "library.no_cover": "Nulla imago operculi",
+    "library.unknown_author": "Auctor ignotus",
+    "library.confirm_delete": "Certusne es hunc librum e memoria locali removere?",
+    "library.error_import": "Error in analysi et importatione libri: ",
+    "reader.status_loading": "📂 Fasciculus EPUB oneratur...",
+    "reader.status_success": "✅ Feliciter onerat",
+    "reader.status_error": "❌ Fasciculus invalidus vel non EPUB",
+    "reader.untitled_story": "Historia sine titulo",
+    "reader.not_updated": "Non renovatum",
+    "reader.description_title": "Descriptio",
+    "reader.meta_author": "Auctor:",
+    "reader.meta_genres": "Genera:",
+    "reader.character_list": "Index personarum",
+    "reader.chapter_list": "Index capitulorum",
+    "reader.chapter_loading": "Capitulum oneratur...",
+    "reader.chapter_prefix": "Capitulum",
+    "import.txt": "Importare fasciculum TXT",
+    "epub_create": "Instrumenta creationis EPUB",
+    "tool.configuration": "Configuratio",
+    "tool.configuration.desc": "Configuratio instrumenti creationis EPUB",
+    "tool.parser": "Parser",
+    "tool.parser.desc": "Convertere fasciculos EPUB in formam MDT"
+}
