@@ -67,3 +67,6 @@ Steps:
 -Enable localhost mode  
 -Open index.html  
 -Start using tool
+
+For 1.1.5 change about mdt-editor,watch this wiki
+https://github.com/TzhouSensei/Novel-Tools/wiki/Edior-in-v1.1.5
