@@ -1,3 +1,0 @@
-# Contributors
-
-- TzhouSensei (Original Author)
