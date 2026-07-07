@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EPUB Bulk Metadata Editor</title>
+        <link href="../../libs/epub/bootstrap.min.css" rel="stylesheet" />
+        <script src="../../libs/epub/jszip.min.js"></script>
+        <link rel="stylesheet" href="../../libs/i18n/language.css" />
+        <style>
+            body {
+                background-color: #f8f9fa;
+                padding: 30px 0;
+            }
+            .epub-editor-card {
+                margin-bottom: 25px;
+                border-left: 5px solid #0d6efd;
+            }
+            .section {
+                background: #fff;
+                padding: 15px;
+                border-radius: 6px;
+                margin-bottom: 15px;
+                border: 1px solid #dee2e6;
+            }
+            .section-title {
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #333;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 5px;
+            }
+            .form-group {
+                margin-bottom: 12px;
+            }
+            .form-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 5px;
+                font-size: 0.9rem;
+            }
+            .form-group input[type="text"],
+            .form-group select {
+                width: 100%;
+                padding: 6px 12px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+            .dynamic-item {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 8px;
+                align-items: center;
+            }
+            .key-input {
+                width: 80px;
+                text-align: center;
+            }
+            .value-input {
+                flex: 1;
+            }
+            .hidden {
+                display: none !important;
+            }
+            .info-badge {
+                background-color: #e2e8f0;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                margin-left: 10px;
+            }
+            .toc-block {
+                border: 1px dashed #4a5568;
+                padding: 12px;
+                margin-bottom: 10px;
+                background: #edf2f7;
+                border-radius: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <a
+            href="../../index.html"
+            onclick="sessionStorage.setItem('reloaded_once', '1')"
+            style="
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                padding: 10px 14px;
+                background: rgba(0, 0, 0, 0.6);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(6px);
+                z-index: 9999;
+            "
+        >
+            ⬅ Home
+        </a>
+        <div class="lang-wrapper"></div>
+        <div class="container">
+            <h2
+                class="mb-4 text-center fw-bold text-primary"
+                data-i18n="epub_bulk.main_title"
+            >
+                CÔNG CỤ CHỈNH SỬA METADATA EPUB HÀNG LOẠT
+            </h2>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center py-4">
+                    <h5
+                        class="card-title mb-3"
+                        data-i18n="epub_bulk.select_title"
+                    >
+                        Chọn các tệp tin EPUB cần chỉnh sửa
+                    </h5>
+                    <input
+                        type="file"
+                        id="importEpubFiles"
+                        accept=".epub"
+                        multiple
+                        class="form-control d-inline-block w-auto me-2"
+                    />
+                    <button
+                        id="clearAllBtn"
+                        class="btn btn-secondary hidden"
+                        data-i18n="epub_bulk.btn_clear_list"
+                    >
+                        Xóa danh sách
+                    </button>
+                </div>
+            </div>
+
+            <div id="progressCard" class="card shadow-sm mb-4 hidden">
+                <div
+                    class="card-header fw-bold bg-dark text-white"
+                    data-i18n="epub_bulk.progress_header"
+                >
+                    Xử lý Files
+                </div>
+                <div class="card-body">
+                    <div class="progress">
+                        <div
+                            id="progressBar"
+                            class="progress-bar progress-bar-striped progress-bar-animated"
+                            style="width: 0%"
+                        >
+                            0%
+                        </div>
+                    </div>
+                    <div
+                        class="mt-3 fw-bold"
+                        id="statusText"
+                        data-i18n="epub_bulk.status_no_data"
+                    >
+                        Chưa có dữ liệu
+                    </div>
+                </div>
+            </div>
+
+            <div id="epubEditorsContainer"></div>
+
+            <div class="text-center mt-4 mb-5">
+                <button
+                    id="exportBulkBtn"
+                    class="btn btn-success btn-lg px-5 shadow hidden"
+                    data-i18n="epub_bulk.btn_save_export_all"
+                >
+                    LƯU & XUẤT TOÀN BỘ FILE EPUB
+                </button>
+            </div>
+        </div>
+
+        <script>
+            let epubFilesList = [];
+
+            document
+                .getElementById("importEpubFiles")
+                .addEventListener("change", handleEpubSelect);
+            document
+                .getElementById("clearAllBtn")
+                .addEventListener("click", clearAll);
+            document
+                .getElementById("exportBulkBtn")
+                .addEventListener("click", exportAllEpubs);
+
+            async function handleEpubSelect(e) {
+                const files = e.target.files;
+                if (!files.length) return;
+
+                document
+                    .getElementById("progressCard")
+                    .classList.remove("hidden");
+                document
+                    .getElementById("clearAllBtn")
+                    .classList.remove("hidden");
+                document
+                    .getElementById("exportBulkBtn")
+                    .classList.remove("hidden");
+
+                const progressBar = document.getElementById("progressBar");
+                const statusText = document.getElementById("statusText");
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const fileId = "epub_" + Date.now() + "_" + i;
+
+                    // Sử dụng hàm t() để đa ngôn ngữ hóa chuỗi trạng thái phân tích
+                    statusText.innerText = t("epub_bulk.status_parsing")
+                        .replace("{current}", i + 1)
+                        .replace("{total}", files.length)
+                        .replace("{filename}", file.name);
+
+                    try {
+                        const zip = await JSZip.loadAsync(file);
+                        const epubData = await parseEpubMetadata(
+                            zip,
+                            file.name,
+                            fileId,
+                        );
+                        epubFilesList.push(epubData);
+
+                        renderEpubEditorForm(epubData);
+
+                        let percent = Math.round(
+                            ((i + 1) / files.length) * 100,
+                        );
+                        progressBar.style.width = percent + "%";
+                        progressBar.innerText = percent + "%";
+                    } catch (err) {
+                        console.error(err);
+                        alert(
+                            t("epub_bulk.alert_error_read").replace(
+                                "{filename}",
+                                file.name,
+                            ) + err.message,
+                        );
+                    }
+                }
+                statusText.innerText = t(
+                    "epub_bulk.status_loaded_ready",
+                ).replace("{count}", files.length);
+            }
+
+            async function parseEpubMetadata(zip, filename, fileId) {
+                const containerFile = zip.file("META-INF/container.xml");
+                if (!containerFile)
+                    throw new Error("Không tìm thấy META-INF/container.xml");
+
+                const containerText = await containerFile.async("text");
+                const parser = new DOMParser();
+                const containerDoc = parser.parseFromString(
+                    containerText,
+                    "text/xml",
+                );
+                const opfPath = containerDoc
+                    .querySelector("rootfile")
+                    .getAttribute("full-path");
+
+                const opfFile = zip.file(opfPath);
+                if (!opfFile)
+                    throw new Error(
+                        `Không tìm thấy file định hình OPF tại: ${opfPath}`,
+                    );
+                const opfText = await opfFile.async("text");
+                const opfDoc = parser.parseFromString(opfText, "text/xml");
+
+                const opfDir = opfPath.includes("/")
+                    ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1)
+                    : "";
+
+                const title = opfDoc.querySelector("title")?.textContent || "";
+                const creator =
+                    opfDoc.querySelector("creator")?.textContent || "";
+                const language =
+                    opfDoc.querySelector("language")?.textContent || "";
+                const description =
+                    opfDoc.querySelector("description")?.textContent || "";
+
+                const subjects = Array.from(
+                    opfDoc.querySelectorAll("subject"),
+                ).map((el) => el.textContent);
+
+                let coverHref = "";
+                let coverManifestItem = null;
+
+                coverManifestItem = opfDoc.querySelector(
+                    'item[properties~="cover-image"]',
+                );
+
+                if (!coverManifestItem) {
+                    const coverMeta =
+                        opfDoc.querySelector('meta[name="cover"]');
+                    if (coverMeta) {
+                        const coverId = coverMeta.getAttribute("content");
+                        coverManifestItem =
+                            opfDoc.getElementById(coverId) ||
+                            opfDoc.querySelector(`item[id="${coverId}"]`);
+                    }
+                }
+
+                let coverBase64 = "";
+                if (coverManifestItem) {
+                    const relativeCoverPath =
+                        coverManifestItem.getAttribute("href");
+                    const fullCoverPath = cleanRelativePath(
+                        opfDir + relativeCoverPath,
+                    );
+                    const coverImgFile = zip.file(fullCoverPath);
+                    if (coverImgFile) {
+                        coverHref = fullCoverPath;
+                        const buffer = await coverImgFile.async("arraybuffer");
+                        coverBase64 = arrayBufferToBase64(
+                            buffer,
+                            getMimeType(fullCoverPath),
+                        );
+                    }
+                }
+
+                return {
+                    fileId,
+                    filename,
+                    zipInstance: zip,
+                    opfPath,
+                    opfDoc,
+                    metadata: {
+                        title,
+                        creator,
+                        language,
+                        description,
+                        subjects,
+                        coverHref,
+                        coverBase64,
+                    },
+                };
+            }
+
+            function renderEpubEditorForm(epub) {
+                const container = document.getElementById(
+                    "epubEditorsContainer",
+                );
+                const meta = epub.metadata;
+
+                const card = document.createElement("div");
+                card.className = "card shadow-sm epub-editor-card mb-4";
+                card.id = epub.fileId;
+                card.dataset.filename = epub.filename;
+
+                // Quy chuẩn các nhãn nội dung form động bằng các thẻ mang thuộc tính data-i18n
+                card.innerHTML = `
+        <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+            <span>📄 <span data-i18n="epub_bulk.label_filename">Tên tệp</span>: ${epub.filename}</span>
+            <button class="btn btn-sm btn-danger" data-i18n="epub_bulk.btn_skip_file" onclick="removeEpubCard('${epub.fileId}')">Bỏ qua file</button>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-4 bg-light p-3 rounded border">
+                <div class="col-md-2 text-center">
+                    <h6 class="fw-bold text-secondary" data-i18n="epub_bulk.title_current_cover">Ảnh bìa hiện tại</h6>
+                    <img id="prev_${epub.fileId}" class="img-fluid rounded border shadow-sm bg-white"  
+                         src="${meta.coverBase64 || "https://placehold.co/120x160?text=No+Cover"}" style="max-height: 160px;">
+                </div>
+                <div class="col-md-10">
+                    <table class="table table-sm table-bordered bg-white mb-2">
+                        <tbody>
+                            <tr><th width="150" class="table-secondary" data-i18n="epub_bulk.th_original_title">Tiêu đề gốc</th><td id="cell_title_${epub.fileId}">${meta.title || "-"}</td></tr>
+                            <tr><th class="table-secondary" data-i18n="epub_bulk.th_original_author">Tác giả gốc</th><td id="cell_author_${epub.fileId}">${meta.creator || "-"}</td></tr>
+                            <tr><th class="table-secondary" data-i18n="epub_bulk.th_language">Ngôn ngữ</th><td>${meta.language || "-"}</td></tr>
+                            <tr><th class="table-secondary" data-i18n="epub_bulk.th_cover_path">Đường dẫn bìa</th><td class="text-monospace small" id="cell_path_${epub.fileId}">${meta.coverHref || t("epub_bulk.status_not_found")}</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="small text-muted text-truncate"><strong data-i18n="epub_bulk.label_original_desc">Mô tả gốc:</strong> ${meta.description || t("epub_bulk.status_empty")}</div>
+                </div>
+            </div>
+
+            <form id="form_${epub.fileId}" onsubmit="event.preventDefault()">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="section">
+                            <div class="section-title text-primary fw-bold mb-2" data-i18n="epub_bulk.section_basic_info">Thông tin cơ bản</div>
+                            <div class="form-group mb-2">
+                                <label>Title (<span class="text-danger">dc:title</span>):</label>
+                                <input type="text" class="form-control epub-title" value="${meta.title.replace(/"/g, "&quot;")}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label>Author (<span class="text-danger">dc:creator</span>):</label>
+                                <input type="text" class="form-control epub-author" value="${meta.creator.replace(/"/g, "&quot;")}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label data-i18n="epub_bulk.th_language">Ngôn ngữ:</label>
+                                <input type="text" class="form-control epub-language" value="${meta.language}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label data-i18n="epub_bulk.label_cover_href_path">Cover Href (Đường dẫn lưu file ảnh):</label>
+                                <input type="text" class="form-control epub-cover-href" value="${meta.coverHref}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="d-block" data-i18n="epub_bulk.label_import_new_cover">Import Ảnh Bìa Mới (Cover Image):</label>
+                                <input type="file" id="file_input_${epub.fileId}" accept="image/*" style="display: none" onchange="handleNewCover(this, '${epub.fileId}')">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" data-i18n="epub_bulk.btn_select_new_cover" onclick="document.getElementById('file_input_${epub.fileId}').click()">
+                                    Chọn ảnh bìa mới đại diện
+                                </button>
+                                <span id="badge_${epub.fileId}" class="badge bg-secondary p-2" data-i18n="epub_bulk.badge_keep_original">Giữ nguyên gốc</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="section">
+                            <div class="section-title text-primary fw-bold mb-2">
+                                <span data-i18n="epub_bulk.section_genre">Thể loại (dc:subject)</span> <small class="text-muted" data-i18n="epub_bulk.note_auto_index">*Tự động tăng chỉ mục</small>
+                            </div>
+                            <div class="genre-container" id="genre_container_${epub.fileId}">
+                                ${meta.subjects
+                                    .map(
+                                        (sub, index) => `
+                                    <div class="dynamic-item d-flex mb-2">
+                                        <input type="text" class="key-input form-control form-control-sm w-auto me-2" value="${index + 1}" disabled style="max-width:50px;">
+                                        <input type="text" class="value-input form-control form-control-sm subject-value me-2" value="${sub.replace(/"/g, "&quot;")}">
+                                        <button type="button" class="btn btn-sm btn-danger" data-i18n="epub_bulk.btn_delete" onclick="removeGenreItem(this, '${epub.fileId}')">Xóa</button>
+                                    </div>
+                                `,
+                                    )
+                                    .join("")}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary mt-2" data-i18n="epub_bulk.btn_add_genre" onclick="addGenreField('${epub.fileId}')">Thêm Thể Loại</button>
+                        </div>
+
+                        <div class="section mt-3">
+                            <div class="section-title text-primary fw-bold mb-2" data-i18n="epub_bulk.section_desc">Mô tả & Giới thiệu (dc:description)</div>
+                            <div class="form-group">
+                                <textarea class="form-control epub-description" rows="5" style="font-size:0.9rem;">${meta.description}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    `;
+                container.appendChild(card);
+
+                // CRITICAL: Kích hoạt biên dịch lại các nhãn vừa chèn vào DOM động
+                applyI18n();
+            }
+
+            function addGenreField(fileId) {
+                const container = document.getElementById(
+                    `genre_container_${fileId}`,
+                );
+                const nextIdx = container.children.length + 1;
+                const div = document.createElement("div");
+                div.className = "dynamic-item d-flex mb-2";
+
+                // Quy chuẩn placeholder thông qua hàm t() hoặc thuộc tính data-i18n
+                div.innerHTML = `
+        <input type="text" class="key-input form-control form-control-sm w-auto me-2" value="${nextIdx}" disabled style="max-width:50px;">
+        <input type="text" class="value-input form-control form-control-sm subject-value me-2" placeholder="${t("epub_bulk.placeholder_new_genre")}">
+        <button type="button" class="btn btn-sm btn-danger" data-i18n="epub_bulk.btn_delete" onclick="removeGenreItem(this, '${fileId}')">Xóa</button>
+    `;
+                container.appendChild(div);
+                applyI18n(); // Biên dịch lại nút xóa mới thêm vào
+            }
+
+            function removeGenreItem(btn, fileId) {
+                const container = document.getElementById(
+                    `genre_container_${fileId}`,
+                );
+                btn.parentElement.remove();
+                Array.from(container.children).forEach((item, idx) => {
+                    item.querySelector(".key-input").value = idx + 1;
+                });
+            }
+
+            function handleNewCover(input, fileId) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById(`prev_${fileId}`).src =
+                        e.target.result;
+
+                    const pathInput = document.querySelector(
+                        `#${fileId} .epub-cover-href`,
+                    );
+                    const ext = file.name.split(".").pop().toLowerCase();
+
+                    if (!pathInput.value.trim()) {
+                        pathInput.value = `OEBPS/images/cover_custom.${ext}`;
+                    }
+
+                    const badge = document.getElementById(`badge_${fileId}`);
+                    badge.innerText = t("epub_bulk.badge_loaded_new_cover");
+                    badge.className = "badge bg-success p-2";
+
+                    const epubObj = epubFilesList.find(
+                        (x) => x.fileId === fileId,
+                    );
+                    if (epubObj) {
+                        epubObj.newCoverBuffer = e.target.result;
+                        epubObj.newCoverFileObj = file;
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function removeEpubCard(fileId) {
+                document.getElementById(fileId).remove();
+                epubFilesList = epubFilesList.filter(
+                    (x) => x.fileId !== fileId,
+                );
+                if (epubFilesList.length === 0) clearAll();
+            }
+
+            function clearAll() {
+                document.getElementById("epubEditorsContainer").innerHTML = "";
+                document.getElementById("importEpubFiles").value = "";
+                document.getElementById("progressCard").classList.add("hidden");
+                document.getElementById("clearAllBtn").classList.add("hidden");
+                document
+                    .getElementById("exportBulkBtn")
+                    .classList.add("hidden");
+                epubFilesList = [];
+                document.getElementById("statusText").innerText = t(
+                    "epub_bulk.status_no_data",
+                );
+            }
+
+            async function exportAllEpubs() {
+                if (!epubFilesList.length) return;
+
+                const progressBar = document.getElementById("progressBar");
+                const statusText = document.getElementById("statusText");
+                progressBar.style.width = "0%";
+
+                for (let i = 0; i < epubFilesList.length; i++) {
+                    const epub = epubFilesList[i];
+
+                    statusText.innerText = t(
+                        "epub_bulk.status_updating",
+                    ).replace("{filename}", epub.filename);
+
+                    const form = document.getElementById(`form_${epub.fileId}`);
+                    if (!form) continue;
+
+                    const updatedTitle = form
+                        .querySelector(".epub-title")
+                        .value.trim();
+                    const updatedAuthor = form
+                        .querySelector(".epub-author")
+                        .value.trim();
+                    const updatedLang = form
+                        .querySelector(".epub-language")
+                        .value.trim();
+                    const updatedCoverHref = form
+                        .querySelector(".epub-cover-href")
+                        .value.trim();
+                    const updatedDesc = form
+                        .querySelector(".epub-description")
+                        .value.trim();
+
+                    const updatedSubjects = Array.from(
+                        form.querySelectorAll(".subject-value"),
+                    )
+                        .map((input) => input.value.trim())
+                        .filter((val) => val !== "");
+
+                    let zip = epub.zipInstance;
+                    let opfDoc = epub.opfDoc;
+
+                    if (opfDoc.querySelector("title"))
+                        opfDoc.querySelector("title").textContent =
+                            updatedTitle;
+                    if (opfDoc.querySelector("creator"))
+                        opfDoc.querySelector("creator").textContent =
+                            updatedAuthor;
+                    if (opfDoc.querySelector("language"))
+                        opfDoc.querySelector("language").textContent =
+                            updatedLang;
+                    if (opfDoc.querySelector("description")) {
+                        opfDoc.querySelector("description").textContent =
+                            updatedDesc;
+                    } else if (updatedDesc) {
+                        let descNode = opfDoc.createElement("dc:description");
+                        descNode.textContent = updatedDesc;
+                        opfDoc.querySelector("metadata").appendChild(descNode);
+                    }
+
+                    const metadataNode = opfDoc.querySelector("metadata");
+                    Array.from(opfDoc.querySelectorAll("subject")).forEach(
+                        (el) => el.remove(),
+                    );
+                    updatedSubjects.forEach((sub) => {
+                        let subNode = opfDoc.createElement("dc:subject");
+                        subNode.textContent = sub;
+                        metadataNode.appendChild(subNode);
+                    });
+
+                    if (epub.newCoverBuffer && updatedCoverHref) {
+                        zip.file(updatedCoverHref, epub.newCoverBuffer);
+
+                        let itemNode = opfDoc.querySelector(
+                            `item[href="${updatedCoverHref}"]`,
+                        );
+                        if (!itemNode) {
+                            if (epub.metadata.coverHref) {
+                                itemNode = opfDoc.querySelector(
+                                    `item[href="${epub.metadata.coverHref.replace(epub.opfPath.substring(0, epub.opfPath.lastIndexOf("/") + 1), "")}"]`,
+                                );
+                            }
+
+                            if (itemNode) {
+                                itemNode.setAttribute("href", updatedCoverHref);
+                            } else {
+                                itemNode = opfDoc.createElement("item");
+                                itemNode.setAttribute(
+                                    "id",
+                                    "custom_added_cover",
+                                );
+                                itemNode.setAttribute("href", updatedCoverHref);
+                                itemNode.setAttribute(
+                                    "media-type",
+                                    epub.newCoverFileObj.type ||
+                                        getMimeType(updatedCoverHref),
+                                );
+                                itemNode.setAttribute(
+                                    "properties",
+                                    "cover-image",
+                                );
+                                opfDoc
+                                    .querySelector("manifest")
+                                    .appendChild(itemNode);
+                            }
+                        }
+                        if (!itemNode.getAttribute("properties")) {
+                            itemNode.setAttribute("properties", "cover-image");
+                        }
+                        let metaCover =
+                            opfDoc.querySelector('meta[name="cover"]');
+                        if (!metaCover) {
+                            metaCover = opfDoc.createElement("meta");
+                            metaCover.setAttribute("name", "cover");
+                            metaCover.setAttribute(
+                                "content",
+                                itemNode.getAttribute("id"),
+                            );
+                            metadataNode.appendChild(metaCover);
+                        } else {
+                            metaCover.setAttribute(
+                                "content",
+                                itemNode.getAttribute("id"),
+                            );
+                        }
+                    }
+
+                    const serializer = new XMLSerializer();
+                    const updatedOpfText = serializer.serializeToString(opfDoc);
+                    zip.file(epub.opfPath, updatedOpfText);
+                    try {
+                        const contentBlob = await zip.generateAsync({
+                            type: "blob",
+                            mimeType: "application/epub+zip",
+                        });
+                        const downloadAnchor = document.createElement("a");
+                        downloadAnchor.href = URL.createObjectURL(contentBlob);
+                        downloadAnchor.download = "[Edited] " + epub.filename;
+                        document.body.appendChild(downloadAnchor);
+                        downloadAnchor.click();
+                        downloadAnchor.remove();
+                    } catch (ex) {
+                        alert(
+                            t("epub_bulk.alert_error_package") + epub.filename,
+                        );
+                    }
+
+                    let totalPercent = Math.round(
+                        ((i + 1) / epubFilesList.length) * 100,
+                    );
+                    progressBar.style.width = totalPercent + "%";
+                    progressBar.innerText = totalPercent + "%";
+                }
+
+                statusText.innerText = t("epub_bulk.status_complete");
+            }
+
+            function cleanRelativePath(path) {
+                const parts = path.split("/");
+                const stack = [];
+                for (const part of parts) {
+                    if (part === "." || part === "") continue;
+                    if (part === "..") {
+                        if (stack.length) stack.pop();
+                    } else {
+                        stack.push(part);
+                    }
+                }
+                return stack.join("/");
+            }
+
+            function getMimeType(filePath) {
+                const ext = filePath.split(".").pop().toLowerCase();
+                if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+                if (ext === "png") return "image/png";
+                if (ext === "gif") return "image/gif";
+                if (ext === "webp") return "image/webp";
+                return "application/octet-stream";
+            }
+
+            function arrayBufferToBase64(buffer, mimeType) {
+                let binary = "";
+                const bytes = new Uint8Array(buffer);
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return `data:${mimeType};base64,` + btoa(binary);
+            }
+        </script>
+        <script src="../../libs/i18n/i18n.js"></script>
+        <script src="../../libs/i18n/lang.js"></script>
+    </body>
+</html>

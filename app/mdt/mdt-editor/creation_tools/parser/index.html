@@ -5,15 +5,374 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>EPUB Generator</title>
 
-        <link rel="stylesheet" href="style.css" />
+        <link
+            href="../../../../../libs/epub/bootstrap.min.css"
+            rel="stylesheet"
+        />
 
-        <link href="bootstrap.min.css" rel="stylesheet" />
+        <link
+            href="../../../../../libs/epub/bootstrap-icons.min.css"
+            rel="stylesheet"
+        />
 
-        <link href="bootstrap-icons.min.css" rel="stylesheet" />
+        <script src="../../../../../libs/epub/jszip.min.js"></script>
 
-        <script src="jszip.min.js"></script>
+        <script src="../../../../../libs/epub/FileSaver.min.js"></script>
+        <link href="../../../../../libs/i18n/language.css" rel="stylesheet" />
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        <script src="FileSaver.min.js"></script>
+            body {
+                background: #f5f6fa;
+                font-family:
+                    Segoe UI,
+                    Tahoma,
+                    Geneva,
+                    Verdana,
+                    sans-serif;
+                color: #222;
+            }
+
+            h1 {
+                font-weight: 700;
+            }
+
+            .card {
+                border: none;
+                border-radius: 14px;
+            }
+
+            .card-header {
+                font-weight: 600;
+                background: #ffffff;
+                border-bottom: 1px solid #ececec;
+            }
+
+            .card-body {
+                background: #ffffff;
+            }
+            #dropZone {
+                border: 3px dashed #0d6efd;
+
+                border-radius: 16px;
+
+                padding: 60px 30px;
+
+                text-align: center;
+
+                cursor: pointer;
+
+                transition: 0.25s;
+
+                background: #fafcff;
+
+                user-select: none;
+            }
+
+            #dropZone:hover {
+                background: #eef5ff;
+            }
+
+            #dropZone.dragover {
+                background: #dcecff;
+
+                border-color: #198754;
+
+                transform: scale(1.02);
+            }
+
+            #dropZone i {
+                color: #0d6efd;
+
+                transition: 0.2s;
+            }
+
+            #dropZone.dragover i {
+                color: #198754;
+
+                transform: scale(1.15);
+            }
+
+            .progress {
+                height: 28px;
+
+                border-radius: 20px;
+
+                overflow: hidden;
+
+                background: #e5e5e5;
+            }
+
+            .progress-bar {
+                font-weight: bold;
+
+                transition: width 0.3s;
+            }
+
+            #coverPreview {
+                width: 100%;
+
+                max-height: 360px;
+
+                object-fit: contain;
+
+                background: white;
+
+                padding: 10px;
+            }
+
+            .table {
+                margin-bottom: 0;
+            }
+
+            .table thead {
+                background: #f1f3f7;
+            }
+
+            .table th {
+                vertical-align: middle;
+            }
+
+            .table td {
+                vertical-align: middle;
+            }
+
+            #descriptionBox {
+                min-height: 120px;
+
+                max-height: 250px;
+
+                overflow: auto;
+
+                background: #fafafa;
+
+                white-space: pre-wrap;
+
+                line-height: 1.6;
+            }
+
+            #tocTree {
+                font-size: 15px;
+            }
+
+            .toc-folder {
+                margin-bottom: 12px;
+            }
+
+            .toc-folder-title {
+                font-weight: 700;
+
+                color: #0d6efd;
+
+                margin-bottom: 8px;
+            }
+
+            .toc-folder ul {
+                margin: 0;
+
+                padding-left: 22px;
+            }
+
+            .toc-folder li {
+                margin-bottom: 6px;
+            }
+
+            .toc-item {
+                padding: 5px 10px;
+
+                border-radius: 6px;
+
+                transition: 0.2s;
+            }
+
+            .toc-item:hover {
+                background: #eef4ff;
+            }
+
+            #logBox {
+                background: #1f1f1f;
+
+                color: #6dff8c;
+
+                font-size: 13px;
+
+                line-height: 1.5;
+
+                border: none;
+
+                border-radius: 10px;
+
+                overflow: auto;
+
+                white-space: pre-wrap;
+            }
+
+            #statusText {
+                font-weight: 600;
+
+                color: #555;
+            }
+
+            button {
+                transition: 0.2s;
+            }
+
+            button:hover {
+                transform: translateY(-2px);
+            }
+
+            button:disabled {
+                cursor: not-allowed;
+
+                transform: none;
+            }
+
+            .table-bordered td {
+                word-break: break-word;
+            }
+
+            .table-bordered th {
+                background: #f8f9fa;
+            }
+
+            .mime-image {
+                color: #198754;
+
+                font-weight: 600;
+            }
+
+            .mime-xhtml {
+                color: #0d6efd;
+
+                font-weight: 600;
+            }
+
+            .mime-unknown {
+                color: #dc3545;
+
+                font-weight: 600;
+            }
+
+            ::-webkit-scrollbar {
+                width: 10px;
+
+                height: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #b5b5b5;
+
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8d8d8d;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #efefef;
+            }
+
+            .loading {
+                animation: pulse 1s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    opacity: 0.4;
+                }
+
+                50% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0.4;
+                }
+            }
+
+            .success-flash {
+                animation: successFlash 0.7s;
+            }
+
+            @keyframes successFlash {
+                0% {
+                    background: #d1ffd8;
+                }
+
+                100% {
+                    background: white;
+                }
+            }
+            .error {
+                color: #dc3545;
+
+                font-weight: bold;
+            }
+
+            .success {
+                color: #198754;
+
+                font-weight: bold;
+            }
+
+            .warning {
+                color: #fd7e14;
+
+                font-weight: bold;
+            }
+            @media (max-width: 992px) {
+                #coverPreview {
+                    margin-bottom: 20px;
+                }
+            }
+
+            @media (max-width: 768px) {
+                h1 {
+                    font-size: 30px;
+                }
+
+                #dropZone {
+                    padding: 45px 20px;
+                }
+
+                .table {
+                    font-size: 14px;
+                }
+
+                #logBox {
+                    height: 180px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .card {
+                    border-radius: 10px;
+                }
+
+                .card-body {
+                    padding: 16px;
+                }
+
+                #dropZone {
+                    padding: 35px 15px;
+                }
+
+                #dropZone h4 {
+                    font-size: 20px;
+                }
+
+                .btn {
+                    width: 100%;
+                }
+
+                .d-flex {
+                    flex-direction: column;
+                }
+            }
+        </style>
     </head>
 
     <body>
@@ -37,19 +396,22 @@
             >
                 ⬅ Back
             </a>
+            <div class="lang-wrapper"></div>
             <div class="text-center mb-5">
                 <h1 class="fw-bold">
                     <i class="bi bi-book-half"></i>
-                    EPUB Generator
+                    <span data-i18n="epub.generator_title">EPUB Generator</span>
                 </h1>
 
-                <p class="text-secondary">
+                <p class="text-secondary" data-i18n="epub.generator_subtitle">
                     Import file ZIP → Parse configuration.json → Generate EPUB
                 </p>
             </div>
 
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">Import ZIP</div>
+                <div class="card-header fw-bold" data-i18n="epub.import_zip">
+                    Import ZIP
+                </div>
 
                 <div class="card-body">
                     <div id="dropZone">
@@ -57,23 +419,27 @@
                             <i class="bi bi-cloud-arrow-up"></i>
                         </div>
 
-                        <h4>Kéo file ZIP vào đây</h4>
+                        <h4 data-i18n="epub.drag_zip">Kéo file ZIP vào đây</h4>
 
-                        <p class="text-secondary">hoặc</p>
+                        <p class="text-secondary" data-i18n="epub.or">hoặc</p>
 
                         <input type="file" id="zipInput" accept=".zip" hidden />
 
-                        <button class="btn btn-primary" id="selectZipBtn">
+                        <button
+                            class="btn btn-primary"
+                            id="selectZipBtn"
+                            data-i18n="epub.select_zip"
+                        >
                             Chọn File ZIP
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Progress -->
-
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">Progress</div>
+                <div class="card-header fw-bold" data-i18n="epub.progress">
+                    Progress
+                </div>
 
                 <div class="card-body">
                     <div class="progress">
@@ -86,14 +452,16 @@
                         </div>
                     </div>
 
-                    <div class="mt-3" id="statusText">Chưa có dữ liệu</div>
+                    <div class="mt-3" id="statusText" data-i18n="epub.no_data">
+                        Chưa có dữ liệu
+                    </div>
                 </div>
             </div>
 
-            <!-- Information -->
-
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">Metadata</div>
+                <div class="card-header fw-bold" data-i18n="ereader.metadata">
+                    Metadata
+                </div>
 
                 <div class="card-body">
                     <div class="row g-3">
@@ -110,26 +478,37 @@
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
-                                        <th width="180">Title</th>
+                                        <th
+                                            width="180"
+                                            data-i18n="epub.meta_title"
+                                        >
+                                            Title
+                                        </th>
                                         <td id="titleCell">-</td>
                                     </tr>
                                     <tr>
-                                        <th width="180">Author</th>
+                                        <th width="180" data-i18n="author">
+                                            Author
+                                        </th>
                                         <td id="authorCell">-</td>
                                     </tr>
 
                                     <tr>
-                                        <th>Language</th>
+                                        <th data-i18n="epub.meta_language">
+                                            Language
+                                        </th>
                                         <td id="languageCell">-</td>
                                     </tr>
 
                                     <tr>
-                                        <th>Genre</th>
+                                        <th data-i18n="genre">Genre</th>
                                         <td id="genreCell">-</td>
                                     </tr>
 
                                     <tr>
-                                        <th>Cover</th>
+                                        <th data-i18n="epub.meta_cover">
+                                            Cover
+                                        </th>
                                         <td id="coverCell">-</td>
                                     </tr>
                                 </tbody>
@@ -139,7 +518,7 @@
 
                     <hr />
 
-                    <h5>Description</h5>
+                    <h5 data-i18n="description">Description</h5>
 
                     <div
                         id="descriptionBox"
@@ -149,64 +528,63 @@
                 </div>
             </div>
 
-            <!-- TOC -->
-
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">Table of Contents</div>
+                <div
+                    class="card-header fw-bold"
+                    data-i18n="ereader.table_of_contents"
+                >
+                    Table of Contents
+                </div>
 
                 <div class="card-body">
                     <div id="tocTree"></div>
                 </div>
             </div>
 
-            <!-- Files -->
-
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">XHTML Files</div>
+                <div class="card-header fw-bold" data-i18n="epub.xhtml_files">
+                    XHTML Files
+                </div>
 
                 <div class="card-body">
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th width="80">#</th>
-
-                                <th>File</th>
-
-                                <th width="150">Images</th>
+                                <th data-i18n="epub.file_th">File</th>
+                                <th width="150" data-i18n="epub.images_th">
+                                    Images
+                                </th>
                             </tr>
                         </thead>
-
                         <tbody id="chapterTable"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Images -->
-
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">Images</div>
+                <div class="card-header fw-bold" data-i18n="epub.images_card">
+                    Images
+                </div>
 
                 <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th width="80">#</th>
-
-                                <th>File</th>
-
+                                <th data-i18n="epub.file_th">File</th>
                                 <th width="150">MIME</th>
                             </tr>
                         </thead>
-
                         <tbody id="imageTable"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Output -->
-
             <div class="card shadow-sm">
-                <div class="card-header fw-bold">Output</div>
+                <div class="card-header fw-bold" data-i18n="epub.output_card">
+                    Output
+                </div>
 
                 <div class="card-body">
                     <div class="d-flex gap-3 flex-wrap">
@@ -216,8 +594,7 @@
                             disabled
                         >
                             <i class="bi bi-gear-fill"></i>
-
-                            Generate EPUB
+                            <span data-i18n="export.epub">Generate EPUB</span>
                         </button>
 
                         <button
@@ -226,8 +603,9 @@
                             disabled
                         >
                             <i class="bi bi-download"></i>
-
-                            Download EPUB
+                            <span data-i18n="epub.download_btn"
+                                >Download EPUB</span
+                            >
                         </button>
                     </div>
 
@@ -238,13 +616,14 @@
                         class="bg-dark text-white rounded p-3"
                         style="height: 250px; overflow: auto"
                     >
-Ready.
-            </pre
+Ready.</pre
                     >
                 </div>
             </div>
         </div>
 
         <script src="app.js"></script>
+        <script src="../../../../../libs/i18n/i18n.js"></script>
+        <script src="../../../../../libs/i18n/lang.js"></script>
     </body>
 </html>

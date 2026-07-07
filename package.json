@@ -20,13 +20,23 @@
             "output": "dist"
         },
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "installerIcon": "icon.ico",
+            "uninstallerIcon": "icon.ico",
+            "uninstallDisplayName": "${productName}"
         },
         "mac": {
-            "target": "dmg"
+            "target": "dmg",
+            "icon": "icon.ico"
         },
         "linux": {
-            "target": "AppImage"
+            "target": "AppImage",
+            "icon": "icon.ico"
         }
     },
     "description": "A tool hub for txt and epub novel",

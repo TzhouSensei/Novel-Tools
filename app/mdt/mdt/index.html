@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.reader">Reader</title>
 
+        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
         <style>
             body.dark {
                 background: radial-gradient(
@@ -315,25 +316,6 @@
             .close-chapter-btn:hover {
                 background: #222;
             }
-            .lang-wrapper {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-
-                padding: 10px 12px;
-                border-radius: 12px;
-
-                background: rgba(255, 255, 255, 0.05);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-
-                color: white;
-                font-family: system-ui, sans-serif;
-            }
 
             .lang-label {
                 font-size: 12px;
@@ -416,29 +398,7 @@
         >
             ⬅ Home
         </a>
-        <div class="lang-wrapper">
-            <label
-                class="lang-label"
-                data-i18n="lang.option"
-                id="lang-select"
-                onchange="setLang(this.value)"
-            ></label>
-
-            <select onchange="setLang(this.value)">
-                <option value="vi-vn">🇻🇳 Tiếng Việt</option>
-                <option value="en-us">🇺🇸 English</option>
-                <option value="ja-jp">🇯🇵 日本語</option>
-                <option value="ko-kr">🇰🇷 한국어</option>
-                <option value="zh-cn">🇨🇳 简体中文</option>
-                <option value="zh-tw">🇹🇼 繁體中文</option>
-                <option value="th-th">🇹🇭 ไทย</option>
-                <option value="id-id">🇮🇩 Indonesia</option>
-                <option value="de-de">🇩🇪 Deutsch</option>
-                <option value="fr-fr">🇫🇷 Français</option>
-                <option value="es-es">🇪🇸 Español</option>
-                <option value="la">🏛️Latina</option>
-            </select>
-        </div>
+        <div class="lang-wrapper"></div>
         <h1 style="text-align: center" data-i18n="subtitle.reader"></h1>
 
         <div id="modes" style="text-align: center; margin-bottom: 16px">
@@ -552,6 +512,7 @@
             });
         </script>
         <script src="../../../libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/lang.js"></script>
         <script src="introscr.js"></script>
         <script src="loadscr.js"></script>
         <script src="../theme/themescr.js"></script>

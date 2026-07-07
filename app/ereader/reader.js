@@ -1105,24 +1105,45 @@ function speakText(text) {
 function initTTS() {
     if (!("speechSynthesis" in window)) return;
 
+    const selector = document.getElementById("tts-voice");
+
     const loadVoices = () => {
         state.tts.voices = window.speechSynthesis.getVoices();
 
-        const selector = document.getElementById("tts-voice");
-        selector.innerHTML = state.tts.voices
-            .map(
-                (v) =>
-                    `<option value="${v.name}">
-                        ${v.name} (${v.lang})
-                    </option>`,
-            )
-            .join("");
+        if (state.tts.voices.length === 0) return false;
 
-        state.tts.voice = state.tts.voices[0] || null;
+        if (selector) {
+            selector.innerHTML = state.tts.voices
+                .map(
+                    (v) =>
+                        `<option value="${v.name}">${v.name} (${v.lang})</option>`,
+                )
+                .join("");
+        }
+
+        state.tts.voice =
+            state.tts.voices.find((v) => v.default) ||
+            state.tts.voices[0] ||
+            null;
+        return true;
     };
 
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    const loaded = loadVoices();
+
+    window.speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+    };
+
+    if (!loaded) {
+        const voicesTimer = setInterval(() => {
+            const success = loadVoices();
+            if (success) {
+                clearInterval(voicesTimer);
+            }
+        }, 200);
+
+        setTimeout(() => clearInterval(voicesTimer), 5000);
+    }
 }
 
 document.getElementById("tts-voice").addEventListener("change", (e) => {
@@ -1211,243 +1232,6 @@ function applyTextureTheme(textureType) {
     }
 }
 
-function createHighlight(color = "yellow", hasNote = false) {
-    const selection = window.getSelection();
-    if (selection.isCollapsed) return;
-
-    const text = selection.toString().trim();
-    if (!text) return;
-
-    let note = "";
-
-    if (hasNote) {
-        note = prompt("Ghi chú:", "") || "";
-    }
-
-    state.highlights.push({
-        id: Date.now(),
-        chapterIndex: state.currentChapterIndex,
-        pageIndex: state.currentPageIndex,
-        text,
-        color,
-        note,
-        createdAt: Date.now(),
-    });
-
-    saveUserData();
-
-    selection.removeAllRanges();
-
-    pushReaderDown();
-
-    activateCompactUI(); // 👈 NEW
-}
-
-function toggleBookmark() {
-    if (!state.bookId) return;
-
-    const idx = state.bookmarks.findIndex(
-        (b) =>
-            b.chapterIndex === state.currentChapterIndex &&
-            b.pageIndex === state.currentPageIndex,
-    );
-
-    if (idx >= 0) {
-        state.bookmarks.splice(idx, 1);
-    } else {
-        state.bookmarks.push({
-            id: Date.now(),
-            chapterIndex: state.currentChapterIndex,
-            pageIndex: state.currentPageIndex,
-            createdAt: Date.now(),
-        });
-    }
-
-    saveUserData();
-    renderBookmarksList();
-    pushReaderDown();
-
-    activateCompactUI(); // 👈 NEW
-}
-
-async function searchFullTextInBook(keyword) {
-    keyword = keyword.trim().toLowerCase();
-
-    if (keyword.length < 2) return [];
-
-    const results = [];
-
-    for (let i = state.currentChapterIndex; i < state.spine.length; i++) {
-        const href = state.spine[i];
-
-        const path = resolveRelativePath(state.basePath, href);
-
-        const file = state.zip.file(path);
-
-        if (!file) continue;
-
-        const html = await file.async("string");
-
-        const doc = new DOMParser().parseFromString(html, "text/html");
-
-        const text =
-            doc.body?.textContent || doc.documentElement.textContent || "";
-
-        let pos = text.toLowerCase().indexOf(keyword);
-
-        while (pos !== -1) {
-            results.push({
-                chapterIndex: i,
-                chapterTitle: state.toc[i]?.title || `Chương ${i + 1}`,
-                charOffset: pos,
-                keyword,
-                snippet:
-                    "..." +
-                    text.substring(
-                        Math.max(0, pos - 40),
-                        Math.min(text.length, pos + keyword.length + 40),
-                    ) +
-                    "...",
-            });
-
-            pos = text.toLowerCase().indexOf(keyword, pos + keyword.length);
-        }
-    }
-
-    state.search.keyword = keyword;
-    state.search.results = results;
-    state.search.lastIndex = results.length ? 0 : -1;
-
-    return results;
-}
-
-function openSearchDialog() {
-    if (document.getElementById("search-bar")) return;
-
-    const bar = document.createElement("div");
-    bar.id = "search-bar";
-    bar.innerHTML = `
-        <input id="search-input" placeholder="Search..." />
-        <button onclick="searchPrev()">▲</button>
-        <button onclick="searchNext()">▼</button>
-        <span id="search-count">0/0</span>
-        <button onclick="closeSearch()">✕</button>
-    `;
-
-    document.body.appendChild(bar);
-
-    document.getElementById("search-input").addEventListener("input", (e) => {
-        runSearch(e.target.value);
-    });
-}
-
-function runSearch(keyword) {
-    clearSearchMarks();
-
-    keyword = keyword.trim();
-    if (!keyword) return;
-
-    state.searchUI.keyword = keyword;
-    state.searchUI.currentIndex = 0;
-
-    const root = document.getElementById("chapter-content");
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-
-    const matches = [];
-
-    while (walker.nextNode()) {
-        const node = walker.currentNode;
-        const text = node.nodeValue;
-
-        const lower = text.toLowerCase();
-        const kw = keyword.toLowerCase();
-
-        let idx = lower.indexOf(kw);
-
-        if (idx !== -1) {
-            const range = document.createRange();
-            range.setStart(node, idx);
-            range.setEnd(node, idx + keyword.length);
-
-            const mark = document.createElement("mark");
-            mark.className = "search-hit";
-
-            range.surroundContents(mark);
-
-            matches.push(mark);
-        }
-    }
-
-    state.searchUI.results = matches;
-
-    updateSearchUI();
-
-    focusMatch(0);
-}
-
-function focusMatch(index) {
-    const hits = state.searchUI.results;
-    if (!hits.length) return;
-
-    index = (index + hits.length) % hits.length;
-    state.searchUI.currentIndex = index;
-
-    hits.forEach((h, i) => {
-        h.classList.toggle("active-hit", i === index);
-    });
-
-    hits[index].scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-    });
-
-    updateSearchUI();
-}
-
-function searchNext() {
-    focusMatch(state.searchUI.currentIndex + 1);
-}
-
-function searchPrev() {
-    focusMatch(state.searchUI.currentIndex - 1);
-}
-
-function clearSearchMarks() {
-    document.querySelectorAll("mark.search-hit").forEach((m) => {
-        const parent = m.parentNode;
-        parent.replaceChild(document.createTextNode(m.textContent), m);
-        parent.normalize();
-    });
-
-    state.searchUI.results = [];
-}
-
-function closeSearch() {
-    clearSearchMarks();
-    document.getElementById("search-bar")?.remove();
-}
-
-function updateSearchUI() {
-    const el = document.getElementById("search-count");
-    if (!el) return;
-
-    const total = state.searchUI.results.length;
-    const current = state.searchUI.currentIndex + 1;
-
-    el.textContent = total ? `${current}/${total}` : "0/0";
-}
-
-function activateCompactUI() {
-    const center = document.getElementById("reader-center");
-
-    center.classList.add("reader-compact");
-
-    clearTimeout(state._compactTimer);
-
-    state._compactTimer = setTimeout(() => {
-        center.classList.remove("reader-compact");
-    }, 4000);
-}
 function exportUserDataBackup() {
     const allProgress = JSON.parse(
         localStorage.getItem("epub_reader_progress") || "{}",

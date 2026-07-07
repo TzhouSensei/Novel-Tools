@@ -3,8 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <title>eBook Configuration Editor</title>
-        <!-- Tích hợp thư viện JSZip để nén và giải nén file ZIP -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="../../../../../libs/epub/jszip.min.js"></script>
+        <link href="../../../../libs/i18n/language.css" rel="stylesheet" />
         <style>
             body {
                 font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -157,6 +157,36 @@
                 margin-left: 10px;
                 color: #4a5568;
             }
+
+            .lang-label {
+                font-size: 12px;
+                opacity: 0.7;
+            }
+
+            .lang-select {
+                background: rgba(0, 0, 0, 0.4);
+                color: white;
+
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+
+                padding: 6px 10px;
+
+                outline: none;
+                cursor: pointer;
+
+                transition: 0.2s;
+            }
+
+            .lang-select:hover {
+                border-color: rgba(0, 255, 255, 0.5);
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            }
+
+            .lang-select option {
+                background: #111;
+                color: white;
+            }
         </style>
     </head>
     <body>
@@ -180,7 +210,8 @@
             >
                 ⬅ Back
             </a>
-            <h2>eBook Configuration Editor</h2>
+            <div class="lang-wrapper"></div>
+            <h2 data-i18n="config.editor_title">eBook Configuration Editor</h2>
 
             <div class="file-actions">
                 <div class="action-row">
@@ -191,6 +222,7 @@
                                 display: block;
                                 margin-bottom: 5px;
                             "
+                            data-i18n="config.import_json"
                             >Import JSON Config:</label
                         >
                         <input type="file" id="importFile" accept=".json" />
@@ -202,10 +234,14 @@
                                 display: block;
                                 margin-bottom: 5px;
                             "
+                            data-i18n="config.import_zip"
                             >Import ZIP Template:</label
                         >
                         <input type="file" id="importZip" accept=".zip" />
-                        <span id="zipStatus" class="info-badge hidden"
+                        <span
+                            id="zipStatus"
+                            class="info-badge hidden"
+                            data-i18n="config.no_zip"
                             >Chưa có ZIP</span
                         >
                     </div>
@@ -217,6 +253,7 @@
                             type="button"
                             class="btn-primary"
                             id="newTemplateBtn"
+                            data-i18n="config.btn_create_new"
                         >
                             Tạo mới từ Template gốc
                         </button>
@@ -226,6 +263,7 @@
                             type="button"
                             class="btn-success hidden"
                             id="exportBtn"
+                            data-i18n="config.btn_export_json"
                         >
                             Xuất file configuration.json
                         </button>
@@ -234,6 +272,7 @@
                             class="btn-success hidden"
                             id="exportZipBtn"
                             style="background-color: #805ad5"
+                            data-i18n="config.btn_export_zip"
                         >
                             Xuất file sách (.ZIP)
                         </button>
@@ -241,7 +280,11 @@
                 </div>
             </div>
 
-            <div id="editorPlaceholder" class="placeholder-text">
+            <div
+                id="editorPlaceholder"
+                class="placeholder-text"
+                data-i18n="config.placeholder"
+            >
                 Vui lòng chọn nhập cấu hình JSON, nạp file ZIP hoặc nhấn Tạo mới
                 để bắt đầu chỉnh sửa.
             </div>
@@ -252,25 +295,33 @@
                 onsubmit="event.preventDefault()"
             >
                 <div class="section">
-                    <div class="section-title">Thông tin cơ bản</div>
+                    <div class="section-title" data-i18n="config.basic_info">
+                        Thông tin cơ bản
+                    </div>
                     <div class="form-group">
-                        <label>Title:</label>
+                        <label data-i18n="config.field_title">Title:</label>
                         <input type="text" id="title" />
                     </div>
                     <div class="form-group">
-                        <label>Author:</label>
+                        <label data-i18n="config.field_author">Author:</label>
                         <input type="text" id="author" />
                     </div>
                     <div class="form-group">
-                        <label>Language:</label>
+                        <label data-i18n="config.field_language"
+                            >Language:</label
+                        >
                         <input type="text" id="language" />
                     </div>
                     <div class="form-group">
-                        <label>Cover Href:</label>
+                        <label data-i18n="config.field_cover_href"
+                            >Cover Href:</label
+                        >
                         <input type="text" id="cover_href" />
                     </div>
                     <div class="form-group">
-                        <label>Import Ảnh Bìa (Cover):</label>
+                        <label data-i18n="config.field_import_cover"
+                            >Import Ảnh Bìa (Cover):</label
+                        >
                         <input
                             type="file"
                             id="importCover"
@@ -284,22 +335,29 @@
                             onclick="
                                 document.getElementById('importCover').click()
                             "
+                            data-i18n="config.btn_select_cover"
                         >
                             Chọn ảnh bìa mới
                         </button>
-                        <span id="coverStatus" class="info-badge hidden"
+                        <span
+                            id="coverStatus"
+                            class="info-badge hidden"
+                            data-i18n="config.no_cover"
                             >Chưa nạp ảnh</span
                         >
                     </div>
                 </div>
 
                 <div class="section">
-                    <div class="section-title">ToC Name (Thư mục ToC)</div>
+                    <div class="section-title" data-i18n="config.toc_folder">
+                        ToC Name (Thư mục ToC)
+                    </div>
                     <div id="tocNameContainer"></div>
                     <button
                         type="button"
                         class="btn-primary"
                         onclick="addTocName('', '')"
+                        data-i18n="config.btn_add_toc_folder"
                     >
                         Thêm Thư Mục ToC
                     </button>
@@ -307,14 +365,19 @@
 
                 <div class="section">
                     <div class="section-title">
-                        Thể loại (Genre)
-                        <small style="color: gray">*Key cố định tăng dần</small>
+                        <span data-i18n="config.genre">Thể loại (Genre)</span>
+                        <small
+                            style="color: gray"
+                            data-i18n="config.key_auto_increment"
+                            >*Key cố định tăng dần</small
+                        >
                     </div>
                     <div id="genreContainer"></div>
                     <button
                         type="button"
                         class="btn-primary"
                         onclick="addGenre('')"
+                        data-i18n="config.btn_add_genre"
                     >
                         Thêm Thể Loại
                     </button>
@@ -322,14 +385,21 @@
 
                 <div class="section">
                     <div class="section-title">
-                        Mô tả & Giới thiệu (Desc)
-                        <small style="color: gray">*Key cố định line_*</small>
+                        <span data-i18n="config.description"
+                            >Mô tả & Giới thiệu (Desc)</span
+                        >
+                        <small
+                            style="color: gray"
+                            data-i18n="config.key_line_format"
+                            >*Key cố định line_*</small
+                        >
                     </div>
                     <div id="descContainer"></div>
                     <button
                         type="button"
                         class="btn-primary"
                         onclick="addDesc('')"
+                        data-i18n="config.btn_add_desc_line"
                     >
                         Thêm Dòng Mô Tả
                     </button>
@@ -337,8 +407,13 @@
 
                 <div class="section">
                     <div class="section-title">
-                        Generate In eBook
-                        <small style="color: red" id="genLimitWarning"
+                        <span data-i18n="config.generate_in_ebook"
+                            >Generate In eBook</span
+                        >
+                        <small
+                            style="color: red"
+                            id="genLimitWarning"
+                            data-i18n="config.generate_limit"
                             >(Tối đa 3 mục)</small
                         >
                     </div>
@@ -348,15 +423,18 @@
                         class="btn-primary"
                         id="addGenBtn"
                         onclick="addGen('')"
+                        data-i18n="config.btn_add_generate"
                     >
                         Thêm Generate
                     </button>
                 </div>
 
                 <div class="section">
-                    <div class="section-title">Custom ToC</div>
+                    <div class="section-title" data-i18n="config.custom_toc">
+                        Custom ToC
+                    </div>
                     <div class="form-group">
-                        <label>Enabled:</label>
+                        <label data-i18n="config.enabled">Enabled:</label>
                         <select id="customTocEnabled">
                             <option value="false">False</option>
                             <option value="true">True</option>
@@ -367,6 +445,7 @@
                         type="button"
                         class="btn-primary"
                         onclick="addCustomTocBlock()"
+                        data-i18n="config.btn_add_toc_block"
                     >
                         Thêm ToC Block
                     </button>
@@ -375,13 +454,11 @@
         </div>
 
         <script>
-            // Cập nhật defaultTemplate hoàn toàn trống rỗng ở các danh sách động
             const defaultTemplate = {
                 toc_name: {},
                 cover_href: "",
                 custom_toc: {
                     enabled: false,
-                    // Không mồi sẵn Block ID 1 nào ở đây
                 },
                 author: "",
                 genre: {},
@@ -394,7 +471,6 @@
             let genCount = 0;
             let tocBlockCounter = 1;
 
-            // Biến toàn cục lưu trữ dữ liệu môi trường ZIP và File Cover đã nạp
             let importedZipInstance = null;
             let coverFileBuffer = null;
             let coverFileExt = "";
@@ -407,7 +483,6 @@
                     loadDataToForm(defaultTemplate);
                 });
 
-            // Tách biệt hoàn toàn: Xử lý Import file cấu hình JSON rời
             document
                 .getElementById("importFile")
                 .addEventListener("change", function (e) {
@@ -425,7 +500,6 @@
                     reader.readAsText(file);
                 });
 
-            // Tách biệt hoàn toàn: Xử lý Import file ZIP nguyên bản (Không ép buộc phải chứa JSON sẵn bên trong)
             document
                 .getElementById("importZip")
                 .addEventListener("change", function (e) {
@@ -443,7 +517,6 @@
                                 statusBadge.innerText = `Đã nạp: ${file.name}`;
                                 statusBadge.classList.remove("hidden");
 
-                                // Thử tìm đọc xem cấu hình configuration.json gốc trong zip có hay không để hỗ trợ tự điền form
                                 const configFile =
                                     zip.file("configuration.json");
                                 if (configFile) {
@@ -469,7 +542,6 @@
                     reader.readAsArrayBuffer(file);
                 });
 
-            // Xử lý nạp độc lập ảnh bìa Cover bên ngoài
             document
                 .getElementById("importCover")
                 .addEventListener("change", function (e) {
@@ -484,7 +556,6 @@
                         badge.innerText = `Đã nhận: ${file.name}`;
                         badge.classList.remove("hidden");
 
-                        // Ghi tạm vào trường text hiển thị để người dùng nhận biết
                         document.getElementById("cover_href").value =
                             `images/cover.${coverFileExt}`;
                     };
@@ -509,7 +580,6 @@
                 document.getElementById("cover_href").value =
                     data.cover_href || "";
 
-                // 1. Xử lý ToC Name (Thư mục ToC)
                 const tocNameCont = document.getElementById("tocNameContainer");
                 tocNameCont.innerHTML = "";
                 if (data.toc_name) {
@@ -519,7 +589,6 @@
                     });
                 }
 
-                // 2. Xử lý Thể loại (Genre) -> Đã bỏ dòng tự mồi phần tử trống
                 const genreCont = document.getElementById("genreContainer");
                 genreCont.innerHTML = "";
                 if (data.genre) {
@@ -528,7 +597,6 @@
                     });
                 }
 
-                // 3. Xử lý Mô tả (Desc) -> Đã bỏ dòng tự mồi phần tử trống
                 const descCont = document.getElementById("descContainer");
                 descCont.innerHTML = "";
                 if (data.desc) {
@@ -537,7 +605,6 @@
                     });
                 }
 
-                // 4. Xử lý Generate In eBook -> Đã bỏ dòng tự mồi phần tử trống
                 const genCont = document.getElementById("genContainer");
                 genCont.innerHTML = "";
                 genCount = 0;
@@ -549,7 +616,6 @@
                 }
                 checkGenLimit();
 
-                // 5. Xử lý Custom ToC -> Sẽ sạch sẽ hoàn toàn nếu object không có key nào
                 document.getElementById("customTocEnabled").value =
                     data.custom_toc?.enabled?.toString() || "false";
                 const customTocCont =
@@ -565,18 +631,17 @@
                     });
                 }
             }
-
-            /* --- HÀM TẠO THÀNH PHẦN GIAO DIỆN DYNAMIC --- */
-
+            statusBadge.innerHTML = `${t("config.status_loaded")}: ${file.name}`;
+            badge.innerHTML = `${t("config.status_received")}: ${file.name}`;
             function addTocName(key, value) {
                 const container = document.getElementById("tocNameContainer");
                 const div = document.createElement("div");
                 div.className = "dynamic-item";
                 div.innerHTML = `
-            <input type="text" class="key-input" style="width:120px; background:none;" placeholder="Folder" value="${key}">
-            <input type="text" class="value-input" placeholder="Tên hiển thị" value="${value}">
-            <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Xóa</button>
-        `;
+                    <input type="text" class="key-input" style="width:120px; background:none;" placeholder="${t("config.placeholder_folder")}" value="${key}">
+                    <input type="text" class="value-input" placeholder="${t("config.placeholder_display_name")}" value="${value}">
+                    <button type="button" class="btn-danger" onclick="this.parentElement.remove()">${t("config.btn_delete")}</button>
+                `;
                 container.appendChild(div);
             }
 
@@ -586,13 +651,12 @@
                 const div = document.createElement("div");
                 div.className = "dynamic-item";
                 div.innerHTML = `
-            <input type="text" class="key-input" value="${index}" disabled>
-            <input type="text" class="value-input" placeholder="Tên thể loại" value="${value}">
-            <button type="button" class="btn-danger" onclick="removeGenreItem(this)">Xóa</button>
-        `;
+                    <input type="text" class="key-input" value="${index}" disabled>
+                    <input type="text" class="value-input" placeholder="${t("config.placeholder_genre_name")}" value="${value}">
+                    <button type="button" class="btn-danger" onclick="removeGenreItem(this)">${t("config.btn_delete")}</button>
+                `;
                 container.appendChild(div);
             }
-
             function removeGenreItem(btn) {
                 btn.parentElement.remove();
                 Array.from(
@@ -608,13 +672,12 @@
                 const div = document.createElement("div");
                 div.className = "dynamic-item";
                 div.innerHTML = `
-            <input type="text" class="key-input" style="width:100px;" value="line_${index}" disabled>
-            <input type="text" class="value-input" placeholder="Nội dung giới thiệu" value="${value}">
-            <button type="button" class="btn-danger" onclick="removeDescItem(this)">Xóa</button>
-        `;
+                    <input type="text" class="key-input" style="width:100px;" value="line_${index}" disabled>
+                    <input type="text" class="value-input" placeholder="${t("config.placeholder_desc_content")}" value="${value}">
+                    <button type="button" class="btn-danger" onclick="removeDescItem(this)">${t("config.btn_delete")}</button>
+                `;
                 container.appendChild(div);
             }
-
             function removeDescItem(btn) {
                 btn.parentElement.remove();
                 Array.from(
@@ -632,19 +695,17 @@
                 const div = document.createElement("div");
                 div.className = "dynamic-item";
                 div.innerHTML = `
-            <input type="text" class="key-input" value="${genCount}" disabled>
-            <select class="value-input">
-                <option value="toc" ${value === "toc" ? "selected" : ""}>toc</option>
-                <option value="cover" ${value === "cover" ? "selected" : ""}>cover</option>
-                <option value="desc" ${value === "desc" ? "selected" : ""}>desc</option>
-            </select>
-            <button type="button" class="btn-danger" onclick="removeGenItem(this)">Xóa</button>
-        `;
+                    <input type="text" class="key-input" value="${genCount}" disabled>
+                    <select class="value-input">
+                        <option value="toc" ${value === "toc" ? "selected" : ""}>toc</option>
+                        <option value="cover" ${value === "cover" ? "selected" : ""}>cover</option>
+                        <option value="desc" ${value === "desc" ? "selected" : ""}>desc</option>
+                    </select>
+                    <button type="button" class="btn-danger" onclick="removeGenItem(this)">${t("config.btn_delete")}</button>
+                `;
                 container.appendChild(div);
                 checkGenLimit();
             }
-
-            // Hàm removeGenItem giữ nguyên
             function removeGenItem(btn) {
                 btn.parentElement.remove();
                 genCount--;
@@ -656,7 +717,6 @@
                 checkGenLimit();
             }
 
-            // Đồng bộ hoá cấu trúc Config hiện tại trên Form biến đổi thành Object JSON chuẩn
             function getJsonConfigFromForm() {
                 const config = {};
                 config.cover_href = document.getElementById("cover_href").value;
@@ -754,20 +814,20 @@
                 block.dataset.id = currentId;
 
                 block.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <strong>ToC Block (ID: <span class="block-id-text">${currentId}</span>)</strong>
-                <button type="button" class="btn-danger" style="padding:4px 8px;" onclick="removeTocBlock(this)">Xóa Block</button>
-            </div>
-            <div class="form-group">
-                <label style="color:#2b6cb0">Key hiển thị:</label>
-                <input type="text" class="toc-visible-key" value="${displayKey}" placeholder="Có thể thay đổi key này">
-            </div>
-            <div class="chapter-container">
-                <div style="font-weight:600; font-size:0.85rem; margin-bottom:5px; color:#4a5568;">CHAPTER_ID LIST:</div>
-                <div class="chapter-list"></div>
-                <button type="button" class="btn-primary" style="padding:4px 8px; margin-top:5px; font-size:0.8rem;" onclick="addChapterRow(this, '', '')">+ Thêm Chapter</button>
-            </div>
-        `;
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong>ToC Block (ID: <span class="block-id-text">${currentId}</span>)</strong>
+                        <button type="button" class="btn-danger" style="padding:4px 8px;" onclick="removeTocBlock(this)">${t("config.btn_delete_block")}</button>
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#2b6cb0">${t("config.display_key")}:</label>
+                        <input type="text" class="toc-visible-key" value="${displayKey}" placeholder="${t("config.placeholder_change_key")}">
+                    </div>
+                    <div class="chapter-container">
+                        <div style="font-weight:600; font-size:0.85rem; margin-bottom:5px; color:#4a5568;">CHAPTER_ID LIST:</div>
+                        <div class="chapter-list"></div>
+                        <button type="button" class="btn-primary" style="padding:4px 8px; margin-top:5px; font-size:0.8rem;" onclick="addChapterRow(this, '', '')">${t("config.btn_add_chapter")}</button>
+                    </div>
+                `;
 
                 container.appendChild(block);
 
@@ -782,13 +842,11 @@
                             );
                     });
                 } else {
-                    // Khi thêm mới hoàn toàn một Block trống từ nút bấm, tạo sẵn 1 dòng input chapter rỗng đầu tiên
                     addChapterRow(chapterListCont, "1", "");
                 }
 
                 reIndexTocBlocks();
             }
-
             function removeTocBlock(btn) {
                 btn.closest(".toc-block").remove();
                 reIndexTocBlocks();
@@ -815,13 +873,12 @@
                 const div = document.createElement("div");
                 div.className = "dynamic-item";
                 div.innerHTML = `
-            <input type="text" class="key-input chap-key" style="width:60px;" value="${finalKey}" disabled>
-            <input type="text" class="value-input chap-val" placeholder="file_location" value="${value}">
-            <button type="button" class="btn-danger" style="padding:5px 8px;" onclick="removeChapterRow(this)">Xóa</button>
-        `;
+                    <input type="text" class="key-input chap-key" style="width:60px;" value="${finalKey}" disabled>
+                    <input type="text" class="value-input chap-val" placeholder="file_location" value="${value}">
+                    <button type="button" class="btn-danger" style="padding:5px 8px;" onclick="removeChapterRow(this)">${t("config.btn_delete")}</button>
+                `;
                 listContainer.appendChild(div);
             }
-
             function removeChapterRow(btn) {
                 const listContainer = btn.parentElement.parentElement;
                 btn.parentElement.remove();
@@ -830,7 +887,6 @@
                 });
             }
 
-            /* --- CHỨC NĂNG XUẤT FILE RỜI --- */
             document
                 .getElementById("exportBtn")
                 .addEventListener("click", function () {
@@ -849,7 +905,6 @@
                     downloadAnchor.remove();
                 });
 
-            /* --- CHỨC NĂNG XUẤT ĐÓNG GÓI ZIP HOÀN CHỈNH --- */
             document
                 .getElementById("exportZipBtn")
                 .addEventListener("click", function () {
@@ -886,5 +941,7 @@
                         });
                 });
         </script>
+        <script src="../../../../../libs/i18n/i18n.js"></script>
+        <script src="../../../../../libs/i18n/lang.js"></script>
     </body>
 </html>
