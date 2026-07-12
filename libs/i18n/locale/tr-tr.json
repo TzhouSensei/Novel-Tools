@@ -275,5 +275,13 @@
         "alert_error_package": "Dosya paketlenirken hata oluştu: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "EPUB bilgilerini düzenleme aracı."
+    "tool.info.editor.desc": "EPUB bilgilerini düzenleme aracı.",
+    "ereader": {
+        "menu_title": "Kontrol Paneli",
+        "btn_bookmark": "Yer İşareti Modu",
+        "btn_highlight": "Vurgulama Modu",
+        "btn_find": "Ara (Find)",
+        "btn_export": "Yapılandırma Verilerini Dışa Aktar (Export)",
+        "btn_import": "Yapılandırma Verilerini İçe Aktar (Import)"
+    }
 }

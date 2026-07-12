@@ -275,5 +275,13 @@
         "alert_error_package": "打包並重新封裝檔案時發生錯誤: "
     },
     "tool.info.editor.title": "EPUB 中介資料編輯器",
-    "tool.info.editor.desc": "用於編輯 EPUB 資訊的工具。"
+    "tool.info.editor.desc": "用於編輯 EPUB 資訊的工具。",
+    "ereader": {
+        "menu_title": "控制面板",
+        "btn_bookmark": "書籤模式",
+        "btn_highlight": "高亮模式",
+        "btn_find": "尋找 (Find)",
+        "btn_export": "匯出配置資料 (Export)",
+        "btn_import": "匯入配置資料 (Import)"
+    }
 }

@@ -275,5 +275,13 @@
         "alert_error_package": "Fout bij inpakken van bestand: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "Tool voor het bewerken van EPUB-informatie."
+    "tool.info.editor.desc": "Tool voor het bewerken van EPUB-informatie.",
+    "ereader": {
+        "menu_title": "Controlepaneel",
+        "btn_bookmark": "Bladwijzermodus",
+        "btn_highlight": "Markeermodus",
+        "btn_find": "Zoeken (Find)",
+        "btn_export": "Configuratiegegevens exporteren (Export)",
+        "btn_import": "Configuratiegegevens importeren (Import)"
+    }
 }

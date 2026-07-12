@@ -278,5 +278,13 @@
         "alert_error_package": "ファイルのパッケージングエラー: "
     },
     "tool.info.editor.title": "EPUBメタデータエディタ",
-    "tool.info.editor.desc": "EPUB情報を編集するためのツール。"
+    "tool.info.editor.desc": "EPUB情報を編集するためのツール。",
+    "ereader": {
+        "menu_title": "コントロールパネル",
+        "btn_bookmark": "ブックマークモード",
+        "btn_highlight": "ハイライトモード",
+        "btn_find": "検索 (Find)",
+        "btn_export": "設定データをエクスポート (Export)",
+        "btn_import": "設定データをインポート (Import)"
+    }
 }

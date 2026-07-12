@@ -275,5 +275,13 @@
         "alert_error_package": "Error packaging file: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "A tool for editing EPUB information."
+    "tool.info.editor.desc": "A tool for editing EPUB information.",
+    "ereader": {
+        "menu_title": "Control Panel",
+        "btn_bookmark": "Bookmark Mode",
+        "btn_highlight": "Highlight Mode",
+        "btn_find": "Search (Find)",
+        "btn_export": "Export Configuration Data (Export)",
+        "btn_import": "Import Configuration Data (Import)"
+    }
 }

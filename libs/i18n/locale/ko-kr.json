@@ -278,5 +278,13 @@
         "alert_error_package": "파일을 패키징하는 중 오류 발생: "
     },
     "tool.info.editor.title": "EPUB 메타데이터 편집기",
-    "tool.info.editor.desc": "EPUB 정보를 편집하는 도구입니다."
+    "tool.info.editor.desc": "EPUB 정보를 편집하는 도구입니다.",
+    "ereader": {
+        "menu_title": "제어판",
+        "btn_bookmark": "북마크 모드",
+        "btn_highlight": "하이라이트 모드",
+        "btn_find": "검색 (Find)",
+        "btn_export": "설정 데이터 내보내기 (Export)",
+        "btn_import": "설정 데이터 가져오기 (Import)"
+    }
 }

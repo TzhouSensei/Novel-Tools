@@ -121,6 +121,11 @@
                 transition:
                     transform 0.3s ease,
                     font-size 0.2s ease;
+                overflow-wrap: break-word;
+                break-inside: avoid;
+                orphans: 2;
+                widows: 2;
+                break-inside: auto;
             }
             #chapter-content p {
                 text-indent: 2em;
@@ -133,6 +138,25 @@
                 white-space: pre-wrap !important;
                 word-wrap: break-word !important;
                 overflow-wrap: break-word !important;
+            }
+            #chapter-content.cover-page {
+                column-count: 1 !important;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+
+            #chapter-content.cover-page > * {
+                break-inside: avoid;
+            }
+
+            #chapter-content.cover-page img {
+                max-width: 100%;
+                max-height: calc(100vh - 180px);
+                width: auto;
+                height: auto;
+                object-fit: contain;
             }
             #chapter-content img {
                 max-width: 100%;
@@ -156,44 +180,6 @@
                 width: 1px;
                 background-color: var(--border-color);
                 pointer-events: none;
-            }
-
-            #zone-left {
-                position: absolute;
-                left: 0;
-                top: var(--corner-size);
-                bottom: var(--corner-size);
-
-                width: 25%;
-
-                z-index: 5;
-                cursor: pointer;
-            }
-
-            #zone-center {
-                position: absolute;
-
-                left: 25%;
-                width: 50%;
-
-                top: -30px;
-                bottom: 0;
-
-                z-index: 5;
-                cursor: pointer;
-            }
-
-            #zone-right {
-                position: absolute;
-
-                right: 0;
-                top: var(--corner-size);
-                bottom: var(--corner-size);
-
-                width: 25%;
-
-                z-index: 5;
-                cursor: pointer;
             }
 
             .corner-btn {
@@ -314,6 +300,11 @@
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            #toc-panel.active {
+                transform: translateX(0);
             }
             #toc-list {
                 list-style: none;
@@ -408,30 +399,6 @@
             }
             .text-italic {
                 font-style: italic;
-            }
-            #zone-left::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-
-                width: 1px;
-                background: rgba(0, 0, 0, 0.5);
-
-                pointer-events: none;
-            }
-            #zone-right::after {
-                content: "";
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                right: 0;
-
-                width: 1px;
-                background: rgba(0, 0, 0, 0.5);
-
-                pointer-events: none;
             }
             #viewer-toolbar {
                 height: 50px;
@@ -595,6 +562,140 @@
                 background: #ff9800;
                 font-weight: bold;
             }
+            .search-result {
+                background: #ffe66b;
+
+                color: #000;
+
+                padding: 0;
+            }
+
+            .search-current {
+                background: #ff6b6b;
+
+                color: #fff;
+
+                padding: 0;
+            }
+            #toc-panel summary {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                list-style: none;
+                gap: 6px;
+            }
+            #toc-panel summary::-webkit-details-marker {
+                display: none;
+            }
+            #toc-panel summary::before {
+                content: "▶";
+                width: 1em;
+                flex-shrink: 0;
+                text-align: center;
+            }
+            #toc-panel details[open] > summary::before {
+                content: "▼";
+            }
+            #toc-panel summary span {
+                flex: 1;
+                display: flex;
+                align-items: center;
+            }
+            #toc-panel summary a {
+                flex: 1;
+                display: block;
+                padding: 6px 0;
+                text-decoration: none;
+                color: inherit;
+            }
+            #toc-panel summary,
+            #toc-panel a {
+                transition: background-color 0.15s ease;
+                border-radius: 4px;
+            }
+
+            #toc-panel summary:hover,
+            #toc-panel a:hover {
+                background: rgba(127, 127, 127, 0.12);
+            }
+            .epub-highlighted {
+                background-color: #ffeb3b88;
+                user-select: text;
+            }
+            .bookmarked-line {
+                border-left: 3px solid var(--accent-color);
+                padding-left: 6px;
+            }
+
+            .floating-btn {
+                position: fixed;
+                top: 50%;
+                z-index: 10000;
+                width: 50px;
+                height: 50px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: var(--accent-color, #4a90e2);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                font-weight: bold;
+                user-select: none;
+                touch-action: none;
+            }
+
+            .custom-floating-box {
+                position: fixed;
+                bottom: 90px;
+                right: 30px;
+                width: 250px;
+                background: var(--panel-bg, #ffffff);
+                border: 1px solid var(--border-color, #d3cfc5);
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                overflow: hidden;
+                transition:
+                    left 0.5s ease-out,
+                    top 0.5s ease-out;
+            }
+            .custom-floating-box .box-header {
+                background: var(--accent-color, #4a90e2);
+                color: white;
+                padding: 8px 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: move;
+                user-select: none;
+            }
+            .custom-floating-box .box-close-btn {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+            }
+            .custom-floating-box .box-body {
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .custom-floating-box .box-body button {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border-color, #d3cfc5);
+                background: var(--bg-color, #f7f4ed);
+                color: var(--text-color, #2b2b2b);
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: left;
+                transition: background 0.2s;
+            }
         </style>
     </head>
     <body class="mode-single">
@@ -664,22 +765,6 @@
             </aside>
 
             <section id="reader-center">
-                <div
-                    class="nav-zone"
-                    id="zone-left"
-                    onclick="navigatePage(-1)"
-                ></div>
-                <div
-                    class="nav-zone"
-                    id="zone-center"
-                    onclick="toggleSettingsMenu()"
-                ></div>
-                <div
-                    class="nav-zone"
-                    id="zone-right"
-                    onclick="navigatePage(1)"
-                ></div>
-
                 <button
                     class="corner-btn"
                     id="btn-tl"
@@ -908,9 +993,61 @@
             </div>
         </div>
 
-        <script src="reader.js"></script>
+        <button id="floating-menu-btn" class="floating-btn">🛠️</button>
+
+        <div
+            id="floating-menu-box"
+            class="custom-floating-box"
+            style="display: none"
+        >
+            <div class="box-header" id="floating-menu-header">
+                <span data-i18n="ereader.menu_title">Bảng Điều Khiển</span>
+                <button class="box-close-btn" id="floating-menu-close">
+                    ×
+                </button>
+            </div>
+            <div class="box-body">
+                <button
+                    onclick="toggleBookmarkLineSelection()"
+                    data-i18n="ereader.btn_bookmark"
+                >
+                    Chế độ Bookmark
+                </button>
+                <button
+                    onclick="toggleHighlightSelection()"
+                    data-i18n="ereader.btn_highlight"
+                >
+                    Chế độ Highlight
+                </button>
+                <button onclick="triggerFindBox()" data-i18n="ereader.btn_find">
+                    Tìm kiếm (Find)
+                </button>
+                <button
+                    onclick="exportUserDataBackup()"
+                    data-i18n="ereader.btn_export"
+                >
+                    Xuất dữ liệu
+                </button>
+                <button
+                    onclick="
+                        document.getElementById('hidden-import-file').click()
+                    "
+                    data-i18n="ereader.btn_import"
+                >
+                    Nhập dữ liệu
+                </button>
+                <input
+                    type="file"
+                    id="hidden-import-file"
+                    style="display: none"
+                    onchange="importUserDataBackup(event)"
+                />
+            </div>
+        </div>
+
         <script src="../../libs/i18n/i18n.js"></script>
         <script src="../../libs/i18n/lang.js"></script>
+        <script src="reader.js"></script>
         <script>
             let uiVisible = false;
 
@@ -925,14 +1062,31 @@
                 const tocpanel = document.getElementById("toc-overlay");
                 const tools = document.getElementById("floating-tools");
                 const lang = document.querySelector(".lang-wrapper");
+                const find = document.querySelector(".fnr-box");
+                const menubox = document.getElementById("floating-menu-box");
+                const menubtn = document.getElementById("floating-menu-btn");
                 if (main && main.contains(e.target)) return;
                 if (lang && lang.contains(e.target)) return;
                 if (tools && tools.contains(e.target)) return;
                 if (toc && toc.contains(e.target)) return;
                 if (tocpanel && tocpanel.contains(e.target)) return;
-
+                if (find && find.contains(e.target)) return;
+                if (menubox && menubox.contains(e.target)) return;
+                if (menubtn && menubtn.contains(e.target)) return;
                 toggleUI(!uiVisible);
             });
+        </script>
+        <script>
+            const btn = document.querySelector(".floating-btn");
+            const reader = document.getElementById("reader-center");
+
+            function updateBtnPos() {
+                const rect = reader.getBoundingClientRect();
+                btn.style.left = `${rect.left + 30}px`;
+            }
+
+            updateBtnPos();
+            window.addEventListener("resize", updateBtnPos);
         </script>
     </body>
 </html>

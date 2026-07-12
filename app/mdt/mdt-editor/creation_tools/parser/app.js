@@ -294,13 +294,11 @@ async function processConfiguration(cfg) {
         return match && match[1] ? match[1].trim() : fallback;
     };
 
-    // --- XỬ LÝ CUSTOM TOC THEO CẤU TRÚC MỚI ---
     if (cfg.custom_toc && cfg.custom_toc.enabled) {
         log(
             "Custom TOC enabled, đang sắp xếp lại thứ tự theo cấu trúc thư mục mới...",
         );
 
-        // Lấy danh sách các Key đại diện cho Folder (bỏ enabled, comment và check xem có phải số/chuỗi không)
         const sortedFolderKeys = Object.keys(cfg.custom_toc)
             .filter((key) => key !== "enabled" && key !== "comment")
             .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
@@ -311,11 +309,9 @@ async function processConfiguration(cfg) {
             const folderObj = cfg.custom_toc[folderKey];
             if (!folderObj || typeof folderObj !== "object") continue;
 
-            // Lấy ID tùy chỉnh hiển thị cho tập/chương này, fallback về folderKey nếu trống
             const customDisplayId = folderObj.id || folderKey;
 
             if (folderObj.chapter_id) {
-                // Lấy tất cả key chương trong tập và sắp xếp theo thứ tự tăng dần
                 const sortedChKeys = Object.keys(folderObj.chapter_id)
                     .filter((k) => k !== "comment")
                     .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
@@ -346,18 +342,17 @@ async function processConfiguration(cfg) {
                         );
 
                         parsedChapters.push({
-                            id: `ch_${customDisplayId}_${chKey}`, // Sử dụng ID cấu trúc mới làm định danh duy nhất
+                            id: `ch_${customDisplayId}_${chKey}`,
                             title: title,
                             href: fileLoc,
                             content: optimizedContent,
-                            folder: folderKey, // Giữ tên của nhóm folder này
+                            folder: folderKey,
                         });
                     }
                 }
             }
         }
     } else {
-        // --- XỬ LÝ THEO MẶC ĐỊNH (KHI CUSTOM_TOC DISABLED) ---
         log("Render TOC theo mặc định (tên file chứa số tăng dần)");
         let fileOrderPairs = [];
         xhtmlFiles.forEach((path) => {

@@ -275,5 +275,13 @@
         "alert_error_package": "Gagal mengemas ulang file: "
     },
     "tool.info.editor.title": "Editor Metadata EPUB",
-    "tool.info.editor.desc": "Alat untuk mengedit informasi EPUB."
+    "tool.info.editor.desc": "Alat untuk mengedit informasi EPUB.",
+    "ereader": {
+        "menu_title": "Panel Kontrol",
+        "btn_bookmark": "Mode Bookmark",
+        "btn_highlight": "Mode Sorotan",
+        "btn_find": "Cari (Find)",
+        "btn_export": "Ekspor Data Konfigurasi (Export)",
+        "btn_import": "Impor Data Konfigurasi (Import)"
+    }
 }

@@ -275,5 +275,13 @@
         "alert_error_package": "Ошибка архивации файла: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "Инструмент для редактирования метаданных EPUB."
+    "tool.info.editor.desc": "Инструмент для редактирования метаданных EPUB.",
+    "ereader": {
+        "menu_title": "Панель управления",
+        "btn_bookmark": "Режим закладок",
+        "btn_highlight": "Режим выделения",
+        "btn_find": "Поиск (Find)",
+        "btn_export": "Экспорт данных конфигурации (Export)",
+        "btn_import": "Импорт данных конфигурации (Import)"
+    }
 }

@@ -275,5 +275,13 @@
         "alert_error_package": "Lỗi đóng gói file: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "Công cụ chỉnh sửa thông tin EPUB."
+    "tool.info.editor.desc": "Công cụ chỉnh sửa thông tin EPUB.",
+    "ereader": {
+        "menu_title": "Bảng Điều Khiển",
+        "btn_bookmark": "Chế độ Bookmark",
+        "btn_highlight": "Chế độ Highlight",
+        "btn_find": "Tìm kiếm (Find)",
+        "btn_export": "Xuất dữ liệu cấu hình (Export)",
+        "btn_import": "Nhập dữ liệu cấu hình (Import)"
+    }
 }

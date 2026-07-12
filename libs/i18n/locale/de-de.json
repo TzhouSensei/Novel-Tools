@@ -278,5 +278,13 @@
         "alert_error_package": "Fehler beim Verpacken der Datei: "
     },
     "tool.info.editor.title": "EPUB-Metadaten-Editor",
-    "tool.info.editor.desc": "Werkzeug zum Bearbeiten von EPUB-Informationen."
+    "tool.info.editor.desc": "Werkzeug zum Bearbeiten von EPUB-Informationen.",
+    "ereader": {
+        "menu_title": "Bedienfeld",
+        "btn_bookmark": "Lesezeichen-Modus",
+        "btn_highlight": "Hervorhebungs-Modus",
+        "btn_find": "Suchen (Find)",
+        "btn_export": "Konfigurationsdaten exportieren (Export)",
+        "btn_import": "Konfigurationsdaten importieren (Import)"
+    }
 }

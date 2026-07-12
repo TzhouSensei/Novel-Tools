@@ -1,4 +1,9 @@
-import { STORY_DATA, SEARCH_INDEX, buildSearchIndex, renderStory } from "./editor-main.js";
+import {
+    STORY_DATA,
+    SEARCH_INDEX,
+    buildSearchIndex,
+    renderStory,
+} from "./editor-main.js";
 (function () {
     let box = null;
     let history = { find: [], replace: [] };

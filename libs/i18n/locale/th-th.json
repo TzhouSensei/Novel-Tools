@@ -277,5 +277,13 @@
         "alert_error_package": "เกิดข้อผิดพลาดในการแพ็กไฟล์: "
     },
     "tool.info.editor.title": "เครื่องมือแก้ไขข้อมูลเมทาดาตา EPUB",
-    "tool.info.editor.desc": "เครื่องมือสำหรับแก้ไขข้อมูล EPUB"
+    "tool.info.editor.desc": "เครื่องมือสำหรับแก้ไขข้อมูล EPUB",
+    "ereader": {
+        "menu_title": "แผงควบคุม",
+        "btn_bookmark": "โหมดบุ๊กมาร์ก",
+        "btn_highlight": "โหมดไฮไลต์",
+        "btn_find": "ค้นหา (Find)",
+        "btn_export": "ส่งออกข้อมูลการตั้งค่า (Export)",
+        "btn_import": "นำเข้าข้อมูลการตั้งค่า (Import)"
+    }
 }

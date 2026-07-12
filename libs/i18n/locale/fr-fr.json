@@ -275,5 +275,13 @@
         "alert_error_package": "Erreur lors du reconditionnement du fichier : "
     },
     "tool.info.editor.title": "Éditeur de métadonnées EPUB",
-    "tool.info.editor.desc": "Outil pour modifier les informations EPUB."
+    "tool.info.editor.desc": "Outil pour modifier les informations EPUB.",
+    "ereader": {
+        "menu_title": "Panneau de Contrôle",
+        "btn_bookmark": "Mode Signet",
+        "btn_highlight": "Mode Surlignage",
+        "btn_find": "Rechercher (Find)",
+        "btn_export": "Exporter les données de configuration (Export)",
+        "btn_import": "Importer les données de configuration (Import)"
+    }
 }

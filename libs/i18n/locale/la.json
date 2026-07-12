@@ -278,5 +278,13 @@
         "alert_error_package": "Error in fasciculo componendo: "
     },
     "tool.info.editor.title": "Capsulae EPUB Capsularum Editor",
-    "tool.info.editor.desc": "Instrumentum ad informationem EPUB emendandam."
+    "tool.info.editor.desc": "Instrumentum ad informationem EPUB emendandam.",
+    "ereader": {
+        "menu_title": "Tabula Moderatrix",
+        "btn_bookmark": "Modus Signaculi",
+        "btn_highlight": "Modus Sublineationis",
+        "btn_find": "Quaerere (Find)",
+        "btn_export": "Data Configurationis Exportare (Export)",
+        "btn_import": "Data Configurationis Importare (Import)"
+    }
 }

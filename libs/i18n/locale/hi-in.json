@@ -275,5 +275,13 @@
         "alert_error_package": "फ़ाइल पैक करने में त्रुटि: "
     },
     "tool.info.editor.title": "EPUB Metadata Editor",
-    "tool.info.editor.desc": "EPUB जानकारी को संपादित करने का उपकरण।"
+    "tool.info.editor.desc": "EPUB जानकारी को संपादित करने का उपकरण।",
+    "ereader": {
+        "menu_title": "नियंत्रण कक्ष",
+        "btn_bookmark": "बुकमार्क मोड",
+        "btn_highlight": "हाइलाइट मोड",
+        "btn_find": "खोजें (Find)",
+        "btn_export": "कॉन्फ़िगरेशन डेटा निर्यात करें (Export)",
+        "btn_import": "कॉन्फ़िगरेशन डेटा आयात करें (Import)"
+    }
 }

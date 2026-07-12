@@ -278,5 +278,13 @@
         "alert_error_package": "打包并重新封装文件时发生错误: "
     },
     "tool.info.editor.title": "EPUB 元数据编辑器",
-    "tool.info.editor.desc": "用于编辑 EPUB 信息的工具。"
+    "tool.info.editor.desc": "用于编辑 EPUB 信息的工具。",
+    "ereader": {
+        "menu_title": "控制面板",
+        "btn_bookmark": "书签模式",
+        "btn_highlight": "高亮模式",
+        "btn_find": "查找 (Find)",
+        "btn_export": "导出配置数据 (Export)",
+        "btn_import": "导入配置数据 (Import)"
+    }
 }
