@@ -57,7 +57,7 @@ const normalizeForComparison = (value = "") =>
         .normalize("NFKD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
         .replace(/\s+/g, " ")
         .trim();
 
@@ -88,9 +88,7 @@ const removeTitleLikeBlocks = (text, title) => {
             if (!normalizedBlock) return true;
             return (
                 normalizedBlock !== normalizedTitle &&
-                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}` &&
-                !normalizedBlock.startsWith(`${normalizedTitle} `) &&
-                !normalizedBlock.endsWith(` ${normalizedTitle}`)
+                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}`
             );
         })
         .join("\n\n");
@@ -119,10 +117,6 @@ const cleanBodyText = (doc, title) => {
         removeTitleLikeBlocks(stripHTML(clonedBody.innerHTML || ""), title),
     );
 };
-
-/* =========================
-   EPUB ADVANCED
-========================= */
 
 export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
     const zip = await JSZip.loadAsync(file);
@@ -283,10 +277,6 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
     };
 }
 
-/* =========================
-   DISPLAY UTILS
-========================= */
-
 export const getDisplayWidth = (str = "") => {
     let width = 0;
 
@@ -346,10 +336,6 @@ export const wrapDisplayText = (text, maxWidth = 80) => {
 
     return lines.join("\n");
 };
-
-/* =========================
-   STRIP HTML (UNIFIED)
-========================= */
 
 export const stripHTML = (html) => {
     const div = document.createElement("div");
@@ -445,10 +431,6 @@ export const stripHTML = (html) => {
         .trim();
 };
 
-/* =========================
-   HELPERS
-========================= */
-
 export const isFakeChapter = (text, title, doc) => {
     if (!text || text.length < 200) return true;
 
@@ -488,10 +470,6 @@ export const makeInfoBox = (text, maxBoxWidth = 80) => {
         border
     );
 };
-
-/* =========================
-   SIMPLE EPUB PARSER
-========================= */
 
 export const parseEpub = async (file, t) => {
     const zip = await JSZip.loadAsync(file);

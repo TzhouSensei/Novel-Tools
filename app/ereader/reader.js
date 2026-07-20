@@ -727,6 +727,11 @@ function setupGlobalInteractions() {
         threshold: 60,
         locked: false,
     };
+    document.addEventListener("selectstart", (e) => {
+        if (!state.isHighlightMode) {
+            e.preventDefault();
+        }
+    });
     function handleSwipeEnd(dx, dy) {
         if (isInteractionPaused) return;
         if (swipe.locked) return;
@@ -871,6 +876,9 @@ function setupGlobalInteractions() {
         const dx = touch.clientX - swipe.startX;
         const dy = touch.clientY - swipe.startY;
         swipe.active = false;
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         if (Math.abs(dx) > swipe.threshold && Math.abs(dx) > Math.abs(dy)) {
             handleSwipeEnd(dx, dy);
             return;

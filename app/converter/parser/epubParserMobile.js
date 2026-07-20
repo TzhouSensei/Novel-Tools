@@ -116,9 +116,7 @@ const removeTitleLikeBlocks = (text, title) => {
             if (!normalizedBlock) return true;
             return (
                 normalizedBlock !== normalizedTitle &&
-                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}` &&
-                !normalizedBlock.startsWith(`${normalizedTitle} `) &&
-                !normalizedBlock.endsWith(` ${normalizedTitle}`)
+                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}`
             );
         })
         .join("\n\n");

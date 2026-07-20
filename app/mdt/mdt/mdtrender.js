@@ -88,7 +88,10 @@ function enableDetailsAnimation(details) {
 document.getElementById("file").addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    status.textContent = t("reader.status_loading", "📂 Đang tải file EPUB...");
+    status.textContent = t(
+        "reader.status_loading",
+        "📂 Đang tải file truyện...",
+    );
     status.style.color = "#666";
     app.classList.add("fade-out");
     const reader = new FileReader();
@@ -123,6 +126,115 @@ document.getElementById("file").addEventListener("change", (e) => {
         app.textContent = "";
         const STORAGE_KEY = "opened-chapters";
         let chapterToScroll = null;
+        const isTxtAutoSplit = !text.includes("<list>");
+        if (isTxtAutoSplit) {
+            const storyTitle = file.name.replace(/\.[^/.]+$/, "");
+            const h1 = document.createElement("h1");
+            h1.textContent =
+                storyTitle ||
+                t("reader.untitled_story", "Truyện không có tiêu đề");
+            app.appendChild(h1);
+
+            const nametester2 =
+                /^[ \t]*?(?:(?:Chương|Hồi|Phần|Tập|Trận|Quyển|Bản|Kiếp|Chapter|Chap|Ch|Vol|Volume|Episode|Ep|Part|Section|Act|Глава|Часть|第|【|no\.?)? ?(?:[0-9一二三四五六七八九十万千两百零]+) ?[章节集回卷 phần chapter ]*[:\-.]?)|^[ \t]*?(?:Ngoại truyện|Phiên ngoại|Vĩ thanh|Mở đầu|Tiền truyện|Lời mở đầu|Lời kết|Prologue|Epilogue|Side story|Extra|Bonus|Spin-off|Interlude|Afterword|Preface|Введение|Эпилог|Пролог|Послесловие|番外|序章|終章|외전|프롤로그|에필로그)/gim;
+
+            let m;
+            let first = true;
+            let lidx = 0;
+            const autoChapters = [];
+
+            while ((m = nametester2.exec(text)) !== null) {
+                let idx = m.index;
+                if (!first) {
+                    autoChapters.push(text.substr(lidx, idx - lidx));
+                }
+                first = false;
+                lidx = idx;
+            }
+            autoChapters.push(text.substr(lidx));
+
+            const formattedChapters = autoChapters
+                .map((rawContent) => {
+                    const lines = rawContent.trim().split(/\r?\n/);
+                    const title = lines[0]
+                        ? lines[0].trim().substr(0, 80)
+                        : "Chương không rõ tiêu đề";
+                    const body = lines.slice(1).join("\n").trim();
+                    return { title, body };
+                })
+                .filter(
+                    (chap) => chap.body.length > 5 || chap.title.length > 0,
+                );
+
+            let simulatedList = "<list>";
+            formattedChapters.forEach((chap) => {
+                simulatedList += `${chap.title}⟨${chap.body}⟩\n`;
+            });
+            simulatedList += "</list>";
+            text = simulatedList;
+        } else {
+            const titleMatch = text.match(/<>\s*([\s\S]*?)\s*<\/>/);
+            if (titleMatch) {
+                const h1 = document.createElement("h1");
+                h1.textContent =
+                    titleMatch[1].trim() ||
+                    t("reader.untitled_story", "Truyện không có tiêu đề");
+                app.appendChild(h1);
+                text = text.replace(titleMatch[0], "");
+            }
+
+            const descMatch = text.match(/<info>\s*([\s\S]*?)\s*<\/info>/);
+            let descriptionContent = "Chưa cập nhật";
+            if (descMatch) {
+                const cleaned = descMatch[1].trim();
+                if (cleaned.length > 0) {
+                    descriptionContent = cleaned;
+                }
+                text = text.replace(descMatch[0], "");
+            }
+            const descDetails = document.createElement("details");
+            const descSummary = document.createElement("summary");
+            descSummary.setAttribute("data-i18n", "reader.description_title");
+            const descDiv = document.createElement("div");
+            descDiv.className = "content";
+            descDiv.textContent = descriptionContent;
+            descDetails.appendChild(descSummary);
+            descDetails.appendChild(descDiv);
+            enableDetailsAnimation(descDetails);
+            app.appendChild(descDetails);
+        }
+
+        if (!isTxtAutoSplit) {
+            let characters = [];
+            const listMatch = outsideText.match(/\[\s*([\s\S]*?)\s*\]/);
+            if (listMatch) {
+                characters = listMatch[1]
+                    .split("\n")
+                    .map((l) => l.trim())
+                    .filter(Boolean);
+                outsideText = outsideText.replace(listMatch[0], "");
+            }
+            if (characters.length === 0) {
+                characters = ["Chưa cập nhật"];
+            }
+            const charDetails = document.createElement("details");
+            const charSummary = document.createElement("summary");
+            charSummary.setAttribute("data-i18n", "reader.character_list");
+            const charDiv = document.createElement("div");
+            charDiv.className = "content";
+            const ul = document.createElement("ul");
+            characters.forEach((name) => {
+                const li = document.createElement("li");
+                li.textContent = name;
+                ul.appendChild(li);
+            });
+            charDiv.appendChild(ul);
+            charDetails.appendChild(charSummary);
+            charDetails.appendChild(charDiv);
+            enableDetailsAnimation(charDetails);
+            app.appendChild(charDetails);
+        }
+
         const titleMatch = text.match(/<>\s*([\s\S]*?)\s*<\/>/);
         if (titleMatch) {
             const h1 = document.createElement("h1");
@@ -151,6 +263,44 @@ document.getElementById("file").addEventListener("change", (e) => {
         descDetails.appendChild(descDiv);
         enableDetailsAnimation(descDetails);
         app.appendChild(descDetails);
+        if (!text.includes("<list>")) {
+            const nametester2 =
+                /^[ \t]*?(?:(?:Chương|Hồi|Phần|Tập|Trận|Quyển|Bản|Kiếp|Chapter|Chap|Ch|Vol|Volume|Episode|Ep|Part|Section|Act|Глава|Часть|第|【|no\.?)? ?(?:[0-9一二三四五六七八九十万千两百零]+) ?[章节集回卷 phần chapter ]*[:\-.]?)|^[ \t]*?(?:Ngoại truyện|Phiên ngoại|Vĩ thanh|Mở đầu|Tiền truyện|Lời mở đầu|Lời kết|Prologue|Epilogue|Side story|Extra|Bonus|Spin-off|Interlude|Afterword|Preface|Введение|Эпилог|Пролог|Послесловие|番外|序章|終章|외전|프롤로그|에필로그)/gim;
+
+            let m;
+            let first = true;
+            let lidx = 0;
+            const autoChapters = [];
+
+            while ((m = nametester2.exec(text)) !== null) {
+                let idx = m.index;
+                if (!first) {
+                    autoChapters.push(text.substr(lidx, idx - lidx));
+                }
+                first = false;
+                lidx = idx;
+            }
+            autoChapters.push(text.substr(lidx));
+
+            const formattedChapters = autoChapters
+                .map((rawContent) => {
+                    const lines = rawContent.trim().split(/\r?\n/);
+                    const title = lines[0]
+                        ? lines[0].trim().substr(0, 80)
+                        : "Chương không rõ tiêu đề";
+                    const body = lines.slice(1).join("\n").trim();
+                    return { title, body };
+                })
+                .filter(
+                    (chap) => chap.body.length > 5 || chap.title.length > 0,
+                );
+            let simulatedList = "<list>";
+            formattedChapters.forEach((chap) => {
+                simulatedList += `${chap.title}⟨${chap.body}⟩\n`;
+            });
+            simulatedList += "</list>";
+            text += simulatedList;
+        }
         const listSectionMatch = text.match(/<list>[\s\S]*?<\/list>/);
         let listSection = "";
         let outsideText = text;

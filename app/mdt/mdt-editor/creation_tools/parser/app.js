@@ -549,9 +549,33 @@ async function generateEpub() {
         config.title ||
         (parsedChapters[0] ? parsedChapters[0].title : "EPUB Generated");
     const author = config.author || "Unknown";
-    const lang = config.language || "zh-cn";
+    const lang = config.language || "Unknown";
     const description = parseDesc(config.desc).replace(/\n/g, " ");
+    let descriptionLines = [];
+    if (config.desc) {
+        const sortedDescKeys = Object.keys(config.desc)
+            .filter((k) => k !== "comment")
+            .sort((a, b) => {
+                const numA = parseInt(a.replace(/\D/g, "")) || 0;
+                const numB = parseInt(b.replace(/\D/g, "")) || 0;
+                return numA - numB;
+            });
 
+        sortedDescKeys.forEach((key) => {
+            const line = config.desc[key];
+
+            if (line && typeof line === "string") {
+                descriptionLines.push(
+                    `<dc:description>${line}</dc:description>`,
+                );
+            }
+        });
+    }
+    const subjects = config.genre
+        ? Object.values(config.genre).filter(
+              (value) => typeof value === "string" && value.trim() !== "",
+          )
+        : [];
     let manifestItems = [];
     let spineItems = [];
 
@@ -620,7 +644,8 @@ async function generateEpub() {
         <dc:title>${bookTitle}</dc:title>
         <dc:creator>${author}</dc:creator>
         <dc:language>${lang}</dc:language>
-        <dc:description>${description}</dc:description>
+        ${descriptionLines.join("\n        ")}
+        ${subjects.map((sub) => `<dc:subject>${sub}</dc:subject>`).join("\n        ")}
         <dc:identifier id="bookid">urn:uuid:${crypto.randomUUID ? crypto.randomUUID() : "12345678-1234-5678-1234-567812345678"}</dc:identifier>
         <meta property="dcterms:modified">${new Date().toISOString().split(".")[0] + "Z"}</meta>
     </metadata>

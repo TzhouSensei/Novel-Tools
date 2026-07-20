@@ -452,7 +452,8 @@
                 </div>
             </form>
         </div>
-
+        <script src="../../../../../libs/i18n/i18n.js"></script>
+        <script src="../../../../../libs/i18n/lang.js"></script>
         <script>
             const defaultTemplate = {
                 toc_name: {},
@@ -514,7 +515,7 @@
 
                                 const statusBadge =
                                     document.getElementById("zipStatus");
-                                statusBadge.innerText = `Đã nạp: ${file.name}`;
+                                statusBadge.innerHTML = `${t("config.status_loaded")}: ${file.name}`;
                                 statusBadge.classList.remove("hidden");
 
                                 const configFile =
@@ -553,7 +554,7 @@
                     reader.onload = function (evt) {
                         coverFileBuffer = evt.target.result;
                         const badge = document.getElementById("coverStatus");
-                        badge.innerText = `Đã nhận: ${file.name}`;
+                        badge.innerHTML = `${t("config.status_received")}: ${file.name}`;
                         badge.classList.remove("hidden");
 
                         document.getElementById("cover_href").value =
@@ -631,8 +632,6 @@
                     });
                 }
             }
-            statusBadge.innerHTML = `${t("config.status_loaded")}: ${file.name}`;
-            badge.innerHTML = `${t("config.status_received")}: ${file.name}`;
             function addTocName(key, value) {
                 const container = document.getElementById("tocNameContainer");
                 const div = document.createElement("div");
@@ -941,7 +940,5 @@
                         });
                 });
         </script>
-        <script src="../../../../../libs/i18n/i18n.js"></script>
-        <script src="../../../../../libs/i18n/lang.js"></script>
     </body>
 </html>
