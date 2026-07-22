@@ -301,7 +301,11 @@ async function parseEpub(arrayBuffer) {
         chapDoc.querySelectorAll("script, style").forEach((el) => el.remove());
 
         let bodyText = "";
-        const paragraphs = chapDoc.querySelectorAll("p, div, br");
+        const paragraphs = [...chapDoc.body.querySelectorAll("p, div")].filter(
+            (el) => {
+                return !el.querySelector("p, div");
+            },
+        );
         if (paragraphs.length > 0) {
             paragraphs.forEach((p) => {
                 if (p.tagName.toLowerCase() === "br") {
@@ -475,26 +479,17 @@ function renderEpub() {
             }
         }
 
-        summary.addEventListener("click", async (e) => {
+        summary.addEventListener("click", (e) => {
             e.preventDefault();
+
             if (openedItems.has(index)) {
                 openedItems.delete(index);
-                saveOpened();
-                renderVisible();
-                return;
+            } else {
+                openedItems.add(index);
             }
-            openedItems.add(index);
+
             saveOpened();
             renderVisible();
-
-            requestAnimationFrame(async () => {
-                const current = folderContent.querySelector(
-                    `[data-chapter="${index}"] .content`,
-                );
-                if (!current) return;
-                await lazyRenderContent(current, chapter);
-                renderedBodies.set(index, current.innerHTML);
-            });
         });
 
         details.dataset.chapter = index;

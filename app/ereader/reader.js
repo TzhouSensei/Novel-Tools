@@ -248,6 +248,7 @@ function parseMetadata(xml) {
         t("ereader.no_description");
     document.getElementById("book-title").innerText = title;
     clearI18n(document.getElementById("book-title"));
+    document.title = title;
     document.getElementById("meta-author").innerText = author;
     document.getElementById("meta-subject").innerText = subject;
     document.getElementById("meta-description").innerText = description;

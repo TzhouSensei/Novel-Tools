@@ -80,6 +80,7 @@
     </head>
     <body>
         <a
+            id="homeBtn"
             href="../../index.html"
             onclick="sessionStorage.setItem('reloaded_once', '1')"
             style="
@@ -98,16 +99,26 @@
         >
             ⬅ Home
         </a>
+
+        <!-- Nút đóng nhanh dành riêng cho chế độ Iframe -->
+        <button
+            id="closeIframeBtn"
+            class="btn btn-danger hidden"
+            style="position: fixed; top: 15px; right: 15px; z-index: 9999"
+        >
+            ✕ Đóng
+        </button>
+
         <div class="lang-wrapper"></div>
         <div class="container">
             <h2
                 class="mb-4 text-center fw-bold text-primary"
                 data-i18n="epub_bulk.main_title"
             >
-                CÔNG CỤ CHỈNH SỬA METADATA EPUB HÀNG LOẠT
+                CÔNG CỤ CHỈNH SỬA METADATA EPUB
             </h2>
 
-            <div class="card shadow-sm mb-4">
+            <div id="uploadCard" class="card shadow-sm mb-4">
                 <div class="card-body text-center py-4">
                     <h5
                         class="card-title mb-3"
@@ -167,13 +178,36 @@
                     class="btn btn-success btn-lg px-5 shadow hidden"
                     data-i18n="epub_bulk.btn_save_export_all"
                 >
-                    LƯU & XUẤT TOÀN BỘ FILE EPUB
+                    LƯU THAY ĐỔI
                 </button>
             </div>
         </div>
 
         <script>
             let epubFilesList = [];
+            let isIframeMode = false;
+            let iframeBookId = null;
+
+            // Đọc cấu hình từ URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("mode") === "iframe") {
+                isIframeMode = true;
+                iframeBookId = urlParams.get("bookId");
+
+                // Ẩn/Hiện thành phần phù hợp môi trường nhúng
+                document.getElementById("homeBtn").classList.add("hidden");
+                document.getElementById("uploadCard").classList.add("hidden");
+                document
+                    .getElementById("closeIframeBtn")
+                    .classList.remove("hidden");
+
+                document.getElementById("closeIframeBtn").onclick = () => {
+                    window.parent.postMessage(
+                        { action: "close_editor_iframe" },
+                        "*",
+                    );
+                };
+            }
 
             document
                 .getElementById("importEpubFiles")
@@ -184,6 +218,74 @@
             document
                 .getElementById("exportBulkBtn")
                 .addEventListener("click", exportAllEpubs);
+
+            // Tự động nạp dữ liệu từ IndexedDB nếu chạy trong Iframe của thư viện
+            if (isIframeMode && iframeBookId) {
+                loadEpubFromIndexedDB(iframeBookId);
+            }
+
+            async function loadEpubFromIndexedDB(bookId) {
+                document
+                    .getElementById("progressCard")
+                    .classList.remove("hidden");
+                const progressBar = document.getElementById("progressBar");
+                const statusText = document.getElementById("statusText");
+
+                statusText.innerText = "Đang đọc dữ liệu sách từ IndexedDB...";
+
+                try {
+                    const db = await openLibraryDB();
+                    const bookData = await getBookRecord(db, bookId);
+                    if (!bookData || !bookData.fileBlob)
+                        throw new Error("Không tìm thấy file Blob của sách");
+
+                    const zip = await JSZip.loadAsync(bookData.fileBlob);
+                    const epubData = await parseEpubMetadata(
+                        zip,
+                        bookData.title + ".epub",
+                        "epub_single_mode",
+                    );
+
+                    // Giữ lại bản ghi gốc để cập nhật đè
+                    epubData.dbRecord = bookData;
+                    epubFilesList.push(epubData);
+
+                    renderEpubEditorForm(epubData);
+
+                    progressBar.style.width = "100%";
+                    progressBar.innerText = "100%";
+                    statusText.innerText = "Đã tải xong thông tin sách.";
+                    document
+                        .getElementById("exportBulkBtn")
+                        .classList.remove("hidden");
+
+                    // Chuyển chữ nút lưu cho khớp ngữ cảnh
+                    document.getElementById("exportBulkBtn").innerText =
+                        "CẬP NHẬT VÀO THƯ VIỆN";
+                } catch (err) {
+                    console.error(err);
+                    statusText.innerText = "Lỗi nạp sách: " + err.message;
+                }
+            }
+
+            // Mở kết nối database dùng chung của Thư viện
+            function openLibraryDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open("EpubReaderLocalDB", 2);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function getBookRecord(db, id) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction("bookshelf", "readonly");
+                    const store = tx.objectStore("bookshelf");
+                    const req = store.get(id);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
 
             async function handleEpubSelect(e) {
                 const files = e.target.files;
@@ -206,7 +308,6 @@
                     const file = files[i];
                     const fileId = "epub_" + Date.now() + "_" + i;
 
-                    // Sử dụng hàm t() để đa ngôn ngữ hóa chuỗi trạng thái phân tích
                     statusText.innerText = t("epub_bulk.status_parsing")
                         .replace("{current}", i + 1)
                         .replace("{total}", files.length)
@@ -270,22 +371,30 @@
                     ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1)
                     : "";
 
-                const title = opfDoc.querySelector("title")?.textContent || "";
+                const title =
+                    opfDoc.querySelector("title, dc\\:title")?.textContent ||
+                    "";
                 const creator =
-                    opfDoc.querySelector("creator")?.textContent || "";
+                    opfDoc.querySelector("creator, dc\\:creator")
+                        ?.textContent || "";
                 const language =
-                    opfDoc.querySelector("language")?.textContent || "";
-                const description =
-                    opfDoc.querySelector("description")?.textContent || "";
+                    opfDoc.querySelector("language, dc\\:language")
+                        ?.textContent || "";
+
+                // CẢI TIẾN: Hỗ trợ đọc gộp nhiều thẻ dc:description phân tách bằng ký tự xuống dòng
+                const descriptionNodes = opfDoc.querySelectorAll(
+                    "description, dc\\:description",
+                );
+                const description = Array.from(descriptionNodes)
+                    .map((node) => node.textContent)
+                    .join("\n");
 
                 const subjects = Array.from(
-                    opfDoc.querySelectorAll("subject"),
+                    opfDoc.querySelectorAll("subject, dc\\:subject"),
                 ).map((el) => el.textContent);
 
                 let coverHref = "";
-                let coverManifestItem = null;
-
-                coverManifestItem = opfDoc.querySelector(
+                let coverManifestItem = opfDoc.querySelector(
                     'item[properties~="cover-image"]',
                 );
 
@@ -347,11 +456,10 @@
                 card.id = epub.fileId;
                 card.dataset.filename = epub.filename;
 
-                // Quy chuẩn các nhãn nội dung form động bằng các thẻ mang thuộc tính data-i18n
                 card.innerHTML = `
         <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
             <span>📄 <span data-i18n="epub_bulk.label_filename">Tên tệp</span>: ${epub.filename}</span>
-            <button class="btn btn-sm btn-danger" data-i18n="epub_bulk.btn_skip_file" onclick="removeEpubCard('${epub.fileId}')">Bỏ qua file</button>
+            <button class="btn btn-sm btn-danger ${isIframeMode ? "hidden" : ""}" data-i18n="epub_bulk.btn_skip_file" onclick="removeEpubCard('${epub.fileId}')">Bỏ qua file</button>
         </div>
         <div class="card-body">
             <div class="row g-3 mb-4 bg-light p-3 rounded border">
@@ -366,10 +474,10 @@
                             <tr><th width="150" class="table-secondary" data-i18n="epub_bulk.th_original_title">Tiêu đề gốc</th><td id="cell_title_${epub.fileId}">${meta.title || "-"}</td></tr>
                             <tr><th class="table-secondary" data-i18n="epub_bulk.th_original_author">Tác giả gốc</th><td id="cell_author_${epub.fileId}">${meta.creator || "-"}</td></tr>
                             <tr><th class="table-secondary" data-i18n="epub_bulk.th_language">Ngôn ngữ</th><td>${meta.language || "-"}</td></tr>
-                            <tr><th class="table-secondary" data-i18n="epub_bulk.th_cover_path">Đường dẫn bìa</th><td class="text-monospace small" id="cell_path_${epub.fileId}">${meta.coverHref || t("epub_bulk.status_not_found")}</td></tr>
+                            <tr><th class="table-secondary" data-i18n="epub_bulk.th_cover_path">Đường dẫn bìa</th><td class="text-monospace small" id="cell_path_${epub.fileId}">${meta.coverHref || "Không tìm thấy"}</td></tr>
                         </tbody>
                     </table>
-                    <div class="small text-muted text-truncate"><strong data-i18n="epub_bulk.label_original_desc">Mô tả gốc:</strong> ${meta.description || t("epub_bulk.status_empty")}</div>
+                    <div class="small text-muted"><strong data-i18n="epub_bulk.label_original_desc">Mô tả gốc:</strong> <span style="white-space: pre-line;">${meta.description || "Trống"}</span></div>
                 </div>
             </div>
 
@@ -379,11 +487,11 @@
                         <div class="section">
                             <div class="section-title text-primary fw-bold mb-2" data-i18n="epub_bulk.section_basic_info">Thông tin cơ bản</div>
                             <div class="form-group mb-2">
-                                <label>Title (<span class="text-danger">dc:title</span>):</label>
+                                <label>Title:</label>
                                 <input type="text" class="form-control epub-title" value="${meta.title.replace(/"/g, "&quot;")}">
                             </div>
                             <div class="form-group mb-2">
-                                <label>Author (<span class="text-danger">dc:creator</span>):</label>
+                                <label>Author:</label>
                                 <input type="text" class="form-control epub-author" value="${meta.creator.replace(/"/g, "&quot;")}">
                             </div>
                             <div class="form-group mb-2">
@@ -408,7 +516,7 @@
                     <div class="col-md-6">
                         <div class="section">
                             <div class="section-title text-primary fw-bold mb-2">
-                                <span data-i18n="epub_bulk.section_genre">Thể loại (dc:subject)</span> <small class="text-muted" data-i18n="epub_bulk.note_auto_index">*Tự động tăng chỉ mục</small>
+                                <span data-i18n="epub_bulk.section_genre">Thể loại</span> <small class="text-muted" data-i18n="epub_bulk.note_auto_index">*Tự động tăng chỉ mục</small>
                             </div>
                             <div class="genre-container" id="genre_container_${epub.fileId}">
                                 ${meta.subjects
@@ -427,9 +535,9 @@
                         </div>
 
                         <div class="section mt-3">
-                            <div class="section-title text-primary fw-bold mb-2" data-i18n="epub_bulk.section_desc">Mô tả & Giới thiệu (dc:description)</div>
+                            <div class="section-title text-primary fw-bold mb-2" data-i18n="epub_bulk.section_desc">Mô tả & Giới thiệu</div>
                             <div class="form-group">
-                                <textarea class="form-control epub-description" rows="5" style="font-size:0.9rem;">${meta.description}</textarea>
+                                <textarea class="form-control epub-description" rows="5" style="font-size:0.9rem;" placeholder="Nhập mô tả, xuống dòng để tạo nhiều thẻ dc:description">${meta.description}</textarea>
                             </div>
                         </div>
                     </div>
@@ -438,9 +546,7 @@
         </div>
     `;
                 container.appendChild(card);
-
-                // CRITICAL: Kích hoạt biên dịch lại các nhãn vừa chèn vào DOM động
-                applyI18n();
+                if (typeof applyI18n === "function") applyI18n();
             }
 
             function addGenreField(fileId) {
@@ -451,14 +557,13 @@
                 const div = document.createElement("div");
                 div.className = "dynamic-item d-flex mb-2";
 
-                // Quy chuẩn placeholder thông qua hàm t() hoặc thuộc tính data-i18n
                 div.innerHTML = `
         <input type="text" class="key-input form-control form-control-sm w-auto me-2" value="${nextIdx}" disabled style="max-width:50px;">
-        <input type="text" class="value-input form-control form-control-sm subject-value me-2" placeholder="${t("epub_bulk.placeholder_new_genre")}">
+        <input type="text" class="value-input form-control form-control-sm subject-value me-2" placeholder="${typeof t === "function" ? t("epub_bulk.placeholder_new_genre") : "Thể loại mới"}">
         <button type="button" class="btn btn-sm btn-danger" data-i18n="epub_bulk.btn_delete" onclick="removeGenreItem(this, '${fileId}')">Xóa</button>
     `;
                 container.appendChild(div);
-                applyI18n(); // Biên dịch lại nút xóa mới thêm vào
+                if (typeof applyI18n === "function") applyI18n();
             }
 
             function removeGenreItem(btn, fileId) {
@@ -479,7 +584,6 @@
                 reader.onload = function (e) {
                     document.getElementById(`prev_${fileId}`).src =
                         e.target.result;
-
                     const pathInput = document.querySelector(
                         `#${fileId} .epub-cover-href`,
                     );
@@ -490,7 +594,10 @@
                     }
 
                     const badge = document.getElementById(`badge_${fileId}`);
-                    badge.innerText = t("epub_bulk.badge_loaded_new_cover");
+                    badge.innerText =
+                        typeof t === "function"
+                            ? t("epub_bulk.badge_loaded_new_cover")
+                            : "Đã nạp ảnh mới";
                     badge.className = "badge bg-success p-2";
 
                     const epubObj = epubFilesList.find(
@@ -521,9 +628,10 @@
                     .getElementById("exportBulkBtn")
                     .classList.add("hidden");
                 epubFilesList = [];
-                document.getElementById("statusText").innerText = t(
-                    "epub_bulk.status_no_data",
-                );
+                document.getElementById("statusText").innerText =
+                    typeof t === "function"
+                        ? t("epub_bulk.status_no_data")
+                        : "Chưa có dữ liệu";
             }
 
             async function exportAllEpubs() {
@@ -533,12 +641,14 @@
                 const statusText = document.getElementById("statusText");
                 progressBar.style.width = "0%";
 
+                const db = isIframeMode ? await openLibraryDB() : null;
+
                 for (let i = 0; i < epubFilesList.length; i++) {
                     const epub = epubFilesList[i];
 
-                    statusText.innerText = t(
-                        "epub_bulk.status_updating",
-                    ).replace("{filename}", epub.filename);
+                    statusText.innerText = isIframeMode
+                        ? "Đang tiến hành cập nhật dữ liệu..."
+                        : `Cập nhật: ${epub.filename}`;
 
                     const form = document.getElementById(`form_${epub.fileId}`);
                     if (!form) continue;
@@ -568,34 +678,52 @@
                     let zip = epub.zipInstance;
                     let opfDoc = epub.opfDoc;
 
-                    if (opfDoc.querySelector("title"))
-                        opfDoc.querySelector("title").textContent =
-                            updatedTitle;
-                    if (opfDoc.querySelector("creator"))
-                        opfDoc.querySelector("creator").textContent =
-                            updatedAuthor;
-                    if (opfDoc.querySelector("language"))
-                        opfDoc.querySelector("language").textContent =
-                            updatedLang;
-                    if (opfDoc.querySelector("description")) {
-                        opfDoc.querySelector("description").textContent =
-                            updatedDesc;
-                    } else if (updatedDesc) {
-                        let descNode = opfDoc.createElement("dc:description");
-                        descNode.textContent = updatedDesc;
-                        opfDoc.querySelector("metadata").appendChild(descNode);
+                    // Ghi đè thông tin Title, Creator, Language
+                    const titleNode = opfDoc.querySelector("title, dc\\:title");
+                    if (titleNode) titleNode.textContent = updatedTitle;
+
+                    const creatorNode = opfDoc.querySelector(
+                        "creator, dc\\:creator",
+                    );
+                    if (creatorNode) creatorNode.textContent = updatedAuthor;
+
+                    const langNode = opfDoc.querySelector(
+                        "language, dc\\:language",
+                    );
+                    if (langNode) langNode.textContent = updatedLang;
+
+                    // CẢI TIẾN: Xóa hết thẻ dc:description cũ và tạo danh sách thẻ mới dựa vào số dòng xuống
+                    Array.from(
+                        opfDoc.querySelectorAll(
+                            "description, dc\\:description",
+                        ),
+                    ).forEach((el) => el.remove());
+                    const metadataNode = opfDoc.querySelector("metadata");
+
+                    if (updatedDesc) {
+                        const descLines = updatedDesc
+                            .split("\n")
+                            .map((l) => l.trim())
+                            .filter((l) => l !== "");
+                        descLines.forEach((line) => {
+                            let descNode =
+                                opfDoc.createElement("dc:description");
+                            descNode.textContent = line;
+                            metadataNode.appendChild(descNode);
+                        });
                     }
 
-                    const metadataNode = opfDoc.querySelector("metadata");
-                    Array.from(opfDoc.querySelectorAll("subject")).forEach(
-                        (el) => el.remove(),
-                    );
+                    // Đồng bộ Thể loại (dc:subject)
+                    Array.from(
+                        opfDoc.querySelectorAll("subject, dc\\:subject"),
+                    ).forEach((el) => el.remove());
                     updatedSubjects.forEach((sub) => {
                         let subNode = opfDoc.createElement("dc:subject");
                         subNode.textContent = sub;
                         metadataNode.appendChild(subNode);
                     });
 
+                    // Xử lý ảnh bìa mới nếu có
                     if (epub.newCoverBuffer && updatedCoverHref) {
                         zip.file(updatedCoverHref, epub.newCoverBuffer);
 
@@ -653,24 +781,49 @@
                         }
                     }
 
+                    // Đóng gói lại file OPF mới vào ZIP
                     const serializer = new XMLSerializer();
                     const updatedOpfText = serializer.serializeToString(opfDoc);
                     zip.file(epub.opfPath, updatedOpfText);
+
                     try {
                         const contentBlob = await zip.generateAsync({
                             type: "blob",
                             mimeType: "application/epub+zip",
                         });
-                        const downloadAnchor = document.createElement("a");
-                        downloadAnchor.href = URL.createObjectURL(contentBlob);
-                        downloadAnchor.download = "[Edited] " + epub.filename;
-                        document.body.appendChild(downloadAnchor);
-                        downloadAnchor.click();
-                        downloadAnchor.remove();
+
+                        // PHÂN TÁCH LUỒNG XỬ LÝ THEO MÔI TRƯỜNG NHÚNG
+                        if (isIframeMode && db) {
+                            // Cập nhật trực tiếp đè vào IndexedDB thay vì sinh lệnh download
+                            const updatedRecord = {
+                                ...epub.dbRecord,
+                                title: updatedTitle,
+                                author: updatedAuthor,
+                                genre: updatedSubjects[0] || "Unknown",
+                                fileBlob: contentBlob,
+                                addedAt: Date.now(), // Cập nhật thời điểm sửa đổi
+                            };
+
+                            // Nếu có cập nhật ảnh bìa mới, xuất blob ảnh bìa đó lưu ngoài để Library render nhanh
+                            if (epub.newCoverFileObj) {
+                                updatedRecord.coverBlob = epub.newCoverFileObj;
+                            }
+
+                            await saveBookRecordToDB(db, updatedRecord);
+                        } else {
+                            // Chế độ chạy độc lập mặc định: Tải tệp xuống trình duyệt
+                            const downloadAnchor = document.createElement("a");
+                            downloadAnchor.href =
+                                URL.createObjectURL(contentBlob);
+                            downloadAnchor.download =
+                                "[Edited] " + epub.filename;
+                            document.body.appendChild(downloadAnchor);
+                            downloadAnchor.click();
+                            downloadAnchor.remove();
+                        }
                     } catch (ex) {
-                        alert(
-                            t("epub_bulk.alert_error_package") + epub.filename,
-                        );
+                        console.error(ex);
+                        alert("Lỗi đóng gói file: " + epub.filename);
                     }
 
                     let totalPercent = Math.round(
@@ -680,7 +833,27 @@
                     progressBar.innerText = totalPercent + "%";
                 }
 
-                statusText.innerText = t("epub_bulk.status_complete");
+                statusText.innerText = "Hoàn thành!";
+
+                // Sau khi lưu thành công ở chế độ Iframe, tự động gửi message để trang mẹ đóng modal
+                if (isIframeMode) {
+                    setTimeout(() => {
+                        window.parent.postMessage(
+                            { action: "close_editor_iframe" },
+                            "*",
+                        );
+                    }, 800);
+                }
+            }
+
+            function saveBookRecordToDB(db, record) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction("bookshelf", "readwrite");
+                    const store = tx.objectStore("bookshelf");
+                    const request = store.put(record);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
             }
 
             function cleanRelativePath(path) {

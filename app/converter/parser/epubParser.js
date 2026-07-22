@@ -1,122 +1,11 @@
+import {
+    cleanBodyText,
+    collectMetaText,
+    getFirstHeading,
+    selectChapterFiles,
+} from "./epubChapterPipeline.js";
+
 export const fileLog = (tag, msg) => console.log(`[DEBUG][${tag}]`, msg);
-
-function tokenizeStructure(str = "") {
-    return (
-        str
-            .toLowerCase()
-            .trim()
-            .match(/\d+|[a-zA-ZÀ-ỹ]+|[^a-zA-ZÀ-ỹ\d]+/g) || []
-    );
-}
-
-function normalizeTokens(tokens) {
-    return tokens.map((token) => {
-        if (/^\d+$/.test(token)) return "[NUMBER]";
-        return token;
-    });
-}
-
-function buildTemplate(samples) {
-    if (!samples.length) return [];
-
-    const tokenized = samples.map((s) => normalizeTokens(tokenizeStructure(s)));
-    const maxLen = Math.max(...tokenized.map((t) => t.length));
-    const template = [];
-
-    for (let i = 0; i < maxLen; i++) {
-        const values = tokenized.map((t) => t[i]);
-        const first = values[0];
-        const same = values.every((v) => v === first);
-        template.push(same ? first : "[VAR]");
-    }
-
-    return template;
-}
-
-function templateScore(value, template) {
-    if (!template.length) return 1;
-
-    const tokens = normalizeTokens(tokenizeStructure(value));
-    const maxLen = Math.max(tokens.length, template.length);
-
-    let matched = 0;
-
-    for (let i = 0; i < maxLen; i++) {
-        if (template[i] === "[VAR]") {
-            matched++;
-            continue;
-        }
-        if (tokens[i] === template[i]) matched++;
-    }
-
-    return matched / maxLen;
-}
-
-const normalizeForComparison = (value = "") =>
-    value
-        .normalize("NFKD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s]/gu, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-const getFirstHeading = (doc) =>
-    [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6")].find((el) =>
-        (el.textContent || "").trim(),
-    );
-
-const removeTitleLikeBlocks = (text, title) => {
-    if (!text || !title) return text;
-
-    const normalizedTitle = normalizeForComparison(title);
-    if (!normalizedTitle) return text;
-
-    return text
-        .split(/\n\s*\n/)
-        .map((block) =>
-            block
-                .replace(/\r\n/g, "\n")
-                .replace(/[ \t]+/g, " ")
-                .replace(/[ \t]*\n[ \t]*/g, "\n")
-                .replace(/\n{3,}/g, "\n\n")
-                .trim(),
-        )
-        .filter((block) => {
-            if (!block) return false;
-            const normalizedBlock = normalizeForComparison(block);
-            if (!normalizedBlock) return true;
-            return (
-                normalizedBlock !== normalizedTitle &&
-                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}`
-            );
-        })
-        .join("\n\n");
-};
-
-const normalizeTextBlock = (text = "") =>
-    text
-        .replace(/\r\n/g, "\n")
-        .replace(/[ \t]+$/gm, "")
-        .replace(/\n[ \t]+/g, "\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .replace(/\n\s+\n/g, "\n\n")
-        .trim();
-
-const cleanBodyText = (doc, title) => {
-    const body = doc.body || doc.documentElement;
-    if (!body) return "";
-
-    const clonedBody = body.cloneNode(true);
-
-    clonedBody
-        .querySelectorAll?.("h1,h2,h3,h4,h5,h6")
-        ?.forEach?.((el) => el.remove());
-
-    return normalizeTextBlock(
-        removeTitleLikeBlocks(stripHTML(clonedBody.innerHTML || ""), title),
-    );
-};
 
 export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
     const zip = await JSZip.loadAsync(file);
@@ -172,10 +61,13 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
         .filter(Boolean)
         .join(", ");
 
-    const description =
-        opfXml.querySelector("description")?.textContent?.trim() ||
-        opfXml.querySelector("dc\\:description")?.textContent?.trim() ||
-        "";
+    const description = collectMetaText(opfXml, [
+        "description",
+        "dc\\:description",
+        "meta[name='description']",
+        "meta[name='comment']",
+        "dc\\:comment",
+    ]);
 
     const manifest = {};
     opfXml.querySelectorAll("manifest item").forEach((i) => {
@@ -202,7 +94,7 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
         const fileTitle =
             firstHeading?.textContent?.trim() || doc.title?.trim() || spine[i];
 
-        const text = cleanBodyText(doc, fileTitle);
+        const text = cleanBodyText(doc, fileTitle, stripHTML);
 
         spineFiles.push({
             index: i,
@@ -214,48 +106,7 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
         });
     }
 
-    let validIndexes = [];
-    let extraFiles = [];
-
-    const spamFile = spineFiles.find((f) => {
-        if (!f.doc) return false;
-        return f.doc.querySelectorAll("a[href]").length > 15;
-    });
-
-    if (spamFile) {
-        const spamLinks = [...spamFile.doc.querySelectorAll("a[href]")].map(
-            (a) => a.getAttribute("href").split("#")[0],
-        );
-
-        spineFiles.forEach((f) => {
-            const ok = spamLinks.some(
-                (h) => h === f.relativePath || f.relativePath.endsWith(h),
-            );
-
-            if (ok) validIndexes.push(f.index);
-        });
-    } else {
-        const total = spineFiles.length;
-        const mid = spineFiles.slice(
-            Math.floor(total * 0.25),
-            Math.ceil(total * 0.75),
-        );
-
-        const filenameTpl = buildTemplate(mid.map((f) => f.relativePath));
-        const titleTpl = buildTemplate(mid.map((f) => f.title));
-
-        const check = (f) => {
-            const s1 = templateScore(f.relativePath, filenameTpl);
-            const s2 = templateScore(f.title, titleTpl);
-            const score = s1 * 0.7 + s2 * 0.3;
-            return score >= 0.75;
-        };
-
-        spineFiles.forEach((f) => {
-            if (check(f)) validIndexes.push(f.index);
-            else extraFiles.push(f);
-        });
-    }
+    const { validIndexes, extraFiles } = selectChapterFiles(spineFiles);
 
     const validChapters = validIndexes
         .sort((a, b) => a - b)
@@ -488,17 +339,18 @@ export const parseEpub = async (file, t) => {
     const creator =
         opfXml.querySelector("creator")?.textContent || t("book.no_author");
 
-    const getMetaContent = (xml, selector) =>
-        xml.querySelector(selector)?.textContent?.trim() || "";
+    const description = collectMetaText(opfXml, [
+        "description",
+        "dc\\:description",
+        "meta[name='description']",
+        "meta[name='comment']",
+        "dc\\:comment",
+    ]);
 
-    const description =
-        getMetaContent(opfXml, "description") ||
-        getMetaContent(opfXml, "dc\\:description") ||
-        getMetaContent(opfXml, "meta[name='description']");
-
-    const comment =
-        getMetaContent(opfXml, "meta[name='comment']") ||
-        getMetaContent(opfXml, "dc\\:comment");
+    const comment = collectMetaText(opfXml, [
+        "meta[name='comment']",
+        "dc\\:comment",
+    ]);
 
     const genre = [...opfXml.querySelectorAll("subject, dc\\:subject")]
         .map((el) => el.textContent?.trim())
@@ -517,42 +369,10 @@ export const parseEpub = async (file, t) => {
     });
 
     const basePath = opfPath.split("/").slice(0, -1).join("/");
-
-    const firstTenLengths = [];
-
-    for (let i = 0; i < Math.min(10, spine.length); i++) {
-        const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
-
-        const file = zip.file(filePath);
-        if (!file) continue;
-
-        const html = await file.async("string");
-        const doc = parser.parseFromString(html, "text/html");
-
-        const text = stripHTML(doc.body?.innerHTML || "");
-
-        firstTenLengths.push({
-            index: i,
-            length: text.length,
-            text,
-        });
-    }
-
-    const avgLength =
-        firstTenLengths.reduce((s, x) => s + x.length, 0) /
-        (firstTenLengths.length || 1);
-
-    const descriptionIndexes = new Set(
-        firstTenLengths
-            .filter((x) => x.length < avgLength * 0.3)
-            .map((x) => x.index),
-    );
-
-    let chaptersTxt = "";
+    const spineFiles = [];
 
     for (let i = 0; i < spine.length; i++) {
         const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
-
         const file = zip.file(filePath);
         if (!file) continue;
 
@@ -565,13 +385,31 @@ export const parseEpub = async (file, t) => {
             doc.title?.trim() ||
             `${t("chapter")} ${i + 1}`;
 
-        const text = cleanBodyText(doc, chapterTitle);
+        const text = cleanBodyText(doc, chapterTitle, stripHTML);
 
-        if (descriptionIndexes.has(i)) continue;
-        if (isFakeChapter(text, chapterTitle, doc)) continue;
-
-        chaptersTxt += `${chapterTitle}\n${text}\n{{SPLITTER}}`;
+        spineFiles.push({
+            index: i,
+            fullPath: filePath,
+            relativePath: spine[i],
+            title: chapterTitle,
+            doc,
+            text,
+        });
     }
+
+    const { validIndexes, descriptionIndexes } = selectChapterFiles(spineFiles);
+    const extraDescription = spineFiles
+        .filter((file) => descriptionIndexes.has(file.index))
+        .map((file) => file.text)
+        .join("\n\n");
+
+    let chaptersTxt = "";
+    validIndexes
+        .sort((a, b) => a - b)
+        .map((index) => spineFiles[index])
+        .forEach((file) => {
+            chaptersTxt += `${file.title}\n${file.text}\n{{SPLITTER}}`;
+        });
 
     return {
         title,
@@ -579,6 +417,7 @@ export const parseEpub = async (file, t) => {
         genre,
         description,
         comment,
+        extraDescription,
         spineLength: spine.length,
         chaptersTxt,
     };

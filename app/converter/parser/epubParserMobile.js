@@ -1,3 +1,10 @@
+import {
+    cleanBodyText,
+    collectMetaText,
+    getFirstHeading,
+    selectChapterFiles,
+} from "./epubChapterPipeline.js";
+
 export const getDisplayWidth = (str = "") => {
     let width = 0;
 
@@ -80,125 +87,14 @@ export const makeInfoBox = (text, maxBoxWidth = 80) => {
     );
 };
 
-const normalizeForComparison = (value = "") =>
-    value
-        .normalize("NFKD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-const getFirstHeading = (doc) =>
-    [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6")].find((el) =>
-        (el.textContent || "").trim(),
-    );
-
-const removeTitleLikeBlocks = (text, title) => {
-    if (!text || !title) return text;
-
-    const normalizedTitle = normalizeForComparison(title);
-    if (!normalizedTitle) return text;
-
-    return text
-        .split(/\n\s*\n/)
-        .map((block) =>
-            block
-                .replace(/\r\n/g, "\n")
-                .replace(/[ \t]+/g, " ")
-                .replace(/[ \t]*\n[ \t]*/g, "\n")
-                .replace(/\n{3,}/g, "\n\n")
-                .trim(),
-        )
-        .filter((block) => {
-            if (!block) return false;
-            const normalizedBlock = normalizeForComparison(block);
-            if (!normalizedBlock) return true;
-            return (
-                normalizedBlock !== normalizedTitle &&
-                normalizedBlock !== `${normalizedTitle} ${normalizedTitle}`
-            );
-        })
-        .join("\n\n");
-};
-
-const normalizeTextBlock = (text = "") =>
-    text
-        .replace(/\r\n/g, "\n")
-        .replace(/[ \t]+$/gm, "")
-        .replace(/\n[ \t]+/g, "\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .replace(/\n\s+\n/g, "\n\n")
-        .trim();
-
-const cleanBodyText = (doc, title) => {
-    const body = doc.body || doc.documentElement;
-    if (!body) return "";
-
-    const clonedBody = body.cloneNode(true);
-
-    clonedBody
-        .querySelectorAll?.("h1,h2,h3,h4,h5,h6")
-        ?.forEach?.((el) => el.remove());
-
-    return normalizeTextBlock(
-        removeTitleLikeBlocks(stripHTML(clonedBody.innerHTML || ""), title),
-    );
-};
-
-const tokenizeStructure = (str = "") =>
-    str
-        .toLowerCase()
-        .trim()
-        .match(/\d+|[a-zA-ZÀ-ỹ]+|[^a-zA-ZÀ-ỹ\d]+/g) || [];
-
-const normalizeTokens = (tokens) =>
-    tokens.map((token) => (/^\d+$/.test(token) ? "[NUMBER]" : token));
-
-const buildTemplate = (samples) => {
-    if (!samples.length) return [];
-
-    const tokenized = samples.map((s) => normalizeTokens(tokenizeStructure(s)));
-    const maxLen = Math.max(...tokenized.map((t) => t.length));
-    const template = [];
-
-    for (let i = 0; i < maxLen; i++) {
-        const values = tokenized.map((t) => t[i]);
-        const first = values[0];
-        const same = values.every((v) => v === first);
-        template.push(same ? first : "[VAR]");
-    }
-
-    return template;
-};
-
-const templateScore = (value, template) => {
-    if (!template.length) return 1;
-
-    const tokens = normalizeTokens(tokenizeStructure(value));
-    const maxLen = Math.max(tokens.length, template.length);
-
-    let matched = 0;
-
-    for (let i = 0; i < maxLen; i++) {
-        if (template[i] === "[VAR]") {
-            matched++;
-            continue;
-        }
-        if (tokens[i] === template[i]) matched++;
-    }
-
-    return matched / maxLen;
-};
-
 const requestUserChoiceAsync = (filename, title) =>
     new Promise((resolve) => {
         setTimeout(() => {
             const choice = prompt(
-                `Ph�t hi?n FILE TH?A c?u tr�c: "${filename}"\nTi�u d?: "${title}"\n\n` +
-                    `Vui l�ng nh?p s? d? x? l�:\n` +
-                    `1. Kh�ng render (Lo?i b? ho�n to�n)\n` +
-                    `2. Render v�o ph?n m� t? (<info>)`,
+                `Phát hiện FILE THỪA cấu trúc: "${filename}"\nTiêu đề: "${title}"\n\n` +
+                    `Vui lòng nhập số để xử lý:\n` +
+                    `1. Không render (Loại bỏ hoàn toàn)\n` +
+                    `2. Render vào phần mô tả (<info>)`,
                 "1",
             );
             resolve(choice || "1");
@@ -347,10 +243,13 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
         .map((el) => el.textContent?.trim())
         .filter(Boolean)
         .join(", ");
-    const description =
-        opfXml.querySelector("description")?.textContent?.trim() ||
-        opfXml.querySelector("dc\\:description")?.textContent?.trim() ||
-        "";
+    const description = collectMetaText(opfXml, [
+        "description",
+        "dc\\:description",
+        "meta[name='description']",
+        "meta[name='comment']",
+        "dc\\:comment",
+    ]);
 
     const manifest = {};
     opfXml.querySelectorAll("manifest item").forEach((i) => {
@@ -375,7 +274,7 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
         const firstHeading = getFirstHeading(doc);
         const fileTitle =
             firstHeading?.textContent?.trim() || doc.title?.trim() || spine[i];
-        const text = cleanBodyText(doc, fileTitle);
+        const text = cleanBodyText(doc, fileTitle, stripHTML);
 
         spineFiles.push({
             index: i,
@@ -387,47 +286,7 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
         });
     }
 
-    let validIndexes = [];
-    let extraFiles = [];
-
-    const spamFile = spineFiles.find((f) => {
-        if (!f.doc) return false;
-        return f.doc.querySelectorAll("a[href]").length > 15;
-    });
-
-    if (spamFile) {
-        const spamLinks = [...spamFile.doc.querySelectorAll("a[href]")].map(
-            (a) => a.getAttribute("href").split("#")[0],
-        );
-
-        spineFiles.forEach((f) => {
-            const ok = spamLinks.some(
-                (h) => h === f.relativePath || f.relativePath.endsWith(h),
-            );
-            if (ok) validIndexes.push(f.index);
-        });
-    } else {
-        const total = spineFiles.length;
-        const mid = spineFiles.slice(
-            Math.floor(total * 0.25),
-            Math.ceil(total * 0.75),
-        );
-
-        const filenameTpl = buildTemplate(mid.map((f) => f.relativePath));
-        const titleTpl = buildTemplate(mid.map((f) => f.title));
-
-        const check = (f) => {
-            const s1 = templateScore(f.relativePath, filenameTpl);
-            const s2 = templateScore(f.title, titleTpl);
-            const score = s1 * 0.7 + s2 * 0.3;
-            return score >= 0.75;
-        };
-
-        spineFiles.forEach((f) => {
-            if (check(f)) validIndexes.push(f.index);
-            else extraFiles.push(f);
-        });
-    }
+    const { validIndexes, extraFiles } = selectChapterFiles(spineFiles);
 
     let extraFilesInfo = "";
     for (const extraFile of extraFiles) {
@@ -489,8 +348,7 @@ export async function parseEpubMobileV2(file, t) {
     const creator =
         opfXml.querySelector("creator")?.textContent || t("book.no_author");
 
-    const getMetaContent = (xml, selector) =>
-        xml.querySelector(selector)?.textContent?.trim() || "";
+    const getMetaContent = (xml, selector) => collectMetaText(xml, selector);
 
     const description =
         getMetaContent(opfXml, "description") ||
@@ -516,49 +374,8 @@ export async function parseEpubMobileV2(file, t) {
         if (manifestItems[idref]) spine.push(manifestItems[idref]);
     });
 
-    const isFakeChapter = (text, chapterTitle, doc) => {
-        if (!text || text.length < 200) return true;
-
-        const normalized = text.toLowerCase();
-        const tocSignals = ["table of contents", "m?c l?c", "contents"];
-        const tocHits = tocSignals.filter((s) => normalized.includes(s)).length;
-        if (tocHits >= 2 && text.length < 3000) return true;
-
-        const linkCount = doc.querySelectorAll("a").length;
-        if (linkCount > 10) return true;
-        if (linkCount / (text.length || 1) > 0.02) return true;
-        return false;
-    };
-
-    const firstTenLengths = [];
-    for (let i = 0; i < Math.min(10, spine.length); i++) {
-        const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
-        const fileObj = zip.file(filePath);
-        if (!fileObj) continue;
-
-        const html = await fileObj.async("string");
-        const doc = parser.parseFromString(html, "text/html");
-        const text = stripHTML(doc.body?.innerHTML || "");
-        firstTenLengths.push({ index: i, length: text.length, text });
-    }
-
-    const avgLength =
-        firstTenLengths.reduce((sum, x) => sum + x.length, 0) /
-        (firstTenLengths.length || 1);
-    const descriptionIndexes = new Set(
-        firstTenLengths
-            .filter((x) => x.length < avgLength * 0.3)
-            .map((x) => x.index),
-    );
-    const extraDescription = firstTenLengths
-        .filter((x) => descriptionIndexes.has(x.index))
-        .map((x) => x.text)
-        .join("\n\n");
-
-    let chaptersTxt = "";
+    const spineFiles = [];
     for (let i = 0; i < spine.length; i++) {
-        if (descriptionIndexes.has(i)) continue;
-
         const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
         const fileObj = zip.file(filePath);
         if (!fileObj) continue;
@@ -574,19 +391,31 @@ export async function parseEpubMobileV2(file, t) {
             doc.title?.trim() ||
             `${t("chapter")} ${i + 1}`;
 
-        doc.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => el.remove());
+        const text = cleanBodyText(doc, chapterTitle, stripHTML);
 
-        const text = stripHTML(doc.body?.innerHTML || "")
-            .split("\n")
-            .filter(
-                (line) =>
-                    line.trim().toLowerCase() !== chapterTitle.toLowerCase(),
-            )
-            .join("\n");
-
-        if (isFakeChapter(text, chapterTitle, doc)) continue;
-        chaptersTxt += `${chapterTitle}\n${text}\n{{SPLITTER}}`;
+        spineFiles.push({
+            index: i,
+            fullPath: filePath,
+            relativePath: spine[i],
+            title: chapterTitle,
+            doc,
+            text,
+        });
     }
+
+    const { validIndexes, descriptionIndexes } = selectChapterFiles(spineFiles);
+    const extraDescription = spineFiles
+        .filter((file) => descriptionIndexes.has(file.index))
+        .map((file) => file.text)
+        .join("\n\n");
+
+    let chaptersTxt = "";
+    validIndexes
+        .sort((a, b) => a - b)
+        .map((index) => spineFiles[index])
+        .forEach((file) => {
+            chaptersTxt += `${file.title}\n${file.text}\n{{SPLITTER}}`;
+        });
 
     return {
         title,
