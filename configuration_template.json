@@ -30,5 +30,8 @@
     "generate_in_ebook": {
         "comment": "format: `(increase)`: `available value:toc,cover,desc`",
         "1": ""
-    }
+    },
+    "parsing_type":"single|br-single|multiple|br-multiple",
+    "parent_tag":"pre|p|h1-h6|blockquote|span",
+    "child_tag":"pre|p|h1-h6|blockquote|span",
 }
