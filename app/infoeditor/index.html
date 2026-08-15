@@ -188,13 +188,11 @@
             let isIframeMode = false;
             let iframeBookId = null;
 
-            // Đọc cấu hình từ URL
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get("mode") === "iframe") {
                 isIframeMode = true;
                 iframeBookId = urlParams.get("bookId");
 
-                // Ẩn/Hiện thành phần phù hợp môi trường nhúng
                 document.getElementById("homeBtn").classList.add("hidden");
                 document.getElementById("uploadCard").classList.add("hidden");
                 document
@@ -219,7 +217,6 @@
                 .getElementById("exportBulkBtn")
                 .addEventListener("click", exportAllEpubs);
 
-            // Tự động nạp dữ liệu từ IndexedDB nếu chạy trong Iframe của thư viện
             if (isIframeMode && iframeBookId) {
                 loadEpubFromIndexedDB(iframeBookId);
             }
@@ -246,7 +243,6 @@
                         "epub_single_mode",
                     );
 
-                    // Giữ lại bản ghi gốc để cập nhật đè
                     epubData.dbRecord = bookData;
                     epubFilesList.push(epubData);
 
@@ -258,8 +254,6 @@
                     document
                         .getElementById("exportBulkBtn")
                         .classList.remove("hidden");
-
-                    // Chuyển chữ nút lưu cho khớp ngữ cảnh
                     document.getElementById("exportBulkBtn").innerText =
                         "CẬP NHẬT VÀO THƯ VIỆN";
                 } catch (err) {
@@ -268,7 +262,6 @@
                 }
             }
 
-            // Mở kết nối database dùng chung của Thư viện
             function openLibraryDB() {
                 return new Promise((resolve, reject) => {
                     const request = indexedDB.open("EpubReaderLocalDB", 2);
@@ -381,7 +374,6 @@
                     opfDoc.querySelector("language, dc\\:language")
                         ?.textContent || "";
 
-                // CẢI TIẾN: Hỗ trợ đọc gộp nhiều thẻ dc:description phân tách bằng ký tự xuống dòng
                 const descriptionNodes = opfDoc.querySelectorAll(
                     "description, dc\\:description",
                 );
@@ -678,7 +670,6 @@
                     let zip = epub.zipInstance;
                     let opfDoc = epub.opfDoc;
 
-                    // Ghi đè thông tin Title, Creator, Language
                     const titleNode = opfDoc.querySelector("title, dc\\:title");
                     if (titleNode) titleNode.textContent = updatedTitle;
 
@@ -692,7 +683,6 @@
                     );
                     if (langNode) langNode.textContent = updatedLang;
 
-                    // CẢI TIẾN: Xóa hết thẻ dc:description cũ và tạo danh sách thẻ mới dựa vào số dòng xuống
                     Array.from(
                         opfDoc.querySelectorAll(
                             "description, dc\\:description",
@@ -713,7 +703,6 @@
                         });
                     }
 
-                    // Đồng bộ Thể loại (dc:subject)
                     Array.from(
                         opfDoc.querySelectorAll("subject, dc\\:subject"),
                     ).forEach((el) => el.remove());
@@ -723,7 +712,6 @@
                         metadataNode.appendChild(subNode);
                     });
 
-                    // Xử lý ảnh bìa mới nếu có
                     if (epub.newCoverBuffer && updatedCoverHref) {
                         zip.file(updatedCoverHref, epub.newCoverBuffer);
 
@@ -781,7 +769,6 @@
                         }
                     }
 
-                    // Đóng gói lại file OPF mới vào ZIP
                     const serializer = new XMLSerializer();
                     const updatedOpfText = serializer.serializeToString(opfDoc);
                     zip.file(epub.opfPath, updatedOpfText);
@@ -792,26 +779,22 @@
                             mimeType: "application/epub+zip",
                         });
 
-                        // PHÂN TÁCH LUỒNG XỬ LÝ THEO MÔI TRƯỜNG NHÚNG
                         if (isIframeMode && db) {
-                            // Cập nhật trực tiếp đè vào IndexedDB thay vì sinh lệnh download
                             const updatedRecord = {
                                 ...epub.dbRecord,
                                 title: updatedTitle,
                                 author: updatedAuthor,
                                 genre: updatedSubjects[0] || "Unknown",
                                 fileBlob: contentBlob,
-                                addedAt: Date.now(), // Cập nhật thời điểm sửa đổi
+                                addedAt: Date.now(),
                             };
 
-                            // Nếu có cập nhật ảnh bìa mới, xuất blob ảnh bìa đó lưu ngoài để Library render nhanh
                             if (epub.newCoverFileObj) {
                                 updatedRecord.coverBlob = epub.newCoverFileObj;
                             }
 
                             await saveBookRecordToDB(db, updatedRecord);
                         } else {
-                            // Chế độ chạy độc lập mặc định: Tải tệp xuống trình duyệt
                             const downloadAnchor = document.createElement("a");
                             downloadAnchor.href =
                                 URL.createObjectURL(contentBlob);
@@ -835,7 +818,6 @@
 
                 statusText.innerText = "Hoàn thành!";
 
-                // Sau khi lưu thành công ở chế độ Iframe, tự động gửi message để trang mẹ đóng modal
                 if (isIframeMode) {
                     setTimeout(() => {
                         window.parent.postMessage(

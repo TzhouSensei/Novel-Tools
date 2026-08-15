@@ -86,15 +86,31 @@ async function updateLastRead(bookId) {
 
         req.onsuccess = () => {
             const book = req.result;
-            if (!book) return resolve();
+
+            if (!book) {
+                resolve();
+                return;
+            }
 
             book.lastReadAt = Date.now();
 
             store.put(book);
+        };
+
+        req.onerror = () => {
+            reject(req.error);
+        };
+        tx.oncomplete = () => {
             resolve();
         };
 
-        req.onerror = () => reject(req.error);
+        tx.onerror = () => {
+            reject(tx.error);
+        };
+
+        tx.onabort = () => {
+            reject(tx.error || new Error("IndexedDB transaction aborted"));
+        };
     });
 }
 async function removeFromRecent(bookId) {
@@ -378,8 +394,17 @@ async function askDeleteBook(id) {
     renderRecentBooks();
     renderLibraryGrid();
 }
-function openBookInReader(bookId) {
-    updateLastRead(bookId);
+async function openBookInReader(bookId) {
+    console.log("[RECENT] opening:", bookId);
+
+    try {
+        await updateLastRead(bookId);
+
+        console.log("[RECENT] saved successfully:", bookId);
+    } catch (err) {
+        console.error("[RECENT] save failed:", err);
+    }
+
     localStorage.setItem("selected_local_book_id", bookId);
     window.location.href = "ereader.html";
 }
@@ -508,7 +533,6 @@ function showContextMenu(x, y, bookId) {
 }
 
 function attachContextMenuEvents(cardElement, bookId) {
-    // Xử lý PC: Click Chuột Phải
     cardElement.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -516,7 +540,6 @@ function attachContextMenuEvents(cardElement, bookId) {
     });
 
     cardElement.addEventListener("pointerdown", (e) => {
-        // Chỉ xử lý cảm ứng khi giữ
         if (e.pointerType !== "touch") return;
 
         longTouchTimer = setTimeout(() => {

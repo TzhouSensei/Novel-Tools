@@ -2,85 +2,58 @@
     "app.title": "NovelTool by TzhouSensei",
     "home.title": "⚡ TOOL HUB by TzhouSensei",
     "home.subtitle": "Choose the tool you want to use",
-
-    "tool.reader.title": "Reader",
-    "tool.reader.desc": "Read novels",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "New generation MDT Library & Reader",
     "tool.editor.title": "Editor",
     "tool.editor.desc": "Create/Edit stories",
-
     "tool.converter.title": "Converter",
     "tool.converter.desc": "Convert EPUB -> TXT",
-
     "converter.title": "Converter EPUB ➜ TXT",
     "lang.option": "Language",
-
     "mdt.reader": "Reader",
     "mdt.editor": "Editor",
-
     "appearance.opt": "🎨 Appearance",
     "new.novel": "➕ Create new novel",
-
     "reset.novel": "🔄 Reset",
     "appearance.opt.default": "Default",
-
     "appearance.opt.ruby": "Ruby Blue",
     "appearance.opt.navajo": "Navajo",
-
     "appearance.khaki": "Khaki",
     "appearance.opt.dark": "🌙 Dark",
-
     "appearance.opt.deep": "🕳 Deep",
     "appearance.opt.anias": "🍂 Anias",
-
     "import.txt.notify": "Import a .txt file",
     "subtitle.editor": "📖 EDITOR",
     "subtitle.reader": "📖 READER",
     "footer.mdt": "Story Reader by TzhouSensei",
-
     "note.1": "When importing a .txt file, the content must follow this structure:",
-
     "note.2": "1. STRUCTURE TAGS \n <>...</> → Title (novel title)\n <info> ... </info> → Novel information (author, description, genre, etc.)\n[ ... ] → Character list\n<list> ... </list> → Chapter list\n{ ... } → Chapter content\n • → System checker / marker (do not remove, chapter content must be inside this marker)",
-
     "note.3": "2. RULES (MANDATORY)\nDo not edit, delete, or modify any MDT tags.\nAll file content must keep the original structure.\nSystem tags are required.\nIf format is incorrect, the tool may fail to read the content.",
-
     "note.4": "3. FILE REQUIREMENT\nThe tool works completely offline\nUsers must prepare a properly formatted .txt file themselves\nThe tool only supports files converted using MDT standard format",
-
     "note.5": "4. DISCLAIMER\nIf the file breaks due to incorrect formatting, the tool is not responsible\nThe tool does not guarantee reading files from non-MDT sources\nOnly files created by the tool or properly designed MDT-compliant files are recommended",
-
     "noscript.tools": "Your browser needs JavaScript enabled to use this feature.",
     "download.txt": "Download TXT",
-
     "opf_not_found": "OPF file not found",
     "book.no_author": "Author not found",
-
     "book.no_title": "Title not found",
     "chapter": "Chapter",
-
     "author": "Author",
     "genre": "Genre",
-
     "chapter.count": "Chapter Counted",
     "description": "Description",
-
     "charlist": "Character list",
     "edit.opt.replace": "Replace",
-
     "edit.opt.match.all": "Match all",
     "edit.opt.match.around": "Match around",
-
     "edit.opt.regex": "Regular Expression",
     "edit.opt.prev": "Previous",
-
     "edit.opt.next": "Next",
     "edit.opt.replace.all": "Replace all",
-
     "edit.opt.cancel": "Cancel",
     "edit.title": "Find & Replace",
-
     "download.all": "⬇ Download all",
     "download.changed": "⬇ Changed only",
-
+    "download.zip": "📦 Download all ZIP (XHTML)",
     "export.epub": "📚 Export EPUB",
     "epub": {
         "generator_title": "EPUB Generator",
@@ -128,7 +101,6 @@
     },
     "tool.epub.reader": "EPUB Reader",
     "tool.epub.reader.desc": "Read EPUB with a clean and intuitive interface",
-
     "ereader.import_epub": "Import EPUB",
     "ereader.no_book_loaded": "No book loaded",
     "ereader.toc": "Table of Contents",
@@ -167,7 +139,6 @@
     "ereader.chapter": "Chapter",
     "ereader.page": "Page",
     "ereader.tts_not_supported": "Your browser does not support TTS.",
-
     "library.page_title": "Local ePub Library",
     "library.heading": "My Bookshelf",
     "library.btn_add": "+ Add new EPUB book",
@@ -235,7 +206,13 @@
         "placeholder_display_name": "Display name",
         "placeholder_genre_name": "Genre name",
         "placeholder_desc_content": "Introduction content",
-        "placeholder_change_key": "This key can be changed"
+        "placeholder_change_key": "This key can be changed",
+        "expand_parsing": "Expand Parsing",
+        "parsing_type": "Parsing Type:",
+        "parent_tag": "Parent Tag:",
+        "child_tag": "Child Tag:",
+        "verified_found": "✓ Verified (.verified)",
+        "verified_not_found": "✗ Not verified (no .verified)"
     },
     "epub_bulk": {
         "btn_home": "⬅ Home",
@@ -283,5 +260,79 @@
         "btn_find": "Search (Find)",
         "btn_export": "Export Configuration Data (Export)",
         "btn_import": "Import Configuration Data (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDT Library",
+            "search": "🔍 Search stories...",
+            "import": "➕ Import story",
+            "create": {
+                "title": "Create new story",
+                "title.label": "Title:",
+                "desc.label": "Description:",
+                "desc.placeholder": "Enter story description...",
+                "char.label": "Character list (one per line):",
+                "char.placeholder": "Enter character list...",
+                "submit": "Create",
+                "need_title": "Please enter a title!"
+            },
+            "read": "Read",
+            "edit": "Edit",
+            "chapters": "Chapters",
+            "last_read": "Read to",
+            "empty": "Library is empty. Import a TXT file or create a new story!",
+            "deleted": "Story deleted!",
+            "importing": "Importing: ",
+            "imported": "Imported: ",
+            "import_error": "Error importing: ",
+            "sort": {
+                "recent": "Most recent",
+                "title": "By title",
+                "created": "Newest"
+            }
+        },
+        "reader": {
+            "title": "📖 Read story",
+            "chapter_list": "📑 Chapter list",
+            "read": "Read",
+            "unread": "Unread",
+            "book_not_found": "Story not found!",
+            "no_chapters": "No chapters yet.",
+            "chapter_not_found": "Chapter not found!"
+        },
+        "editor": {
+            "title": "✏️ Edit story",
+            "tab": {
+                "metadata": "📋 Metadata",
+                "toc": "📑 Table of contents",
+                "other": "⚙️ Other"
+            },
+            "meta": {
+                "title": "Title:",
+                "description": "Description:",
+                "characters": "Character list (one per line):",
+                "save": "💾 Save info",
+                "saved": "Story info saved!"
+            },
+            "toc": {
+                "title": "Chapter list",
+                "add": "➕ Add chapter"
+            },
+            "other": {
+                "preview": "👁️ Preview story (Reader)",
+                "downloaded": "TXT file downloaded!",
+                "zip_downloaded": "ZIP file downloaded!",
+                "zip_no_lib": "JSZip library not loaded!",
+                "reset_confirm": "Reset this entire story?"
+            },
+            "modal": {
+                "title": "Edit chapter",
+                "close": "Close",
+                "save": "💾 Save",
+                "saved": "Chapter saved!",
+                "need_title": "Please enter a chapter title!"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 Dark Neon"
 }

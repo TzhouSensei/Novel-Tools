@@ -2,6 +2,7 @@ import {
     cleanBodyText,
     collectMetaText,
     getFirstHeading,
+    resolveZipPath,
     selectChapterFiles,
 } from "./epubChapterPipeline.js";
 
@@ -201,13 +202,17 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
 
     const loadCharacters = async () => {
         const allFiles = Object.keys(zip.files);
-        const targetPaths = allFiles.filter((path) =>
-            /(^|\/)(characters?|character)\.xhtml$/i.test(path),
-        );
+        const targetPaths = allFiles.filter((path) => {
+            const normalizedPath = path.replace(/\\/g, "/");
+            return /(^|\/)(characters?|character)([^/]*?)\.xhtml$/i.test(
+                normalizedPath,
+            );
+        });
 
         if (!targetPaths.length) return [];
 
-        const fileData = zip.file(targetPaths[0]);
+        const resolvedPath = resolveZipPath(zip, targetPaths[0]);
+        const fileData = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileData) return [];
 
         const html = await fileData.async("string");
@@ -231,7 +236,8 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
     if (!container) throw new Error("OPF not found");
 
     const opfPath = container.match(/full-path="([^"]+)"/)?.[1];
-    const opfText = await zip.file(opfPath).async("string");
+    const resolvedOpfPath = resolveZipPath(zip, opfPath);
+    const opfText = await zip.file(resolvedOpfPath || opfPath).async("string");
     const opfXml = parser.parseFromString(opfText, "application/xml");
 
     const basePath = opfPath.split("/").slice(0, -1).join("/");
@@ -265,7 +271,8 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
     const spineFiles = [];
     for (let i = 0; i < spine.length; i++) {
         const fullPath = basePath ? `${basePath}/${spine[i]}` : spine[i];
-        const fileData = zip.file(fullPath);
+        const resolvedPath = resolveZipPath(zip, fullPath);
+        const fileData = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileData) continue;
 
         const html = await fileData.async("string");
@@ -308,9 +315,9 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
         }
     }
 
-    const validChapters = validIndexes
-        .sort((a, b) => a - b)
-        .map((i) => spineFiles[i])
+    const validChapters = spineFiles
+        .filter((file) => validIndexes.includes(file.index))
+        .sort((a, b) => a.index - b.index)
         .map((f) => ({
             title: f.title,
             text: f.text,
@@ -339,7 +346,8 @@ export async function parseEpubMobileV2(file, t) {
 
     const opfPath = opfPathMatch[1];
     const basePath = opfPath.split("/").slice(0, -1).join("/");
-    const opfText = await zip.file(opfPath).async("string");
+    const resolvedOpfPath = resolveZipPath(zip, opfPath);
+    const opfText = await zip.file(resolvedOpfPath || opfPath).async("string");
     const parser = new DOMParser();
     const opfXml = parser.parseFromString(opfText, "application/xml");
 
@@ -377,7 +385,8 @@ export async function parseEpubMobileV2(file, t) {
     const spineFiles = [];
     for (let i = 0; i < spine.length; i++) {
         const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
-        const fileObj = zip.file(filePath);
+        const resolvedPath = resolveZipPath(zip, filePath);
+        const fileObj = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileObj) continue;
 
         const html = await fileObj.async("string");
@@ -410,9 +419,9 @@ export async function parseEpubMobileV2(file, t) {
         .join("\n\n");
 
     let chaptersTxt = "";
-    validIndexes
-        .sort((a, b) => a - b)
-        .map((index) => spineFiles[index])
+    spineFiles
+        .filter((file) => validIndexes.includes(file.index))
+        .sort((a, b) => a.index - b.index)
         .forEach((file) => {
             chaptersTxt += `${file.title}\n${file.text}\n{{SPLITTER}}`;
         });

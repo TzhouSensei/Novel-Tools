@@ -121,7 +121,269 @@ function isTocNameValid(tocNames) {
     return keys.length > 0;
 }
 
-function cleanAndOptimizeHtml(rawHtml, title, lang = "vi") {
+function hasNoLineBreaks(text) {
+    if (!text) return false;
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = text;
+    const normalized = tempDiv.textContent
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/\r\n/g, "\n")
+        .replace(/\n{2,}/g, "\n");
+
+    return !normalized.includes("\n");
+}
+
+function getParentTagName(parentTag) {
+    if (parentTag === undefined || parentTag === null) return "p";
+    const normalized = String(parentTag).trim().toLowerCase();
+    if (!normalized) return "";
+    if (normalized === "none") return "";
+    if (/^h[1-6]$/.test(normalized)) return normalized;
+    return normalized;
+}
+
+function isAlreadyWrapped(node, parentTag, childTag) {
+    if (!node || !childTag) return false;
+    const kids = Array.from(node.children);
+    if (kids.length === 0) return false;
+
+    let parentEl = null;
+    if (parentTag) {
+        if (node.tagName.toLowerCase() === parentTag) {
+            parentEl = node;
+        } else if (
+            kids.length === 1 &&
+            kids[0].tagName.toLowerCase() === parentTag
+        ) {
+            parentEl = kids[0];
+        }
+    } else {
+        if (kids.length === 1) {
+            parentEl = kids[0];
+        }
+    }
+    if (!parentEl) return false;
+
+    const parentKids = Array.from(parentEl.children);
+    return (
+        parentKids.length > 0 &&
+        parentKids.every((k) => k.tagName.toLowerCase() === childTag)
+    );
+}
+
+function extractPlainLines(htmlStr) {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlStr;
+    let container = tempDiv;
+
+    let innerHtml = container.innerHTML;
+    innerHtml = innerHtml
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(
+            /<\/(?:p|div|pre|h[1-6]|blockquote|section|article|li)>/gi,
+            "\n",
+        )
+        .replace(/<[^>]+>/g, "");
+
+    return innerHtml
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+}
+
+function groupSentencesForBr(lines, parsingType) {
+    const grouped = [];
+    const isBrSingle = parsingType === "br-single";
+
+    if (isBrSingle) {
+        let currentGroup = "";
+        lines.forEach((line) => {
+            const sentences = line.match(/[^.!?。！？]+[.!?。！？]*/g) || [
+                line,
+            ];
+            let buffer = [];
+
+            sentences.forEach((sentence) => {
+                sentence = sentence.trim();
+                if (!sentence) return;
+
+                if (sentence.length > 30) {
+                    if (buffer.length > 0) {
+                        const joined = buffer.join(" ");
+                        if (joined.trim())
+                            grouped.push({
+                                type: "br",
+                                content: joined.trim(),
+                            });
+                        buffer = [];
+                    }
+                    grouped.push({ type: "br", content: sentence });
+                } else {
+                    buffer.push(sentence);
+                    if (buffer.length >= 2) {
+                        const joined = buffer.join(" ");
+                        const total = buffer
+                            .map((s) => s.length)
+                            .reduce((a, b) => a + b, 0);
+                        if (total <= 20 || buffer.length === 2) {
+                            grouped.push({
+                                type: "br",
+                                content: joined.trim(),
+                            });
+                            buffer = [];
+                        }
+                    }
+                }
+            });
+
+            if (buffer.length > 0) {
+                const joined = buffer.join(" ");
+                if (joined.trim())
+                    grouped.push({ type: "br", content: joined.trim() });
+            }
+        });
+    } else {
+        lines.forEach((line) => {
+            grouped.push({ type: "br", content: line.trim() });
+        });
+    }
+
+    return grouped;
+}
+
+function applyParsing(rawHtml, parseConfig = {}) {
+    const parsingType = parseConfig.parsing_type || "single";
+
+    const parentRaw = parseConfig.parent_tag;
+    const parentIsNone =
+        parentRaw !== undefined && parentRaw !== null
+            ? String(parentRaw).trim().toLowerCase() === "none"
+            : false;
+    const parentTag = parentIsNone ? "" : getParentTagName(parentRaw) || "div";
+    const childTag = getParentTagName(parseConfig.child_tag) || "p";
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(rawHtml, "text/html");
+
+    const scripts = doc.querySelectorAll("script");
+    scripts.forEach((el) => el.remove());
+    const buttons = doc.querySelectorAll("button");
+    buttons.forEach((el) => el.remove());
+
+    let bestNode = doc.body;
+    let maxLen = 0;
+
+    function walk(node) {
+        if (!node) return;
+        if (
+            ["SCRIPT", "STYLE", "BUTTON", "NOSCRIPT", "NAV"].includes(
+                node.tagName,
+            )
+        )
+            return;
+
+        const totalLen = node.textContent ? node.textContent.trim().length : 0;
+        if (totalLen > maxLen) {
+            maxLen = totalLen;
+            bestNode = node;
+        }
+
+        for (let i = 0; i < node.children.length; i++) {
+            walk(node.children[i]);
+        }
+    }
+
+    walk(doc.body);
+
+    const headingRegex = /<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi;
+    let titleHtml = "";
+    let bodyHtml = bestNode.innerHTML;
+    const allHeadings = bodyHtml.match(headingRegex) || [];
+    if (allHeadings.length > 0) {
+        titleHtml = allHeadings[0];
+        bodyHtml = bodyHtml.replace(headingRegex, "");
+    }
+
+    const noLineBreaks = hasNoLineBreaks(bodyHtml);
+
+    let finalBody = "";
+
+    if (parsingType === "single" || parsingType === "br-single") {
+        let contentLines = [];
+
+        if (parsingType === "br-single" && noLineBreaks) {
+            const rawLines = extractPlainLines(bodyHtml);
+            const groups = groupSentencesForBr(rawLines, "br-single");
+            contentLines = groups.map((g) => escapeText(g.content));
+        } else {
+            const rawLines = extractPlainLines(bodyHtml);
+            contentLines = rawLines.map((line) => escapeText(line));
+        }
+
+        const inner =
+            parsingType === "br-single"
+                ? contentLines.join("<br/>\n")
+                : contentLines.join("\n");
+
+        if (parentTag) {
+            finalBody = `<${parentTag} style="text-indent: 2em; line-height: 1.6; margin: 0.5em 0;">\n${inner}\n</${parentTag}>`;
+        } else {
+            finalBody = inner;
+        }
+    } else if (parsingType === "multiple" || parsingType === "br-multiple") {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = bodyHtml;
+        const alreadyWrapped = isAlreadyWrapped(tempDiv, parentTag, childTag);
+
+        if (alreadyWrapped) {
+            finalBody = tempDiv.innerHTML;
+        } else {
+            const lines = extractPlainLines(bodyHtml);
+            let children = "";
+
+            if (parsingType === "br-multiple") {
+                const groups = groupSentencesForBr(lines, "br-multiple");
+                children = groups
+                    .map(
+                        (g) =>
+                            `<${childTag} style="text-indent: 2em; line-height: 1.6; margin: 0.5em 0;">${escapeText(g.content)}</${childTag}>`,
+                    )
+                    .join("<br/>");
+            } else {
+                children = lines
+                    .map(
+                        (line) =>
+                            `<${childTag} style="text-indent: 2em; line-height: 1.6; margin: 0.5em 0;">${escapeText(line)}</${childTag}>`,
+                    )
+                    .join("");
+            }
+
+            if (parentTag) {
+                finalBody = `<${parentTag}>${children}</${parentTag}>`;
+            } else {
+                finalBody = children;
+            }
+        }
+    }
+
+    if (titleHtml) {
+        finalBody = titleHtml + "\n" + finalBody;
+    }
+
+    return finalBody;
+}
+
+function escapeText(text) {
+    const A = () => String.fromCharCode(38);
+    return String(text)
+        .replace(/&/g, () => A() + "amp;")
+        .replace(/</g, () => A() + "lt;")
+        .replace(/>/g, () => A() + "gt;")
+        .replace(/"/g, () => A() + "quot;");
+}
+
+function cleanAndOptimizeHtml(rawHtml, title, lang = "vi", parseConfig = null) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(rawHtml, "text/html");
 
@@ -156,75 +418,82 @@ function cleanAndOptimizeHtml(rawHtml, title, lang = "vi") {
     walk(doc.body);
 
     let finalBodyContent = "";
-    const hasBlockElements = bestNode.querySelector(
-        "p, div, pre, li, table, h1, h2, h3, h4, h5, h6",
-    );
 
-    if (!hasBlockElements) {
-        let htmlStr = bestNode.innerHTML;
-        if (htmlStr.includes("<br") || htmlStr.includes("<BR")) {
-            finalBodyContent = htmlStr
-                .split(/<br\s*\/?>/i)
-                .map(
-                    (line) =>
-                        `<p style="text-indent: 2em; margin: 0.5em 0;">${line.trim()}</p>`,
-                )
-                .join("");
-        } else {
-            finalBodyContent = bestNode.textContent
-                .split("\n")
-                .map((line) => line.trim())
-                .filter((line) => line.length > 0)
-                .map(
-                    (line) =>
-                        `<p style="text-indent: 2em; margin: 0.5em 0;">${line}</p>`,
-                )
-                .join("");
-        }
+    if (parseConfig && (parseConfig.parsing_type || "").trim() !== "") {
+        finalBodyContent = applyParsing(rawHtml, parseConfig);
     } else {
-        const inlineHybridRegex =
-            /((?:<[a-z0-9]+[^>]*>.*?<\/[a-z0-9]+>\s*)+)(<br\s*\/?>|$)/gi;
+        const hasBlockElements = bestNode.querySelector(
+            "p, div, pre, li, table, h1, h2, h3, h4, h5, h6",
+        );
 
-        if (inlineHybridRegex.test(bestNode.innerHTML)) {
-            let innerContent = bestNode.innerHTML;
-            let blocks = innerContent.split(/<br\s*\/?>/i);
-            let processedLines = [];
+        if (!hasBlockElements) {
+            let htmlStr = bestNode.innerHTML;
+            if (htmlStr.includes("<br") || htmlStr.includes("<BR")) {
+                finalBodyContent = htmlStr
+                    .split(/<br\s*\/?>/i)
+                    .map(
+                        (line) =>
+                            `<p style="text-indent: 2em; margin: 0.5em 0;">${line.trim()}</p>`,
+                    )
+                    .join("");
+            } else {
+                finalBodyContent = bestNode.textContent
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map(
+                        (line) =>
+                            `<p style="text-indent: 2em; margin: 0.5em 0;">${line}</p>`,
+                    )
+                    .join("");
+            }
+        } else {
+            const inlineHybridRegex =
+                /((?:<[a-z0-9]+[^>]*>.*?<\/[a-z0-9]+>\s*)+)(<br\s*\/?>|$)/gi;
 
-            blocks.forEach((block) => {
-                let tempDiv = document.createElement("div");
-                tempDiv.innerHTML = block;
-                let text = tempDiv.textContent.trim();
-                if (!text) return;
+            if (inlineHybridRegex.test(bestNode.innerHTML)) {
+                let innerContent = bestNode.innerHTML;
+                let blocks = innerContent.split(/<br\s*\/?>/i);
+                let processedLines = [];
 
-                const hasPunctuation = /[.\s?!;"）»』”。！？…]$/g.test(text);
+                blocks.forEach((block) => {
+                    let tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = block;
+                    let text = tempDiv.textContent.trim();
+                    if (!text) return;
 
-                if (!hasPunctuation) {
-                    processedLines.push(
-                        `<p style="text-indent: 2em; margin: 0.5em 0;">${text}</p>`,
+                    const hasPunctuation = /[.\s?!;"）»』」。！？…]$/g.test(
+                        text,
                     );
-                } else {
-                    let sentences = text.match(
-                        /[^.!?。！？]+[.!?。！？]*/g,
-                    ) || [text];
-                    let currentPair = [];
 
-                    for (let i = 0; i < sentences.length; i++) {
-                        currentPair.push(sentences[i].trim());
-                        if (
-                            currentPair.length === 2 ||
-                            i === sentences.length - 1
-                        ) {
-                            processedLines.push(
-                                `<p style="text-indent: 2em; margin: 0.5em 0;">${currentPair.join(" ")}</p>`,
-                            );
-                            currentPair = [];
+                    if (!hasPunctuation) {
+                        processedLines.push(
+                            `<p style="text-indent: 2em; margin: 0.5em 0;">${text}</p>`,
+                        );
+                    } else {
+                        let sentences = text.match(
+                            /[^.!?。！？]+[.!?。！？]*/g,
+                        ) || [text];
+                        let currentPair = [];
+
+                        for (let i = 0; i < sentences.length; i++) {
+                            currentPair.push(sentences[i].trim());
+                            if (
+                                currentPair.length === 2 ||
+                                i === sentences.length - 1
+                            ) {
+                                processedLines.push(
+                                    `<p style="text-indent: 2em; margin: 0.5em 0;">${currentPair.join(" ")}</p>`,
+                                );
+                                currentPair = [];
+                            }
                         }
                     }
-                }
-            });
-            finalBodyContent = processedLines.join("");
-        } else {
-            finalBodyContent = bestNode.innerHTML;
+                });
+                finalBodyContent = processedLines.join("");
+            } else {
+                finalBodyContent = bestNode.innerHTML;
+            }
         }
     }
 
@@ -236,9 +505,7 @@ function cleanAndOptimizeHtml(rawHtml, title, lang = "vi") {
     <meta charset="utf-8" />
 </head>
 <body>
-    <section>
         ${finalBodyContent}
-    </section>
 </body>
 </html>`;
 
@@ -284,7 +551,9 @@ async function processConfiguration(cfg) {
     parsedChapters = [];
     const allFiles = Object.keys(zipData.files);
     const xhtmlFiles = allFiles.filter(
-        (f) => f.endsWith(".xhtml") || f.endsWith(".html"),
+        (f) =>
+            (f.endsWith(".xhtml") || f.endsWith(".html")) &&
+            !f.endsWith(".verified"),
     );
     const tocNames = cfg.toc_name || {};
     const lang = cfg.language || "vi";
@@ -335,10 +604,13 @@ async function processConfiguration(cfg) {
                                     : `Chương ${customDisplayId}_${chKey}`);
                         }
 
+                        const parseConfig =
+                            cfg.expand_parsing && cfg.parse ? cfg.parse : null;
                         const optimizedContent = cleanAndOptimizeHtml(
                             content,
                             title,
                             lang,
+                            parseConfig,
                         );
 
                         parsedChapters.push({
@@ -380,7 +652,14 @@ async function processConfiguration(cfg) {
                     : `Chương ${virtualId}`;
             }
 
-            const optimizedContent = cleanAndOptimizeHtml(content, title, lang);
+            const parseConfig =
+                cfg.expand_parsing && cfg.parse ? cfg.parse : null;
+            const optimizedContent = cleanAndOptimizeHtml(
+                content,
+                title,
+                lang,
+                parseConfig,
+            );
 
             parsedChapters.push({
                 id: `ch_${virtualId}`,

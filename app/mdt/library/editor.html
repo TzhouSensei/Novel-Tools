@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="mdt.editor.title">Chỉnh sửa truyện</title>
+
+        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
+        <link href="shared/theme.css" rel="stylesheet" />
+        <style>
+            :root {
+                --primary: #4a90e2;
+                --bg: #f5f7fa;
+                --card-bg: #ffffff;
+                --border: #e0e0e0;
+                --danger: #e74c3c;
+                --success: #2e8b57;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                background-color: var(--bg);
+                margin: 0;
+                padding: 0;
+                transition:
+                    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+                min-height: 100vh;
+                background-attachment: fixed;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 16px;
+            }
+
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .back-btn {
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                text-decoration: none;
+                transition: 0.2s;
+            }
+
+            .back-btn:hover {
+                background: #eee;
+            }
+
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .lang-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .lang-label {
+                font-size: 13px;
+                color: #666;
+            }
+
+            .lang-select {
+                padding: 6px 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 13px;
+            }
+
+            .tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+                border-bottom: 2px solid var(--border);
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                padding: 10px 20px;
+                border: none;
+                background: transparent;
+                color: #666;
+                font-size: 15px;
+                font-weight: 600;
+                cursor: pointer;
+                border-bottom: 3px solid transparent;
+                margin-bottom: -2px;
+                transition: 0.2s;
+            }
+
+            .tab-btn:hover {
+                color: var(--primary);
+            }
+
+            .tab-btn.active {
+                color: var(--primary);
+                border-bottom-color: var(--primary);
+            }
+
+            .tab-panel {
+                display: none;
+            }
+
+            .tab-panel.active {
+                display: block;
+            }
+
+            .meta-form {
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 24px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid var(--border);
+            }
+
+            .meta-form label {
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
+                margin: 16px 0 4px 0;
+            }
+
+            .meta-form input,
+            .meta-form textarea {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                font-family: inherit;
+            }
+
+            .meta-form textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .meta-actions {
+                margin-top: 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                transition: 0.2s;
+            }
+
+            .btn-primary {
+                background: var(--success);
+                color: #fff;
+            }
+
+            .btn-primary:hover {
+                background: #1e6b40;
+            }
+
+            .btn-ghost {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: #555;
+            }
+
+            .btn-ghost:hover {
+                background: #eee;
+            }
+
+            .btn-danger {
+                background: var(--danger);
+                color: #fff;
+            }
+
+            .toc-panel {
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid var(--border);
+            }
+
+            .toc-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .toc-header h3 {
+                margin: 0;
+                color: #333;
+            }
+
+            #chapter-list {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            @media (max-width: 999px) {
+                #chapter-list {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            .chapter-row {
+                display: flex;
+                align-items: center;
+                padding: 10px 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: 0.2s;
+                background: #fff;
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .chapter-row:hover {
+                border-color: var(--primary);
+                background: #f8faff;
+            }
+
+            .chapter-row .ch-index {
+                font-size: 12px;
+                color: #999;
+                background: #f0f0f0;
+                padding: 2px 8px;
+                border-radius: 6px;
+                flex-shrink: 0;
+            }
+
+            .chapter-row .ch-title-text {
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-weight: 500;
+            }
+
+            .chapter-row .ch-read {
+                font-size: 11px;
+                color: #888;
+                flex-shrink: 0;
+            }
+
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                padding: 16px;
+            }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+            .modal {
+                background: #fff;
+                border-radius: 12px;
+                padding: 24px;
+                width: 100%;
+                max-width: 700px;
+                max-height: 90vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+
+            .modal-header h3 {
+                margin: 0;
+                flex: 1;
+            }
+
+            .modal-close {
+                background: transparent;
+                border: none;
+                font-size: 22px;
+                cursor: pointer;
+                color: #999;
+                padding: 4px 8px;
+                border-radius: 6px;
+                line-height: 1;
+            }
+
+            .modal-close:hover {
+                background: #f0f0f0;
+                color: var(--danger);
+            }
+
+            .fnr-toggle-btn {
+                background: #0e639c;
+                color: #fff;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                margin-right: 10px;
+                transition: 0.2s;
+                flex-shrink: 0;
+            }
+
+            .fnr-toggle-btn:hover {
+                background: #1177bb;
+            }
+
+            .fnr-panel {
+                display: none;
+                background: #2d2d2d;
+                color: #ccc;
+                border: 1px solid #454545;
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 12px;
+                font-size: 13px;
+            }
+
+            .fnr-panel.show {
+                display: block;
+            }
+
+            .fnr-row {
+                display: flex;
+                gap: 6px;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+
+            .fnr-input {
+                flex: 1;
+                background: #3c3c3c;
+                color: #ccc;
+                border: 1px solid #3c3c3c;
+                padding: 6px 8px;
+                font-size: 13px;
+                border-radius: 4px;
+                box-sizing: border-box;
+                min-width: 0;
+            }
+
+            .fnr-input:focus {
+                border-color: #007acc;
+                outline: none;
+            }
+
+            .fnr-counter {
+                font-size: 12px;
+                color: #aaa;
+                min-width: 55px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .fnr-mini-btn {
+                background: #3a3a3a;
+                color: #ccc;
+                border: none;
+                padding: 6px 10px;
+                cursor: pointer;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 40px;
+                text-align: center;
+                flex-shrink: 0;
+                transition: 0.2s;
+            }
+
+            .fnr-mini-btn:hover {
+                background: #4a4a4a;
+            }
+
+            .fnr-radio-group {
+                display: flex;
+                gap: 12px;
+                padding: 2px 0 8px;
+                flex-wrap: wrap;
+            }
+
+            .fnr-radio-label {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                color: #ccc;
+            }
+
+            .fnr-radio-label input {
+                margin: 0;
+                cursor: pointer;
+            }
+
+            .fnr-btn-group {
+                display: flex;
+                gap: 6px;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .fnr-btn {
+                background: #0e639c;
+                color: #fff;
+                border: none;
+                padding: 6px 12px;
+                cursor: pointer;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 70px;
+                text-align: center;
+                transition: 0.2s;
+            }
+
+            .fnr-btn:hover {
+                background: #1177bb;
+            }
+
+            .fnr-btn-secondary {
+                background: #3a3a3a;
+                color: #ccc;
+            }
+
+            .fnr-btn-secondary:hover {
+                background: #4a4a4a;
+            }
+
+            .fnr-match {
+                background: rgba(255, 230, 0, 0.4);
+                border-radius: 2px;
+            }
+
+            .fnr-active {
+                background: rgba(255, 140, 0, 0.6);
+            }
+
+            .textarea-wrapper {
+                position: relative;
+                flex: 1;
+                display: flex;
+                min-height: 300px;
+            }
+
+            .textarea-overlay {
+                position: absolute;
+                inset: 0;
+                padding: 12px;
+                font-size: 14px;
+                font-family: inherit;
+                line-height: 1.7;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow: hidden;
+                pointer-events: none;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: transparent;
+                color: transparent;
+                z-index: 0;
+            }
+
+            .textarea-overlay mark {
+                background: rgba(255, 230, 0, 0.4);
+                color: inherit;
+                border-radius: 2px;
+            }
+
+            .textarea-overlay mark.fnr-active-mark {
+                background: rgba(255, 140, 0, 0.6);
+            }
+
+            .modal textarea#modal-body-input {
+                position: relative;
+                z-index: 1;
+                background: transparent;
+                caret-color: var(--text, #222);
+            }
+
+            .modal input[type="text"] {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 12px;
+                font-family: inherit;
+            }
+
+            .modal textarea {
+                width: 100%;
+                flex: 1;
+                min-height: 300px;
+                padding: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                font-family: inherit;
+                line-height: 1.7;
+                resize: none;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 16px;
+            }
+
+            .other-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                max-width: 420px;
+            }
+
+            .other-panel .btn {
+                text-align: left;
+                padding: 14px 18px;
+                font-size: 15px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                color: #333;
+                border-radius: 10px;
+                width: 100%;
+            }
+
+            .other-panel .btn:hover {
+                background: #f0f0f0;
+                border-color: var(--primary);
+            }
+
+            .other-panel .btn.primary-block {
+                background: var(--success);
+                color: #fff;
+                border-color: var(--success);
+            }
+
+            .other-panel .btn.primary-block:hover {
+                background: #1e6b40;
+            }
+
+            .other-panel .btn.danger-block {
+                background: #fff;
+                color: var(--danger);
+                border-color: var(--danger);
+            }
+
+            .other-panel .btn.danger-block:hover {
+                background: #fdecea;
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+            }
+
+            .toast.show {
+                opacity: 1;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 12px;
+                }
+
+                .meta-form {
+                    padding: 16px;
+                }
+
+                .tab-btn {
+                    padding: 8px 14px;
+                    font-size: 13px;
+                }
+
+                .modal {
+                    padding: 16px;
+                }
+
+                .modal textarea {
+                    min-height: 200px;
+                }
+
+                header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .lang-wrapper,
+                .home-btn {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    pointer-events: none;
+                    transition: 0.3s ease;
+                }
+                .ui-visible .lang-wrapper,
+                .ui-visible .home-btn {
+                    opacity: 1;
+                    transform: translateY(0);
+                    pointer-events: auto;
+                }
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <a href="index.html" class="back-btn">⬅ Library</a>
+                <div class="header-right">
+                    <div
+                        id="modes"
+                        style="text-align: center; margin-bottom: 16px"
+                    >
+                        <label data-i18n="appearance.opt"></label>
+                        <select id="themeSelect">
+                            <option
+                                value=""
+                                data-i18n="appearance.opt.default"
+                            ></option>
+                            <option
+                                value="ruby"
+                                data-i18n="appearance.opt.ruby"
+                            ></option>
+                            <option
+                                value="navajo"
+                                data-i18n="appearance.opt.navajo"
+                            ></option>
+                            <option
+                                value="khaki"
+                                data-i18n="appearance.khaki"
+                            ></option>
+                            <option
+                                value="dark"
+                                data-i18n="appearance.opt.dark"
+                            ></option>
+                            <option
+                                value="deep"
+                                data-i18n="appearance.opt.deep"
+                            ></option>
+                            <option
+                                value="anias"
+                                data-i18n="appearance.opt.anias"
+                            ></option>
+                            <option
+                                value="dark_neon"
+                                data-i18n="appearance.opt.dark_neon"
+                            ></option>
+                        </select>
+                    </div>
+                    <div class="lang-wrapper"></div>
+                </div>
+            </header>
+
+            <!-- 3 MENU: Metadata / TOC / Khác -->
+            <div class="tabs">
+                <button
+                    class="tab-btn active"
+                    data-tab="metadata"
+                    data-i18n="mdt.editor.tab.metadata"
+                >
+                    📋 Metadata
+                </button>
+                <button
+                    class="tab-btn"
+                    data-tab="toc"
+                    data-i18n="mdt.editor.tab.toc"
+                >
+                    📑 Mục lục
+                </button>
+                <button
+                    class="tab-btn"
+                    data-tab="other"
+                    data-i18n="mdt.editor.tab.other"
+                >
+                    ⚙️ Khác
+                </button>
+            </div>
+
+            <!-- TAB 1: METADATA -->
+            <div id="tab-metadata" class="tab-panel active">
+                <div class="meta-form">
+                    <label data-i18n="mdt.editor.meta.title">Tiêu đề:</label>
+                    <input type="text" id="meta-title" />
+
+                    <label data-i18n="mdt.editor.meta.description"
+                        >Mô tả:</label
+                    >
+                    <textarea id="meta-description"></textarea>
+
+                    <label data-i18n="mdt.editor.meta.characters">
+                        Danh sách nhân vật (mỗi dòng 1 nhân vật):
+                    </label>
+                    <textarea id="meta-characters"></textarea>
+
+                    <label style="margin-top: 20px">
+                        <input type="checkbox" id="meta-enable-config" />
+                        <span data-i18n="mdt.editor.meta.enable_config"
+                            >Bật xác thực (thêm file .verified khi xuất
+                            ZIP)</span
+                        >
+                    </label>
+
+                    <div class="meta-actions">
+                        <button
+                            id="meta-save"
+                            class="btn btn-primary"
+                            data-i18n="mdt.editor.meta.save"
+                        >
+                            💾 Lưu thông tin
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: TABLE OF CONTENTS -->
+            <div id="tab-toc" class="tab-panel">
+                <div class="toc-panel">
+                    <div class="toc-header">
+                        <h3 data-i18n="mdt.editor.toc.title">
+                            Danh sách chương
+                        </h3>
+                        <button
+                            id="add-chapter-btn"
+                            class="btn btn-primary"
+                            data-i18n="mdt.editor.toc.add"
+                        >
+                            ➕ Thêm chương
+                        </button>
+                    </div>
+                    <div id="chapter-list"></div>
+                </div>
+            </div>
+
+            <div id="tab-other" class="tab-panel">
+                <div class="other-panel">
+                    <a
+                        href="reader.html"
+                        class="btn"
+                        data-i18n="mdt.editor.other.preview"
+                    >
+                        👁️ Xem trước truyện (Reader)
+                    </a>
+                    <a
+                        href="creation_tools/index.html"
+                        class="btn"
+                        data-i18n="epub_create"
+                    >
+                        📚 Công cụ tạo EPUB
+                    </a>
+                    <button
+                        id="download-full"
+                        class="btn"
+                        data-i18n="download.all"
+                    >
+                        ⬇ Tải toàn bộ TXT
+                    </button>
+                    <button
+                        id="download-zip"
+                        class="btn"
+                        data-i18n="download.zip"
+                    >
+                        📦 Tải toàn bộ ZIP (XHTML)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL EDIT CHƯƠNG -->
+        <div id="editor-modal" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-chapter-title"></h3>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                        <button
+                            id="fnr-toggle-btn"
+                            class="fnr-toggle-btn"
+                            data-i18n="edit.title"
+                        >
+                            🔍 Find & Replace
+                        </button>
+                        <button
+                            id="modal-close"
+                            class="modal-close"
+                            data-i18n="mdt.editor.modal.close"
+                            title="Đóng"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+                <!-- FIND & REPLACE PANEL -->
+                <div id="fnr-panel" class="fnr-panel">
+                    <div class="fnr-row">
+                        <input
+                            type="text"
+                            id="fnr-find-input"
+                            class="fnr-input"
+                            placeholder="Find..."
+                        />
+                        <span id="fnr-match-counter" class="fnr-counter"
+                            >0/0</span
+                        >
+                        <button
+                            class="fnr-mini-btn"
+                            id="fnr-prev-btn"
+                            data-i18n="edit.opt.prev"
+                        >
+                            ◀
+                        </button>
+                        <button
+                            class="fnr-mini-btn"
+                            id="fnr-next-btn"
+                            data-i18n="edit.opt.next"
+                        >
+                            ▶
+                        </button>
+                    </div>
+                    <div class="fnr-row">
+                        <input
+                            type="text"
+                            id="fnr-replace-input"
+                            class="fnr-input"
+                            placeholder="Replace..."
+                        />
+                    </div>
+                    <div class="fnr-radio-group">
+                        <label class="fnr-radio-label">
+                            <input
+                                type="radio"
+                                name="fnr-mode"
+                                value="all"
+                                checked
+                            />
+                            <span data-i18n="edit.opt.match.all"
+                                >Match Whole</span
+                            >
+                        </label>
+                        <label class="fnr-radio-label">
+                            <input
+                                type="radio"
+                                name="fnr-mode"
+                                value="around"
+                            />
+                            <span data-i18n="edit.opt.match.around"
+                                >Match Partial</span
+                            >
+                        </label>
+                        <label class="fnr-radio-label">
+                            <input type="radio" name="fnr-mode" value="regex" />
+                            <span data-i18n="edit.opt.regex">Regex</span>
+                        </label>
+                    </div>
+                    <div class="fnr-btn-group">
+                        <button
+                            class="fnr-btn"
+                            id="fnr-replace-btn"
+                            data-i18n="edit.opt.replace"
+                        >
+                            Replace
+                        </button>
+                        <button
+                            class="fnr-btn"
+                            id="fnr-replace-all-btn"
+                            data-i18n="edit.opt.replace.all"
+                        >
+                            All
+                        </button>
+                        <button
+                            class="fnr-btn fnr-btn-secondary"
+                            id="fnr-close-btn"
+                            data-i18n="edit.opt.cancel"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <input
+                    type="text"
+                    id="modal-title-input"
+                    placeholder="Tiêu đề chương..."
+                />
+                <div class="textarea-wrapper">
+                    <div
+                        id="body-overlay"
+                        class="textarea-overlay"
+                        aria-hidden="true"
+                    ></div>
+                    <textarea id="modal-body-input"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        id="modal-cancel"
+                        class="btn btn-ghost"
+                        data-i18n="ui.cancel"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        id="modal-save"
+                        class="btn btn-primary"
+                        data-i18n="mdt.editor.modal.save"
+                    >
+                        💾 Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <noscript>
+            <div
+                style="text-align: center; color: red; margin: 20px 0"
+                data-i18n="noscript.tools"
+            ></div>
+        </noscript>
+
+        <script src="../../../libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/lang.js"></script>
+        <script src="../../../libs/epub/jszip.min.js"></script>
+        <script src="shared/theme.js"></script>
+        <script src="shared/mdt-parser.js"></script>
+        <script src="shared/mdt-db.js"></script>
+        <script src="editor.js"></script>
+        <script>
+            let uiVisible = false;
+            document.addEventListener("click", function (e) {
+                if (window.innerWidth > 600) return;
+                uiVisible = !uiVisible;
+                if (uiVisible) {
+                    document.body.classList.add("ui-visible");
+                } else {
+                    document.body.classList.remove("ui-visible");
+                }
+            });
+        </script>
+    </body>
+</html>

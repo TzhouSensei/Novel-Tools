@@ -157,6 +157,14 @@
                 margin-left: 10px;
                 color: #4a5568;
             }
+            .badge-verified-yes {
+                background: #c6f6d5;
+                color: #22543d;
+            }
+            .badge-verified-no {
+                background: #fed7d7;
+                color: #742a2a;
+            }
 
             .lang-label {
                 font-size: 12px;
@@ -244,6 +252,10 @@
                             data-i18n="config.no_zip"
                             >Chưa có ZIP</span
                         >
+                        <span
+                            id="verifiedStatus"
+                            class="info-badge hidden"
+                        ></span>
                     </div>
                 </div>
 
@@ -450,6 +462,72 @@
                         Thêm ToC Block
                     </button>
                 </div>
+
+                <div class="section">
+                    <div
+                        class="section-title"
+                        data-i18n="config.expand_parsing"
+                    >
+                        Expand Parsing
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="config.enabled">Enabled:</label>
+                        <select id="expandParsingEnabled">
+                            <option value="false">False</option>
+                            <option value="true">True</option>
+                        </select>
+                    </div>
+                    <div id="parseSection" class="hidden">
+                        <div class="form-group">
+                            <label data-i18n="config.parsing_type"
+                                >Parsing Type:</label
+                            >
+                            <select id="parsingType">
+                                <option value="single">single</option>
+                                <option value="br-single">br-single</option>
+                                <option value="multiple">multiple</option>
+                                <option value="br-multiple">br-multiple</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="config.parent_tag"
+                                >Parent Tag:</label
+                            >
+                            <select id="parentTag">
+                                <option value="">(none)</option>
+                                <option value="pre">pre</option>
+                                <option value="p">p</option>
+                                <option value="div">div</option>
+                                <option value="h1">h1</option>
+                                <option value="h2">h2</option>
+                                <option value="h3">h3</option>
+                                <option value="h4">h4</option>
+                                <option value="h5">h5</option>
+                                <option value="h6">h6</option>
+                                <option value="blockquote">blockquote</option>
+                                <option value="span">span</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="config.child_tag"
+                                >Child Tag:</label
+                            >
+                            <select id="childTag">
+                                <option value="pre">pre</option>
+                                <option value="p">p</option>
+                                <option value="div">div</option>
+                                <option value="h1">h1</option>
+                                <option value="h2">h2</option>
+                                <option value="h3">h3</option>
+                                <option value="h4">h4</option>
+                                <option value="h5">h5</option>
+                                <option value="h6">h6</option>
+                                <option value="blockquote">blockquote</option>
+                                <option value="span">span</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
         <script src="../../../../../libs/i18n/i18n.js"></script>
@@ -467,12 +545,19 @@
                 title: "",
                 language: "",
                 generate_in_ebook: {},
+                expand_parsing: false,
+                parse: {
+                    parsing_type: "br-multiple",
+                    parent_tag: "p",
+                    child_tag: "p",
+                },
             };
 
             let genCount = 0;
             let tocBlockCounter = 1;
 
             let importedZipInstance = null;
+            let hasVerifiedFile = false;
             let coverFileBuffer = null;
             let coverFileExt = "";
 
@@ -512,6 +597,42 @@
                         JSZip.loadAsync(evt.target.result)
                             .then(function (zip) {
                                 importedZipInstance = zip;
+                                hasVerifiedFile = false;
+                                if (zip.file(".verified")) {
+                                    hasVerifiedFile = true;
+                                }
+
+                                const verifiedBadge =
+                                    document.getElementById("verifiedStatus");
+                                if (verifiedBadge) {
+                                    if (hasVerifiedFile) {
+                                        verifiedBadge.innerHTML = t(
+                                            "config.verified_found",
+                                        );
+                                        verifiedBadge.classList.remove(
+                                            "hidden",
+                                        );
+                                        verifiedBadge.classList.remove(
+                                            "badge-verified-no",
+                                        );
+                                        verifiedBadge.classList.add(
+                                            "badge-verified-yes",
+                                        );
+                                    } else {
+                                        verifiedBadge.innerHTML = t(
+                                            "config.verified_not_found",
+                                        );
+                                        verifiedBadge.classList.remove(
+                                            "hidden",
+                                        );
+                                        verifiedBadge.classList.remove(
+                                            "badge-verified-yes",
+                                        );
+                                        verifiedBadge.classList.add(
+                                            "badge-verified-no",
+                                        );
+                                    }
+                                }
 
                                 const statusBadge =
                                     document.getElementById("zipStatus");
@@ -562,6 +683,24 @@
                     };
                     reader.readAsArrayBuffer(file);
                 });
+
+            document
+                .getElementById("expandParsingEnabled")
+                .addEventListener("change", function () {
+                    updateParseSectionVisibility();
+                });
+
+            function updateParseSectionVisibility() {
+                const enabled =
+                    document.getElementById("expandParsingEnabled").value ===
+                    "true";
+                const parseSection = document.getElementById("parseSection");
+                if (enabled) {
+                    parseSection.classList.remove("hidden");
+                } else {
+                    parseSection.classList.add("hidden");
+                }
+            }
 
             function loadDataToForm(data) {
                 document
@@ -631,7 +770,33 @@
                         }
                     });
                 }
+
+                const expandParsingEnabled = document.getElementById(
+                    "expandParsingEnabled",
+                );
+                const expandParsingVal = data.expand_parsing || false;
+                if (hasVerifiedFile) {
+                    expandParsingEnabled.value = "false";
+                    expandParsingEnabled.disabled = true;
+                } else {
+                    expandParsingEnabled.value = expandParsingVal.toString();
+                    expandParsingEnabled.disabled = false;
+                }
+
+                const parseData = data.parse || {};
+                document.getElementById("parsingType").value =
+                    parseData.parsing_type || "br-multiple";
+                document.getElementById("parentTag").value =
+                    parseData.parent_tag === undefined ||
+                    parseData.parent_tag === null
+                        ? "p"
+                        : parseData.parent_tag;
+                document.getElementById("childTag").value =
+                    parseData.child_tag || "p";
+
+                updateParseSectionVisibility();
             }
+
             function addTocName(key, value) {
                 const container = document.getElementById("tocNameContainer");
                 const div = document.createElement("div");
@@ -789,6 +954,25 @@
                     });
                 });
 
+                const expandParsingEnabled = document.getElementById(
+                    "expandParsingEnabled",
+                );
+                if (hasVerifiedFile) {
+                    config.expand_parsing = false;
+                } else {
+                    config.expand_parsing =
+                        expandParsingEnabled.value === "true";
+                }
+
+                if (config.expand_parsing) {
+                    config.parse = {
+                        parsing_type:
+                            document.getElementById("parsingType").value,
+                        parent_tag: document.getElementById("parentTag").value,
+                        child_tag: document.getElementById("childTag").value,
+                    };
+                }
+
                 return config;
             }
 
@@ -922,6 +1106,10 @@
                         "configuration.json",
                         JSON.stringify(config, null, 4),
                     );
+
+                    if (!zip.file(".verified")) {
+                        zip.file(".verified", "");
+                    }
 
                     zip.generateAsync({ type: "blob" })
                         .then(function (content) {

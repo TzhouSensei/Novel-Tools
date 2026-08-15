@@ -2,85 +2,57 @@
     "app.title": "NovelTool by TzhouSensei",
     "home.title": "⚡ PUSAT ALAT by TzhouSensei",
     "home.subtitle": "Pilih alat yang ingin kamu gunakan",
-
-    "tool.reader.title": "Pembaca",
-    "tool.reader.desc": "Membaca novel",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "MDT Library & Reader generasi baru",
     "tool.editor.title": "Editor",
     "tool.editor.desc": "Membuat/Mengedit cerita",
-
     "tool.converter.title": "Konverter",
     "tool.converter.desc": "Konversi EPUB -> TXT",
-
     "converter.title": "Konverter EPUB ➜ TXT",
     "lang.option": "Bahasa",
-
     "mdt.reader": "Pembaca",
     "mdt.editor": "Editor",
-
     "appearance.opt": "🎨 Tampilan",
     "new.novel": "➕ Buat novel baru",
-
     "reset.novel": "🔄 Reset",
     "appearance.opt.default": "Default",
-
     "appearance.opt.ruby": "Biru Ruby",
     "appearance.opt.navajo": "Navajo",
-
     "appearance.khaki": "Khaki",
     "appearance.opt.dark": "🌙 Gelap",
-
     "appearance.opt.deep": "🕳 Dalam",
     "appearance.opt.anias": "🍂 Anias",
-
     "import.txt.notify": "Impor file .txt",
     "subtitle.editor": "📖 EDITOR",
     "subtitle.reader": "📖 Pembaca Cerita",
     "footer.mdt": "Pembaca Cerita oleh TzhouSensei",
-
     "note.1": "Saat mengimpor file .txt, konten harus mengikuti struktur berikut:",
-
     "note.2": "1. TAG STRUKTUR \n <>...</> → Judul (nama novel)\n <info> ... </info> → Informasi novel (penulis, deskripsi, genre, dll)\n[ ... ] → Daftar karakter\n<list> ... </list> → Daftar bab\n{ ... } → Isi bab\n • → Penanda sistem (jangan dihapus, isi bab harus berada di dalam penanda ini)",
-
     "note.3": "2. ATURAN (WAJIB)\nJangan mengedit, menghapus, atau mengubah tag MDT.\nSemua isi file harus mempertahankan struktur asli.\nTag sistem wajib ada.\nJika format salah, alat mungkin gagal membaca isi.",
-
     "note.4": "3. PERSYARATAN FILE\nAlat ini sepenuhnya bekerja offline\nPengguna harus menyiapkan file .txt dengan format yang benar\nHanya mendukung file standar MDT",
-
     "note.5": "4. PENAFIAN\nJika file rusak karena format salah, alat tidak bertanggung jawab\nFile non-MDT tidak dijamin dapat dibaca\nHanya file yang dibuat atau kompatibel dengan MDT yang disarankan",
-
     "noscript.tools": "Browser kamu perlu mengaktifkan JavaScript untuk menggunakan fitur ini.",
     "download.txt": "Unduh TXT",
-
     "opf_not_found": "File OPF tidak ditemukan",
     "book.no_author": "Penulis tidak ditemukan",
-
     "book.no_title": "Judul tidak ditemukan",
     "chapter": "Bab",
-
     "author": "Penulis",
     "genre": "Genre",
-
     "chapter.count": "Jumlah bab",
     "description": "Deskripsi",
-
     "charlist": "Daftar karakter",
     "edit.opt.replace": "Ganti",
-
     "edit.opt.match.all": "Cocokkan semua",
     "edit.opt.match.around": "Cocok di sekitar",
-
     "edit.opt.regex": "Ekspresi reguler",
     "edit.opt.prev": "Sebelumnya",
-
     "edit.opt.next": "Berikutnya",
     "edit.opt.replace.all": "Ganti semua",
-
     "edit.opt.cancel": "Batal",
     "edit.title": "Cari & Ganti",
-
     "download.all": "⬇ Unduh semua",
     "download.changed": "⬇ Hanya perubahan",
-
     "export.epub": "📚 Ekspor EPUB",
     "epub": {
         "generator_title": "EPUB Generator",
@@ -128,7 +100,6 @@
     },
     "tool.epub.reader": "Pembaca EPUB",
     "tool.epub.reader.desc": "Baca EPUB dengan antarmuka yang intuitif",
-
     "ereader.import_epub": "Impor EPUB",
     "ereader.no_book_loaded": "Tidak ada buku",
     "ereader.toc": "Daftar Isi",
@@ -167,7 +138,6 @@
     "ereader.chapter": "Bab",
     "ereader.page": "Halaman",
     "ereader.tts_not_supported": "Browser tidak mendukung TTS.",
-
     "library.page_title": "Perpustakaan ePub Lokal",
     "library.heading": "Rak Buku Saya",
     "library.btn_add": "+ Tambahkan buku EPUB baru",
@@ -283,5 +253,77 @@
         "btn_find": "Cari (Find)",
         "btn_export": "Ekspor Data Konfigurasi (Export)",
         "btn_import": "Impor Data Konfigurasi (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDT Library",
+            "search": "🔍 Search stories...",
+            "import": "➕ Import story",
+            "create": {
+                "title": "Create new story",
+                "title.label": "Title:",
+                "desc.label": "Description:",
+                "desc.placeholder": "Enter story description...",
+                "char.label": "Character list (one per line):",
+                "char.placeholder": "Enter character list...",
+                "submit": "Create",
+                "need_title": "Please enter a title!"
+            },
+            "read": "Read",
+            "edit": "Edit",
+            "chapters": "Chapters",
+            "last_read": "Read to",
+            "empty": "Library is empty. Import a TXT file or create a new story!",
+            "deleted": "Story deleted!",
+            "importing": "Importing: ",
+            "imported": "Imported: ",
+            "import_error": "Error importing: ",
+            "sort": {
+                "recent": "Most recent",
+                "title": "By title",
+                "created": "Newest"
+            }
+        },
+        "reader": {
+            "title": "📖 Read story",
+            "chapter_list": "📑 Chapter list",
+            "read": "Read",
+            "unread": "Unread",
+            "book_not_found": "Story not found!",
+            "no_chapters": "No chapters yet.",
+            "chapter_not_found": "Chapter not found!"
+        },
+        "editor": {
+            "title": "✏️ Edit story",
+            "tab": {
+                "metadata": "📋 Metadata",
+                "toc": "📑 Table of contents",
+                "other": "⚙️ Other"
+            },
+            "meta": {
+                "title": "Title:",
+                "description": "Description:",
+                "characters": "Character list (one per line):",
+                "save": "💾 Save info",
+                "saved": "Story info saved!"
+            },
+            "toc": {
+                "title": "Chapter list",
+                "add": "➕ Add chapter"
+            },
+            "other": {
+                "preview": "👁️ Preview story (Reader)",
+                "downloaded": "TXT file downloaded!",
+                "reset_confirm": "Reset this entire story?"
+            },
+            "modal": {
+                "title": "Edit chapter",
+                "close": "Close",
+                "save": "💾 Save",
+                "saved": "Chapter saved!",
+                "need_title": "Please enter a chapter title!"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 Dark Neon"
 }

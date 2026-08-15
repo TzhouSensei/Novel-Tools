@@ -133,6 +133,9 @@ window.addEventListener("DOMContentLoaded", async () => {
                             },
                         };
                         await handleFileSelect(mockEvent);
+                        requestAnimationFrame(() => {
+                            recalculatePagination();
+                        });
                     }
                 };
             };
@@ -619,6 +622,7 @@ function navigatePage(direction) {
             loadChapter(prevChapter, true, Infinity).then(() => {
                 state.currentChapterIndex = prevChapter;
                 requestAnimationFrame(() => {
+                    recalculatePagination();
                     state.currentPageIndex = state.maxPagesInChapter - 1;
                     renderCurrentPagePosition();
                     saveBookProgress();
@@ -628,8 +632,17 @@ function navigatePage(direction) {
         return;
     } else if (targetPage >= state.maxPagesInChapter) {
         if (state.currentChapterIndex < state.spine.length - 1) {
+            const nextChapter = state.currentChapterIndex + 1;
             clearBlobUrls();
-            navigateChapter(1);
+            loadChapter(nextChapter, false, 0).then(() => {
+                state.currentChapterIndex = nextChapter;
+                requestAnimationFrame(() => {
+                    recalculatePagination();
+                    state.currentPageIndex = 0;
+                    renderCurrentPagePosition();
+                    saveBookProgress();
+                });
+            });
         }
         return;
     }
@@ -650,11 +663,16 @@ function renderCurrentPagePosition() {
 
 function navigateChapter(direction) {
     let targetChapter = state.currentChapterIndex + direction;
-    if (targetChapter >= 0 && targetChapter < state.spine.length) {
-        state.currentPageIndex = 0;
-        clearBlobUrls();
-        loadChapter(targetChapter);
-    }
+    clearBlobUrls();
+    loadChapter(targetChapter, false, 0).then(() => {
+        state.currentChapterIndex = targetChapter;
+        requestAnimationFrame(() => {
+            state.currentPageIndex = 0;
+            recalculatePagination();
+            renderCurrentPagePosition();
+            saveBookProgress();
+        });
+    });
 }
 
 function jumpToProgress(e) {
@@ -711,6 +729,16 @@ function handleReaderTap(e) {
     }
     toggleSettingsMenu();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    ["btn-tl", "btn-tr", "btn-bl", "btn-br"].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.style.pointerEvents = "auto";
+            btn.style.zIndex = "100050";
+        }
+    });
+});
 
 function setupGlobalInteractions() {
     const viewEl = document.getElementById("reader-center");
@@ -837,6 +865,9 @@ function setupGlobalInteractions() {
     viewEl.addEventListener(
         "touchstart",
         (e) => {
+            if (e.target.closest("a, button, input, select, textarea")) {
+                return;
+            }
             if (isInteractionPaused) return;
             if (e.touches.length !== 1) return;
             const t = e.touches[0];
@@ -871,6 +902,9 @@ function setupGlobalInteractions() {
         { passive: false },
     );
     viewEl.addEventListener("touchend", (e) => {
+        if (e.target.closest("a, button, input, select, textarea")) {
+            return;
+        }
         if (!swipe.active) return;
         if (isInteractionPaused) return;
         const touch = e.changedTouches[0];
@@ -2014,29 +2048,44 @@ function destroyBookmarkLineMenuEvents() {
 function preprocessContinuousBlocks() {
     const chapterContentEl = document.getElementById("chapter-content");
     if (!chapterContentEl) return;
+
     const blocks = chapterContentEl.querySelectorAll("pre, div, p");
+
     blocks.forEach((el) => {
         if (el.dataset.processedLines === "true") return;
+
         const hasChildBlocks = el.querySelector(
             "p, div, li, h1, h2, h3, h4, h5, h6",
         );
+
         if (
             el.tagName === "PRE" ||
             (!hasChildBlocks && el.innerHTML.includes("\n"))
         ) {
             const rawHtml = el.innerHTML;
-            const lines = rawHtml.split(/\r?\n/);
-            if (lines.length > 1) {
-                const wrappedHtml = lines
-                    .map((line) => {
-                        const cleanLine = line.trim();
-                        if (!cleanLine) return "<br>";
-                        return `<span class="epub-virtual-line" style="display: block; margin: 2px 0;">${line}</span>`;
-                    })
-                    .join("");
-                el.innerHTML = wrappedHtml;
-                el.dataset.processedLines = "true";
+
+            let lines = rawHtml.split(/\r?\n/);
+            while (lines.length > 0 && !lines[lines.length - 1].trim()) {
+                lines.pop();
             }
+
+            if (lines.length === 0) {
+                return;
+            }
+
+            const wrappedHtml = lines
+                .map((line) => {
+                    const cleanLine = line.trim();
+                    if (!cleanLine) {
+                        return "<br>";
+                    }
+
+                    return `<span class="epub-virtual-line" style="display: block; margin: 2px 0;">${line}</span>`;
+                })
+                .join("");
+
+            el.innerHTML = wrappedHtml;
+            el.dataset.processedLines = "true";
         }
     });
 }

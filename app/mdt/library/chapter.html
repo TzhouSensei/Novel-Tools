@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="mdt.reader.title">Đọc truyện</title>
+
+        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
+        <link href="shared/theme.css" rel="stylesheet" />
+        <style>
+            :root {
+                --primary: #4a90e2;
+                --bg: #f5f7fa;
+                --card-bg: #ffffff;
+                --border: #e0e0e0;
+                --danger: #e74c3c;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                background-color: var(--bg);
+                margin: 0;
+                padding: 0;
+                transition:
+                    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+                min-height: 100vh;
+                background-attachment: fixed;
+            }
+
+            .container {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 16px;
+            }
+
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .back-btn {
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                text-decoration: none;
+                transition: 0.2s;
+            }
+
+            .back-btn:hover {
+                background: #eee;
+            }
+
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .lang-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .lang-label {
+                font-size: 13px;
+                color: #666;
+            }
+
+            .lang-select {
+                padding: 6px 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 13px;
+            }
+
+            .content-wrapper {
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 24px 32px 32px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid var(--border);
+                margin-bottom: 20px;
+            }
+
+            .content-chapter-title {
+                font-size: 20px;
+                font-weight: 700;
+                margin: 0 0 16px 0;
+                color: var(--primary);
+                text-align: center;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--border);
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+
+            .content-chapter-title:hover {
+                color: #357abd;
+                text-decoration: underline;
+            }
+
+            .chapter-content {
+                font-size: 17px;
+                line-height: 1.8;
+                max-width: 760px;
+                margin: 0 auto;
+            }
+
+            .bullet {
+                display: block;
+                text-align: center;
+                font-size: 1.4em;
+                line-height: 1;
+                margin: 2px 0;
+                padding: 0;
+            }
+
+            .empty-text {
+                display: block;
+                text-align: center;
+                opacity: 0.7;
+                font-style: italic;
+                margin: 4px 0;
+                line-height: 1.4;
+            }
+
+            .content-nav {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .content-nav.top {
+                margin-bottom: 20px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .content-nav.bottom {
+                margin-top: 24px;
+                padding-top: 16px;
+                border-top: 1px solid var(--border);
+            }
+
+            .nav-btn {
+                padding: 10px 20px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: 0.2s;
+            }
+
+            .nav-btn:hover:not(:disabled) {
+                background: #e8f0fe;
+                border-color: var(--primary);
+            }
+
+            .nav-btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+            }
+
+            .toast.show {
+                opacity: 1;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 12px;
+                }
+
+                .content-wrapper {
+                    padding: 16px;
+                }
+
+                .chapter-content {
+                    font-size: 16px;
+                }
+
+                header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .nav-btn {
+                    padding: 8px 12px;
+                    font-size: 13px;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .lang-wrapper,
+                .home-btn {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    pointer-events: none;
+                    transition: 0.3s ease;
+                }
+                .ui-visible .lang-wrapper,
+                .ui-visible .home-btn {
+                    opacity: 1;
+                    transform: translateY(0);
+                    pointer-events: auto;
+                }
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <a href="reader.html" class="back-btn">⬅ Danh sách chương</a>
+                <div class="header-right">
+                    <div
+                        id="modes"
+                        style="text-align: center; margin-bottom: 16px"
+                    >
+                        <label data-i18n="appearance.opt"></label>
+                        <select id="themeSelect">
+                            <option
+                                value=""
+                                data-i18n="appearance.opt.default"
+                            ></option>
+                            <option
+                                value="ruby"
+                                data-i18n="appearance.opt.ruby"
+                            ></option>
+                            <option
+                                value="navajo"
+                                data-i18n="appearance.opt.navajo"
+                            ></option>
+                            <option
+                                value="khaki"
+                                data-i18n="appearance.khaki"
+                            ></option>
+                            <option
+                                value="dark"
+                                data-i18n="appearance.opt.dark"
+                            ></option>
+                            <option
+                                value="deep"
+                                data-i18n="appearance.opt.deep"
+                            ></option>
+                            <option
+                                value="anias"
+                                data-i18n="appearance.opt.anias"
+                            ></option>
+                            <option
+                                value="dark_neon"
+                                data-i18n="appearance.opt.dark_neon"
+                            ></option>
+                        </select>
+                    </div>
+                    <div class="lang-wrapper"></div>
+                </div>
+            </header>
+
+            <div id="content-wrapper" class="content-wrapper">
+                <div class="content-nav top">
+                    <button
+                        id="prev-btn-top"
+                        class="nav-btn"
+                        data-i18n="ereader.previous_chapter"
+                    >
+                        ◀ Chương trước
+                    </button>
+                    <button
+                        id="next-btn-top"
+                        class="nav-btn"
+                        data-i18n="ereader.next_chapter"
+                    >
+                        Chương sau ▶
+                    </button>
+                </div>
+
+                <h2
+                    id="content-title"
+                    class="content-chapter-title"
+                    title="Về trang chính của truyện"
+                ></h2>
+
+                <div id="chapter-content" class="chapter-content"></div>
+
+                <div class="content-nav bottom">
+                    <button
+                        id="prev-btn-bottom"
+                        class="nav-btn"
+                        data-i18n="ereader.previous_chapter"
+                    >
+                        ◀ Chương trước
+                    </button>
+                    <button
+                        id="next-btn-bottom"
+                        class="nav-btn"
+                        data-i18n="ereader.next_chapter"
+                    >
+                        Chương sau ▶
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <noscript>
+            <div
+                style="text-align: center; color: red; margin: 20px 0"
+                data-i18n="noscript.tools"
+            ></div>
+        </noscript>
+
+        <script src="../../../libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/lang.js"></script>
+        <script src="shared/theme.js"></script>
+        <script src="shared/mdt-parser.js"></script>
+        <script src="shared/mdt-db.js"></script>
+        <script src="chapter.js"></script>
+        <script>
+            let uiVisible = false;
+            document.addEventListener("click", function (e) {
+                if (window.innerWidth > 600) return;
+                uiVisible = !uiVisible;
+                if (uiVisible) {
+                    document.body.classList.add("ui-visible");
+                } else {
+                    document.body.classList.remove("ui-visible");
+                }
+            });
+        </script>
+    </body>
+</html>

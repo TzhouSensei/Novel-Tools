@@ -2,82 +2,55 @@
     "app.title": "TruyenChuTool от TzhouSensei",
     "home.title": "⚡ TOOL HUB от TzhouSensei",
     "home.subtitle": "Выберите инструмент, который хотите использовать",
-
-    "tool.reader.title": "Chitalka",
-    "tool.reader.desc": "Чтение новелл/романов",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "Новое поколение MDT — библиотека и ридер",
     "tool.editor.title": "Redaktor",
     "tool.editor.desc": "Создание/Редактирование книг",
-
     "tool.converter.title": "Konverter",
     "tool.converter.desc": "Конвертация EPUB -> TXT",
-
     "converter.title": "Конвертер EPUB ➜ TXT",
     "lang.option": "Язык",
-
     "mdt.reader": "Chitalka",
     "mdt.editor": "Redaktor",
-
     "appearance.opt": "🎨 Внешний вид",
     "new.novel": "➕ Создать новую книгу",
-
     "reset.novel": "🔄 Сброс",
     "appearance.opt.default": "По умолчанию",
-
     "appearance.opt.ruby": "Ruby Blue",
     "appearance.opt.navajo": "Navajo",
-
     "appearance.khaki": "Khaki",
     "appearance.opt.dark": "🌙 Темная",
-
     "appearance.opt.deep": "🕳 Глубокая",
     "appearance.opt.anias": "🍂 Anias",
-
     "import.txt.notify": "Перетащите или выберите файл .txt",
     "subtitle.editor": "📖 РЕДАКТОР",
     "subtitle.reader": "📖 Читалка книг",
     "footer.mdt": "Читалка книг от TzhouSensei",
-
     "note.1": "При импорте файла .txt содержимое должно строго соответствовать следующей структуре:",
-
     "note.2": "1. СТРУКТУРНЫЕ ТЕГИ \n <>...</>; → Title (Название книги)\n <;info>; ... <;/info>; → Информация о книге (автор, описание, жанры и т.д.)\n[ ... ] → Список персонажей\n<;list>; ... <;/list>; → Список глав\n{ ... } → Содержимое каждой главы\n • → Системный маркер/чеккер (не удалять, текст главы должен находиться внутри этого маркера)",
-
     "note.3": " 2. ОБЯЗАТЕЛЬНЫЕ ПРАВИЛА\nНе изменяйте, не удаляйте и не перемещайте системные теги MDT.\nВсе содержимое файла должно сохранять исходную структуру.\nИспользование системных тегов обязательно.\nЕсли формат нарушен, инструмент не сможет прочитать файл.",
-
     "note.4": "3. ТРЕБОВАНИЯ К ФАЙЛУ\nИнструмент работает полностью автономно (офлайн)\nПользователь должен сам подготовить файл .txt в правильном формате\nПоддерживаются только файлы, сконвертированные по стандарту MDT",
-
     "note.5": "4. ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ\nЕсли файл поврежден из-за изменения формата, разработчик ответственности не несет\nИнструмент не гарантирует чтение файлов из сторонних источников, не соответствующих стандарту MDT\nРекомендуется использовать только файлы, созданные этим инструментом, или файлы, оформленные строго по спецификации",
-
     "noscript.tools": "Для использования этой функции в браузере должен быть включен JavaScript.",
     "download.txt": "Скачать TXT",
-
     "opf_not_found": "Файл OPF не найден",
     "book.no_author": "Автор не найден",
-
     "book.no_title": "Название не найдено",
     "chapter": "Глава",
-
     "author": "Автор",
     "genre": "Жанр",
-
     "chapter.count": "Количество глав",
     "description": "Описание",
-
     "charlist": "Список персонажей",
     "edit.opt.replace": "Заменить",
-
     "edit.opt.match.all": "Учитывать регистр",
     "edit.opt.match.around": "Искать вокруг",
-
     "edit.opt.regex": "Регулярное выражение",
     "edit.opt.prev": "Назад",
-
     "edit.opt.next": "Далее",
     "edit.opt.replace.all": "Заменить все",
-
     "edit.opt.cancel": "Отмена",
     "edit.title": "Найти и заменить",
-
     "download.all": "⬇ Скачать все",
     "download.changed": "⬇ Скачать измененные",
     "export.epub": "📚 Экспорт в EPUB",
@@ -127,7 +100,6 @@
     },
     "tool.epub.reader": "EPUB Reader",
     "tool.epub.reader.desc": "Удобное чтение файлов EPUB",
-
     "ereader.import_epub": "Импорт EPUB",
     "ereader.no_book_loaded": "Книга не загружена",
     "ereader.toc": "Оглавление",
@@ -166,7 +138,6 @@
     "ereader.chapter": "Глава",
     "ereader.page": "Страница",
     "ereader.tts_not_supported": "Ваш браузер не поддерживает TTS.",
-
     "library.page_title": "Локальная библиотека ePub",
     "library.heading": "Моя книжная полка",
     "library.btn_add": "+ Добавить новую книгу EPUB",
@@ -175,7 +146,6 @@
     "library.unknown_author": "Неизвестный автор",
     "library.confirm_delete": "Вы уверены, что хотите удалить эту книгу из локального хранилища?",
     "library.error_import": "Ошибка при анализе и загрузке книги: ",
-
     "reader.status_loading": "📂 Загрузка файла EPUB...",
     "reader.status_success": "✅ Загружено успешно",
     "reader.status_error": "❌ Ошибка файла или неверный формат EPUB",
@@ -283,5 +253,77 @@
         "btn_find": "Поиск (Find)",
         "btn_export": "Экспорт данных конфигурации (Export)",
         "btn_import": "Импорт данных конфигурации (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDT Library",
+            "search": "🔍 Search stories...",
+            "import": "➕ Import story",
+            "create": {
+                "title": "Create new story",
+                "title.label": "Title:",
+                "desc.label": "Description:",
+                "desc.placeholder": "Enter story description...",
+                "char.label": "Character list (one per line):",
+                "char.placeholder": "Enter character list...",
+                "submit": "Create",
+                "need_title": "Please enter a title!"
+            },
+            "read": "Read",
+            "edit": "Edit",
+            "chapters": "Chapters",
+            "last_read": "Read to",
+            "empty": "Library is empty. Import a TXT file or create a new story!",
+            "deleted": "Story deleted!",
+            "importing": "Importing: ",
+            "imported": "Imported: ",
+            "import_error": "Error importing: ",
+            "sort": {
+                "recent": "Most recent",
+                "title": "By title",
+                "created": "Newest"
+            }
+        },
+        "reader": {
+            "title": "📖 Read story",
+            "chapter_list": "📑 Chapter list",
+            "read": "Read",
+            "unread": "Unread",
+            "book_not_found": "Story not found!",
+            "no_chapters": "No chapters yet.",
+            "chapter_not_found": "Chapter not found!"
+        },
+        "editor": {
+            "title": "✏️ Edit story",
+            "tab": {
+                "metadata": "📋 Metadata",
+                "toc": "📑 Table of contents",
+                "other": "⚙️ Other"
+            },
+            "meta": {
+                "title": "Title:",
+                "description": "Description:",
+                "characters": "Character list (one per line):",
+                "save": "💾 Save info",
+                "saved": "Story info saved!"
+            },
+            "toc": {
+                "title": "Chapter list",
+                "add": "➕ Add chapter"
+            },
+            "other": {
+                "preview": "👁️ Preview story (Reader)",
+                "downloaded": "TXT file downloaded!",
+                "reset_confirm": "Reset this entire story?"
+            },
+            "modal": {
+                "title": "Edit chapter",
+                "close": "Close",
+                "save": "💾 Save",
+                "saved": "Chapter saved!",
+                "need_title": "Please enter a chapter title!"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 Тёмный неон"
 }

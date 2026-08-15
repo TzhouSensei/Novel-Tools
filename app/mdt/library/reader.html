@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="mdt.reader.title">Đọc truyện</title>
+
+        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
+        <link href="shared/theme.css" rel="stylesheet" />
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                margin: 0;
+                padding: 0;
+                transition:
+                    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+                min-height: 100vh;
+                background-attachment: fixed;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 16px;
+            }
+
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .back-btn {
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                color: var(--text);
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                text-decoration: none;
+                transition: 0.2s;
+            }
+
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .lang-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .lang-label {
+                font-size: 13px;
+            }
+
+            .lang-select {
+                padding: 6px 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 13px;
+            }
+
+            .story-header {
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 20px 24px;
+                box-shadow: var(--shadow-sm);
+                border: 1px solid var(--border);
+                margin-bottom: 20px;
+            }
+
+            .story-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 6px 0;
+            }
+
+            .story-desc {
+                font-size: 14px;
+                margin: 0;
+                white-space: pre-wrap;
+                line-height: 1.6;
+                max-height: 120px;
+                overflow-y: auto;
+            }
+
+            .chapter-list-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 12px 0;
+            }
+
+            .chapter-list {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            @media (max-width: 999px) {
+                .chapter-list {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            .chapter-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition:
+                    background 0.2s,
+                    color 0.2s;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                font-weight: 500;
+                min-width: 0;
+            }
+
+            .chapter-item.read {
+                font-weight: 400;
+            }
+
+            .chapter-item.read .chapter-title {
+                text-decoration: line-through;
+            }
+
+            .chapter-item .chapter-title {
+                flex: 1;
+                margin-right: 8px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .chapter-item .chapter-status {
+                font-size: 11px;
+                padding: 2px 6px;
+                border-radius: 6px;
+                flex-shrink: 0;
+            }
+
+            .chapter-item.read .chapter-status {
+                background: var(--read-bg);
+            }
+
+            .chapter-item:not(.read) .chapter-status {
+                background: var(--success-bg);
+                color: var(--success-text);
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: var(--shadow-md);
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+            }
+
+            .toast.show {
+                opacity: 1;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 12px;
+                }
+
+                .story-header {
+                    padding: 16px;
+                }
+
+                .story-title {
+                    font-size: 18px;
+                }
+
+                header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .lang-wrapper,
+                .home-btn {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    pointer-events: none;
+                    transition: 0.3s ease;
+                }
+                .ui-visible .lang-wrapper,
+                .ui-visible .home-btn {
+                    opacity: 1;
+                    transform: translateY(0);
+                    pointer-events: auto;
+                }
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <a href="index.html" class="back-btn">⬅ Library</a>
+                <div class="header-right">
+                    <div
+                        id="modes"
+                        style="text-align: center; margin-bottom: 16px"
+                    >
+                        <label data-i18n="appearance.opt"></label>
+                        <select id="themeSelect">
+                            <option
+                                value=""
+                                data-i18n="appearance.opt.default"
+                            ></option>
+                            <option
+                                value="ruby"
+                                data-i18n="appearance.opt.ruby"
+                            ></option>
+                            <option
+                                value="navajo"
+                                data-i18n="appearance.opt.navajo"
+                            ></option>
+                            <option
+                                value="khaki"
+                                data-i18n="appearance.khaki"
+                            ></option>
+                            <option
+                                value="dark"
+                                data-i18n="appearance.opt.dark"
+                            ></option>
+                            <option
+                                value="deep"
+                                data-i18n="appearance.opt.deep"
+                            ></option>
+                            <option
+                                value="anias"
+                                data-i18n="appearance.opt.anias"
+                            ></option>
+                            <option
+                                value="dark_neon"
+                                data-i18n="appearance.opt.dark_neon"
+                            ></option>
+                        </select>
+                    </div>
+                    <div class="lang-wrapper"></div>
+                </div>
+            </header>
+
+            <div id="story-header" class="story-header">
+                <h1 id="story-title" class="story-title"></h1>
+                <p id="story-desc" class="story-desc"></p>
+            </div>
+
+            <h2 class="chapter-list-title" data-i18n="mdt.reader.chapter_list">
+                📑 Danh sách chương
+            </h2>
+            <div id="chapter-list" class="chapter-list"></div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <noscript>
+            <div
+                style="text-align: center; color: red; margin: 20px 0"
+                data-i18n="noscript.tools"
+            ></div>
+        </noscript>
+
+        <script src="../../../libs/i18n/i18n.js"></script>
+        <script src="../../../libs/i18n/lang.js"></script>
+        <script src="shared/theme.js"></script>
+        <script src="shared/mdt-parser.js"></script>
+        <script src="shared/mdt-db.js"></script>
+        <script src="reader.js"></script>
+        <script>
+            let uiVisible = false;
+            document.addEventListener("click", function (e) {
+                if (window.innerWidth > 600) return;
+                uiVisible = !uiVisible;
+                if (uiVisible) {
+                    document.body.classList.add("ui-visible");
+                } else {
+                    document.body.classList.remove("ui-visible");
+                }
+            });
+        </script>
+    </body>
+</html>

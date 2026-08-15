@@ -12,6 +12,76 @@ export const getFirstHeading = (doc) =>
         (el.textContent || "").trim(),
     );
 
+export const normalizeEpubPath = (value = "") => {
+    if (!value) return "";
+
+    let normalized = String(value).trim().replace(/\\/g, "/");
+    normalized = normalized.replace(/^\.\//, "").replace(/^\/+/, "");
+
+    try {
+        normalized = decodeURIComponent(normalized);
+    } catch {
+        console.log("Cannot normalized");
+    }
+
+    return normalized.replace(/\/+/g, "/").replace(/^\.\//, "");
+};
+
+export const getEpubPathVariants = (value = "") => {
+    const normalized = normalizeEpubPath(value);
+    const variants = new Set();
+
+    if (!normalized) return [];
+
+    const addVariant = (candidate) => {
+        if (!candidate) return;
+        variants.add(candidate);
+        variants.add(candidate.replace(/^\/+/, ""));
+    };
+
+    addVariant(normalized);
+    addVariant(normalized.replace(/ /g, "%20"));
+    addVariant(normalized.replace(/%20/g, " "));
+    addVariant(normalized.replace(/ /g, "+"));
+    addVariant(normalized.replace(/%20/g, "+"));
+
+    const segments = normalized.split("/").filter(Boolean);
+    const encodedSegments = segments.map((segment) => {
+        try {
+            return encodeURIComponent(decodeURIComponent(segment));
+        } catch {
+            return encodeURIComponent(segment);
+        }
+    });
+    const encodedPath = encodedSegments.join("/");
+    addVariant(encodedPath);
+    addVariant(encodedPath.replace(/%20/g, " "));
+    addVariant(encodedPath.replace(/ /g, "%20"));
+
+    return [...variants].filter(Boolean);
+};
+
+export const resolveZipPath = (zip, value = "") => {
+    if (!zip || !value) return null;
+
+    const candidates = getEpubPathVariants(value);
+    for (const candidate of candidates) {
+        if (zip.file(candidate)) return candidate;
+    }
+
+    const normalizedValue = normalizeEpubPath(value).toLowerCase();
+    const matchedEntry = Object.keys(zip.files || {}).find((entry) => {
+        const normalizedEntry = normalizeEpubPath(entry).toLowerCase();
+        return (
+            normalizedEntry === normalizedValue ||
+            normalizedEntry.replace(/ /g, "%20") === normalizedValue ||
+            normalizedEntry.replace(/%20/g, " ") === normalizedValue
+        );
+    });
+
+    return matchedEntry || null;
+};
+
 export const removeTitleLikeBlocks = (text, title) => {
     if (!text || !title) return text;
 

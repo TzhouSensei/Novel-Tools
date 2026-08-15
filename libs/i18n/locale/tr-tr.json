@@ -2,82 +2,55 @@
     "app.title": "TzhouSensei'den TruyenChuTool",
     "home.title": "⚡ TzhouSensei'den TOOL HUB",
     "home.subtitle": "Kullanmak istediğiniz aracı seçin",
-
-    "tool.reader.title": "Reader",
-    "tool.reader.desc": "Roman oku",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "Yeni nesil MDT Kütüphane & Okuyucu",
     "tool.editor.title": "Editor",
     "tool.editor.desc": "Hikaye Oluştur/Düzenle",
-
     "tool.converter.title": "Converter",
     "tool.converter.desc": "Dönüştür EPUB -> TXT",
-
     "converter.title": "Dönüştürücü EPUB ➜ TXT",
     "lang.option": "Dil",
-
     "mdt.reader": "Reader",
     "mdt.editor": "Editor",
-
     "appearance.opt": "🎨 Görünüm",
     "new.novel": "➕ Yeni Hikaye Oluştur",
-
     "reset.novel": "🔄 Sıfırla",
     "appearance.opt.default": "Varsayılan",
-
     "appearance.opt.ruby": "Ruby Blue",
     "appearance.opt.navajo": "Navajo",
-
     "appearance.khaki": "Khaki",
     "appearance.opt.dark": "🌙 Karanlık",
-
     "appearance.opt.deep": "🕳 Derin",
     "appearance.opt.anias": "🍂 Anias",
-
     "import.txt.notify": ".txt dosyasını buraya sürükleyin",
     "subtitle.editor": "📖 EDİTÖR",
     "subtitle.reader": "📖 Hikaye Okuyucu",
     "footer.mdt": "TzhouSensei'nin Hikaye Okuyucusu",
-
     "note.1": "Bir .txt dosyası aktarırken, içeriğin aşağıdaki yapıya kesinlikle uyması gerekir:",
-
     "note.2": "1. YAPI ETİKETLERİ \n <>...</>; → Title (Hikaye başlığı)\n <;info>; ... <;/info>; → Hikaye bilgisi (yazar, açıklama, tür vb.)\n[ ... ] → Karakter listesi\n<;list>; ... <;/list>; → Bölüm listesi\n{ ... } → Her bölümün içeriği\n • → Sistem kontrolcüsü / işaretçi (silmeyin, bölüm içeriği bu işaretçinin içinde olmalıdır)",
-
     "note.3": " 2. ZORUNLU KURALLAR\nHerhangi bir MDT etiketini düzenlemeyin, silmeyin veya değiştirmeyin.\nDosyadaki tüm içerik orijinal yapısını korumalıdır.\nSistem etiketlerinin kullanımı zorunludur.\nFormat yanlışsa, araç içeriği okuyamayabilir.",
-
     "note.4": "3. DOSYA GEREKSİNİMLERİ\nAraç tamamen çevrimdışı çalışır\nKullanıcı .txt dosyasını doğru formatta kendisi hazırlamalıdır\nAraç yalnızca MDT standardına göre dönüştürülmüş dosyaları destekler",
-
     "note.5": "4. FERAGATNAME\nDosya yanlış biçimlendirme nedeniyle bozulursa, araç sorumluluk kabul etmez\nAraç, MDT standardına uymayan kaynaklardan gelen dosyaların okunacağını garanti etmez\nYalnızca araç tarafından oluşturulan veya teknik özelliklere uygun olarak tasarlanmış dosyaların kullanılması önerilir",
-
     "noscript.tools": "Bu özelliği kullanmak için tarayıcınızda JavaScript'in etkinleştirilmesi gerekir.",
     "download.txt": "TXT İndir",
-
     "opf_not_found": "OPF dosyası bulunamadı",
     "book.no_author": "Yazar bulunamadı",
-
     "book.no_title": "Başlık bulunamadı",
     "chapter": "Bölüm",
-
     "author": "Yazar",
     "genre": "Tür",
-
     "chapter.count": "Bölüm sayısı",
     "description": "Açıklama",
-
     "charlist": "Karakter listesi",
     "edit.opt.replace": "Değiştir",
-
     "edit.opt.match.all": "Tümünü eşleştir",
     "edit.opt.match.around": "Etrafını eşleştir",
-
     "edit.opt.regex": "Düzenli İfade (Regex)",
     "edit.opt.prev": "Önceki",
-
     "edit.opt.next": "Sonraki",
     "edit.opt.replace.all": "Tümünü Değiştir",
-
     "edit.opt.cancel": "İptal",
     "edit.title": "Bul & Değiştir",
-
     "download.all": "⬇ Tümünü İndir",
     "download.changed": "⬇ Düzenlenenleri İndir",
     "export.epub": "📚 EPUB Olarak Dışa Aktar",
@@ -127,7 +100,6 @@
     },
     "tool.epub.reader": "EPUB Reader",
     "tool.epub.reader.desc": "Görsel bir arayüz ile EPUB okuyun",
-
     "ereader.import_epub": "EPUB İçe Aktar",
     "ereader.no_book_loaded": "Henüz bir kitap yüklenmedi",
     "ereader.toc": "İçindekiler",
@@ -166,7 +138,6 @@
     "ereader.chapter": "Bölüm",
     "ereader.page": "Sayfa",
     "ereader.tts_not_supported": "Tarayıcınız TTS (Sesli Okuma) desteklemiyor.",
-
     "library.page_title": "Yerel ePub Kitaplığı",
     "library.heading": "Kitaplığım",
     "library.btn_add": "+ Yeni EPUB kitabı ekle",
@@ -175,7 +146,6 @@
     "library.unknown_author": "Bilinmeyen yazar",
     "library.confirm_delete": "Bu kitabı yerel hafızadan silmek istediğinize emin misiniz?",
     "library.error_import": "Kitap ayrıştırılırken ve yüklenirken hata oluştu: ",
-
     "reader.status_loading": "📂 EPUB dosyası yükleniyor...",
     "reader.status_success": "✅ Başarıyla yüklendi",
     "reader.status_error": "❌ Dosya hatası veya yanlış EPUB formatı",
@@ -283,5 +253,77 @@
         "btn_find": "Ara (Find)",
         "btn_export": "Yapılandırma Verilerini Dışa Aktar (Export)",
         "btn_import": "Yapılandırma Verilerini İçe Aktar (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDT Library",
+            "search": "🔍 Search stories...",
+            "import": "➕ Import story",
+            "create": {
+                "title": "Create new story",
+                "title.label": "Title:",
+                "desc.label": "Description:",
+                "desc.placeholder": "Enter story description...",
+                "char.label": "Character list (one per line):",
+                "char.placeholder": "Enter character list...",
+                "submit": "Create",
+                "need_title": "Please enter a title!"
+            },
+            "read": "Read",
+            "edit": "Edit",
+            "chapters": "Chapters",
+            "last_read": "Read to",
+            "empty": "Library is empty. Import a TXT file or create a new story!",
+            "deleted": "Story deleted!",
+            "importing": "Importing: ",
+            "imported": "Imported: ",
+            "import_error": "Error importing: ",
+            "sort": {
+                "recent": "Most recent",
+                "title": "By title",
+                "created": "Newest"
+            }
+        },
+        "reader": {
+            "title": "📖 Read story",
+            "chapter_list": "📑 Chapter list",
+            "read": "Read",
+            "unread": "Unread",
+            "book_not_found": "Story not found!",
+            "no_chapters": "No chapters yet.",
+            "chapter_not_found": "Chapter not found!"
+        },
+        "editor": {
+            "title": "✏️ Edit story",
+            "tab": {
+                "metadata": "📋 Metadata",
+                "toc": "📑 Table of contents",
+                "other": "⚙️ Other"
+            },
+            "meta": {
+                "title": "Title:",
+                "description": "Description:",
+                "characters": "Character list (one per line):",
+                "save": "💾 Save info",
+                "saved": "Story info saved!"
+            },
+            "toc": {
+                "title": "Chapter list",
+                "add": "➕ Add chapter"
+            },
+            "other": {
+                "preview": "👁️ Preview story (Reader)",
+                "downloaded": "TXT file downloaded!",
+                "reset_confirm": "Reset this entire story?"
+            },
+            "modal": {
+                "title": "Edit chapter",
+                "close": "Close",
+                "save": "💾 Save",
+                "saved": "Chapter saved!",
+                "need_title": "Please enter a chapter title!"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 Koyu Neon"
 }

@@ -2,84 +2,58 @@
     "app.title": "TruyenChuTool by TzhouSensei",
     "home.title": "⚡ TOOL HUB by TzhouSensei",
     "home.subtitle": "Chọn công cụ bạn muốn sử dụng",
-
-    "tool.reader.title": "Reader",
-    "tool.reader.desc": "Đọc tiểu thuyết",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "MDT Library & Reader thế hệ mới",
     "tool.editor.title": "Editor",
     "tool.editor.desc": "Tạo/Chỉnh sửa truyện",
-
     "tool.converter.title": "Converter",
     "tool.converter.desc": "Convert EPUB -> TXT",
-
     "converter.title": "Converter EPUB ➜ TXT",
     "lang.option": "Ngôn ngữ",
-
     "mdt.reader": "Reader",
     "mdt.editor": "Editor",
-
     "appearance.opt": "🎨 Giao diện",
     "new.novel": "➕ Tạo truyện mới",
-
     "reset.novel": "🔄 Reset",
     "appearance.opt.default": "Mặc định",
-
     "appearance.opt.ruby": "Ruby Blue",
     "appearance.opt.navajo": "Navajo",
-
     "appearance.khaki": "Khaki",
     "appearance.opt.dark": "🌙 Dark",
-
     "appearance.opt.deep": "🕳 Deep",
     "appearance.opt.anias": "🍂 Anias",
-
     "import.txt.notify": "Đưa file .txt vào",
     "subtitle.editor": "📖 EDITOR",
     "subtitle.reader": "📖 Máy Đọc Truyện",
     "footer.mdt": "Máy Đọc Truyện của TzhouSensei",
-
     "note.1": "Khi import file .txt, nội dung bắt buộc phải tuân theo cấu trúc sau:",
-
     "note.2": "1. STRUCTURE TAGS \n <>...</>; → Title (tiêu đề truyện)\n <;info>; ... <;/info>; → Thông tin truyện (tác giả, mô tả, thể loại, v.v.)\n[ ... ] → Danh sách nhân vật\n<;list>; ... <;/list>; → Danh sách chương\n{ ... } → Nội dung từng chương\n • → Checker / marker hệ thống (không xoá, nội dung chương phải nằm trong marker này)",
-
     "note.3": " 2. RULES (QUY TẮC BẮT BUỘC)\nKhông được chỉnh sửa, xoá hoặc thay đổi bất kỳ thẻ MDT nào.\nToàn bộ nội dung trong file phải giữ nguyên cấu trúc gốc.\nCác thẻ hệ thốnglà bắt buộc.\nNếu sai format,tool có thể không đọc được nội dung.",
-
     "note.4": "3. FILE REQUIREMENT\nTool hoạt động offline hoàn toàn\nNgười dùng phải tự chuẩn bị file .txt đúng format\nTool chỉ hỗ trợ file đã được convert theo chuẩn MDT",
-
     "note.5": "4. DISCLAIMER\nNếu file bị lỗi do chỉnh sửa sai format, tool không chịu trách nhiệm\nTool không đảm bảo đọc được file từ nguồn không theo chuẩn MDT\nChỉ khuyến nghị sử dụng file do tool tạo hoặc file tự thiết kế đúng spec",
-
     "noscript.tools": "Trình duyệt cần bật JavaScript để sử dụng tính năng này.",
     "download.txt": "Tải TXT",
-
     "opf_not_found": "Không tìm thấy file OPF",
     "book.no_author": "Không thấy tác giả",
-
     "book.no_title": "Không thấy tiêu đề",
     "chapter": "Chương",
-
     "author": "Tác giả",
     "genre": "Thể loại",
-
     "chapter.count": "Số chương",
     "description": "Mô tả",
-
     "charlist": "Danh sách nhân vật",
     "edit.opt.replace": "Thay thế",
-
     "edit.opt.match.all": "Khớp tất cả",
     "edit.opt.match.around": "Khớp xung quanh",
-
     "edit.opt.regex": "Biểu thức chính quy",
     "edit.opt.prev": "Trước",
-
     "edit.opt.next": "Tiếp theo",
     "edit.opt.replace.all": "Thay tất cả",
-
     "edit.opt.cancel": "Hủy",
     "edit.title": "Find & Replace",
-
     "download.all": "⬇ Tải toàn bộ",
     "download.changed": "⬇ Tải đã chỉnh sửa",
+    "download.zip": "📦 Tải toàn bộ ZIP (XHTML)",
     "export.epub": "📚 Export EPUB",
     "epub": {
         "generator_title": "EPUB Generator",
@@ -127,7 +101,6 @@
     },
     "tool.epub.reader": "EPUB Reader",
     "tool.epub.reader.desc": "Đọc EPUB với giao diện trực quan",
-
     "ereader.import_epub": "Import EPUB",
     "ereader.no_book_loaded": "Chưa có sách được nạp",
     "ereader.toc": "Mục lục",
@@ -166,7 +139,6 @@
     "ereader.chapter": "Chương",
     "ereader.page": "Trang",
     "ereader.tts_not_supported": "Trình duyệt của bạn không hỗ trợ TTS.",
-
     "library.page_title": "Thư viện Sách ePub Cục Bộ",
     "library.heading": "Kệ Sách Của Tôi",
     "library.btn_add": "+ Thêm sách EPUB mới",
@@ -175,7 +147,6 @@
     "library.unknown_author": "Chưa rõ tác giả",
     "library.confirm_delete": "Bạn có chắc chắn muốn xóa cuốn sách này khỏi bộ nhớ cục bộ?",
     "library.error_import": "Lỗi khi phân tích và nạp sách: ",
-
     "reader.status_loading": "📂 Đang tải file EPUB...",
     "reader.status_success": "✅ Tải thành công",
     "reader.status_error": "❌ File lỗi hoặc sai format EPUB",
@@ -235,7 +206,13 @@
         "placeholder_display_name": "Tên hiển thị",
         "placeholder_genre_name": "Tên thể loại",
         "placeholder_desc_content": "Nội dung giới thiệu",
-        "placeholder_change_key": "Có thể thay đổi key này"
+        "placeholder_change_key": "Có thể thay đổi key này",
+        "expand_parsing": "Mở Rộng Parsing",
+        "parsing_type": "Kiểu Parsing:",
+        "parent_tag": "Thẻ Cha:",
+        "child_tag": "Thẻ Con:",
+        "verified_found": "✓ Đã xác minh (.verified)",
+        "verified_not_found": "✗ Chưa xác minh (không có .verified)"
     },
     "epub_bulk": {
         "btn_home": "⬅ Trang chủ",
@@ -283,5 +260,79 @@
         "btn_find": "Tìm kiếm (Find)",
         "btn_export": "Xuất dữ liệu cấu hình (Export)",
         "btn_import": "Nhập dữ liệu cấu hình (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDT Library",
+            "search": "🔍 Tìm truyện...",
+            "import": "➕ Import truyện",
+            "create": {
+                "title": "Tạo truyện mới",
+                "title.label": "Tiêu đề:",
+                "desc.label": "Mô tả:",
+                "desc.placeholder": "Nhập mô tả truyện...",
+                "char.label": "Danh sách nhân vật (mỗi dòng 1 nhân vật):",
+                "char.placeholder": "Nhập danh sách nhân vật...",
+                "submit": "Tạo",
+                "need_title": "Vui lòng nhập tiêu đề!"
+            },
+            "read": "Đọc",
+            "edit": "Sửa",
+            "chapters": "Chương",
+            "last_read": "Đọc tới",
+            "empty": "Thư viện trống. Hãy import file TXT hoặc tạo truyện mới!",
+            "deleted": "Đã xóa truyện!",
+            "importing": "Đang nhập: ",
+            "imported": "Đã nhập: ",
+            "import_error": "Lỗi khi nhập: ",
+            "sort": {
+                "recent": "Gần đây nhất",
+                "title": "Theo tên",
+                "created": "Mới thêm"
+            }
+        },
+        "reader": {
+            "title": "📖 Đọc truyện",
+            "chapter_list": "📑 Danh sách chương",
+            "read": "Đã đọc",
+            "unread": "Chưa đọc",
+            "book_not_found": "Không tìm thấy truyện!",
+            "no_chapters": "Chưa có chương nào.",
+            "chapter_not_found": "Không tìm thấy chương!"
+        },
+        "editor": {
+            "title": "✏️ Chỉnh sửa truyện",
+            "tab": {
+                "metadata": "📋 Metadata",
+                "toc": "📑 Mục lục",
+                "other": "⚙️ Khác"
+            },
+            "meta": {
+                "title": "Tiêu đề:",
+                "description": "Mô tả:",
+                "characters": "Danh sách nhân vật (mỗi dòng 1 nhân vật):",
+                "save": "💾 Lưu thông tin",
+                "saved": "Đã lưu thông tin truyện!"
+            },
+            "toc": {
+                "title": "Danh sách chương",
+                "add": "➕ Thêm chương"
+            },
+            "other": {
+                "preview": "👁️ Xem trước truyện (Reader)",
+                "downloaded": "Đã tải file TXT!",
+                "zip_downloaded": "Đã tải file ZIP!",
+                "zip_no_lib": "Thư viện JSZip chưa được tải!",
+                "reset_confirm": "Reset toàn bộ truyện này?"
+            },
+            "modal": {
+                "title": "Chỉnh sửa chương",
+                "close": "Đóng",
+                "save": "💾 Save",
+                "saved": "Đã lưu chương!",
+                "need_title": "Vui lòng nhập tiêu đề chương!"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 Dark Neon"
 }

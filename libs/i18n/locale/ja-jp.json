@@ -2,87 +2,58 @@
     "app.title": "NovelTool by TzhouSensei",
     "home.title": "⚡ ツールハブ by TzhouSensei",
     "home.subtitle": "使いたいツールを選択してください",
-
-    "tool.reader.title": "リーダー",
-    "tool.reader.desc": "小説を読む",
-
+    "tool.reader.title": "New MDT",
+    "tool.reader.desc": "新世代MDTライブラリ＆リーダー",
     "tool.editor.title": "エディター",
     "tool.editor.desc": "ストーリーの作成・編集",
-
     "tool.converter.title": "コンバーター",
     "tool.converter.desc": "EPUB → TXT 変換",
-
     "converter.title": "EPUB ➜ TXT コンバーター",
     "lang.option": "言語",
-
     "mdt.reader": "リーダー",
     "mdt.editor": "エディター",
-
     "appearance.opt": "🎨 外観",
     "new.novel": "➕ 新しい小説を作成",
-
     "reset.novel": "🔄 リセット",
     "appearance.opt.default": "デフォルト",
-
     "appearance.opt.ruby": "ルビーブルー",
     "appearance.opt.navajo": "ナバホ",
-
     "appearance.khaki": "カーキ",
     "appearance.opt.dark": "🌙 ダーク",
-
     "appearance.opt.deep": "🕳 ディープ",
     "appearance.opt.anias": "🍂 アニアス",
-
     "import.txt.notify": ".txtファイルをインポート",
     "subtitle.editor": "📖 エディター",
     "subtitle.reader": "📖 小説リーダー",
     "footer.mdt": "TzhouSenseiの小説リーダー",
-
     "note.1": ".txtファイルをインポートする際は、以下の構造に従ってください：",
-
     "note.2": "1. 構造タグ \n <>...</> → タイトル（小説名）\n <info> ... </info> → 小説情報（作者、説明、ジャンルなど）\n[ ... ] → キャラクターリスト\n<list> ... </list> → 章リスト\n{ ... } → 章の内容\n • → システムマーカー（削除不可、この中に章の内容を入れる）",
-
     "note.3": "2. ルール（必須）\nMDTタグを編集・削除・変更しないでください。\nすべてのファイル内容は元の構造を維持する必要があります。\nシステムタグは必須です。\n形式が正しくない場合、ツールは正常に読み込めない可能性があります。",
-
     "note.4": "3. ファイル要件\nこのツールは完全オフラインで動作します\nユーザーは正しい形式の .txt ファイルを用意する必要があります\nMDT標準形式で変換されたファイルのみ対応しています",
-
     "note.5": "4. 免責事項\n不正なフォーマットによるファイル破損については責任を負いません\nMDT以外のファイルは読み取り保証対象外です\nツールで作成またはMDT準拠ファイルのみ推奨されます",
-
     "noscript.tools": "この機能を使用するにはJavaScriptを有効にしてください。",
     "download.txt": "TXTをダウンロード",
-
     "opf_not_found": "OPFファイルが見つかりません",
     "book.no_author": "作者が見つかりません",
-
     "book.no_title": "タイトルが見つかりません",
     "chapter": "チャプター",
-
     "author": "作者",
     "genre": "ジャンル",
-
     "chapter.count": "チャプター数",
     "description": "説明",
-
     "charlist": "キャラクター一覧",
     "edit.opt.replace": "置換",
-
     "edit.opt.match.all": "すべて一致",
     "edit.opt.match.around": "周辺一致",
-
     "edit.opt.regex": "正規表現",
     "edit.opt.prev": "前へ",
-
     "edit.opt.next": "次へ",
     "edit.opt.replace.all": "すべて置換",
-
     "edit.opt.cancel": "キャンセル",
     "edit.title": "検索と置換",
-
     "download.all": "⬇ すべてダウンロード",
     "download.changed": "⬇ 変更のみ",
-
     "export.epub": "📚 EPUBをエクスポート",
-
     "epub": {
         "generator_title": "EPUB ジェネレーター",
         "generator_subtitle": "ZIP ファイルをインポート → configuration.json を解析 → EPUB を生成",
@@ -111,7 +82,6 @@
         "characters_title": "キャラクター",
         "desc_title": "説明"
     },
-
     "ui": {
         "description": "説明",
         "characters": "キャラクター",
@@ -123,7 +93,6 @@
         "not_updated": "未更新",
         "confirm_delete_chapter": "このチャプターを削除しますか？"
     },
-
     "prompt": {
         "title": "ストーリーのタイトルを入力：",
         "description": "ストーリーの説明を入力：",
@@ -131,7 +100,6 @@
     },
     "tool.epub.reader": "EPUBリーダー",
     "tool.epub.reader.desc": "直感的なインターフェースでEPUBを読む",
-
     "ereader.import_epub": "EPUBをインポート",
     "ereader.no_book_loaded": "本が読み込まれていません",
     "ereader.toc": "目次",
@@ -170,7 +138,6 @@
     "ereader.chapter": "章",
     "ereader.page": "ページ",
     "ereader.tts_not_supported": "TTS非対応",
-
     "library.page_title": "ローカルEPUBライブラリ",
     "library.heading": "本棚",
     "library.btn_add": "+ EPUB本を追加",
@@ -286,5 +253,77 @@
         "btn_find": "検索 (Find)",
         "btn_export": "設定データをエクスポート (Export)",
         "btn_import": "設定データをインポート (Import)"
-    }
+    },
+    "mdt": {
+        "library": {
+            "title": "📚 MDTライブラリ",
+            "search": "🔍 作品を検索...",
+            "import": "➕ 作品をインポート",
+            "create": {
+                "title": "新規作品を作成",
+                "title.label": "タイトル:",
+                "desc.label": "説明:",
+                "desc.placeholder": "作品の説明を入力...",
+                "char.label": "キャラクターリスト（1行に1人）:",
+                "char.placeholder": "キャラクターリストを入力...",
+                "submit": "作成",
+                "need_title": "タイトルを入力してください！"
+            },
+            "read": "読む",
+            "edit": "編集",
+            "chapters": "章",
+            "last_read": "読んだ場所",
+            "empty": "ライブラリは空です。TXTファイルをインポートするか、新規作品を作成してください！",
+            "deleted": "作品を削除しました！",
+            "importing": "インポート中: ",
+            "imported": "インポート完了: ",
+            "import_error": "インポートエラー: ",
+            "sort": {
+                "recent": "最近",
+                "title": "タイトル順",
+                "created": "新着"
+            }
+        },
+        "reader": {
+            "title": "📖 作品を読む",
+            "chapter_list": "📑 章リスト",
+            "read": "既読",
+            "unread": "未読",
+            "book_not_found": "作品が見つかりません！",
+            "no_chapters": "章がまだありません。",
+            "chapter_not_found": "章が見つかりません！"
+        },
+        "editor": {
+            "title": "✏️ 作品を編集",
+            "tab": {
+                "metadata": "📋 メタデータ",
+                "toc": "📑 目次",
+                "other": "⚙️ その他"
+            },
+            "meta": {
+                "title": "タイトル:",
+                "description": "説明:",
+                "characters": "キャラクターリスト（1行に1人）:",
+                "save": "💾 保存",
+                "saved": "作品情報を保存しました！"
+            },
+            "toc": {
+                "title": "章リスト",
+                "add": "➕ 章を追加"
+            },
+            "other": {
+                "preview": "👁️ 作品をプレビュー（リーダー）",
+                "downloaded": "TXTファイルをダウンロードしました！",
+                "reset_confirm": "この作品をすべてリセットしますか？"
+            },
+            "modal": {
+                "title": "章を編集",
+                "close": "閉じる",
+                "save": "💾 保存",
+                "saved": "章を保存しました！",
+                "need_title": "章のタイトルを入力してください！"
+            }
+        }
+    },
+    "appearance.opt.dark_neon": "🌌 ダークネオン"
 }
