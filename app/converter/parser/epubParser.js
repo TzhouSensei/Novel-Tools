@@ -1,10 +1,14 @@
 import {
+    applyAssetDecisions,
     cleanBodyText,
     collectMetaText,
+    detectChaptersFromOpf,
+    detectFilesWithAssets,
     getFirstHeading,
     resolveZipPath,
     selectChapterFiles,
 } from "./epubChapterPipeline.js";
+import { showAssetDecisionDialog } from "./epubAssetDecisionDialog.js";
 
 export const fileLog = (tag, msg) => console.log(`[DEBUG][${tag}]`, msg);
 
@@ -75,21 +79,13 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
         "dc\\:comment",
     ]);
 
-    const manifest = {};
-    opfXml.querySelectorAll("manifest item").forEach((i) => {
-        manifest[i.getAttribute("id")] = i.getAttribute("href");
-    });
-
-    const spine = [];
-    opfXml.querySelectorAll("spine itemref").forEach((i) => {
-        const id = i.getAttribute("idref");
-        if (manifest[id]) spine.push(manifest[id]);
-    });
+    const detectedChapters = detectChaptersFromOpf(opfXml, basePath);
 
     const spineFiles = [];
 
-    for (let i = 0; i < spine.length; i++) {
-        const fullPath = basePath ? `${basePath}/${spine[i]}` : spine[i];
+    for (let i = 0; i < detectedChapters.length; i++) {
+        const chapter = detectedChapters[i];
+        const fullPath = chapter.fullPath;
         const resolvedPath = resolveZipPath(zip, fullPath);
         const fileData = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileData) continue;
@@ -99,39 +95,57 @@ export async function parseEpubAdvanced(file, JSZip, DOMParser, state) {
 
         const firstHeading = getFirstHeading(doc);
         const fileTitle =
-            firstHeading?.textContent?.trim() || doc.title?.trim() || spine[i];
+            firstHeading?.textContent?.trim() ||
+            doc.title?.trim() ||
+            chapter.href;
 
         const text = cleanBodyText(doc, fileTitle, stripHTML);
 
         spineFiles.push({
             index: i,
+            idref: chapter.idref,
             fullPath,
-            relativePath: spine[i],
+            relativePath: chapter.href,
             title: fileTitle,
             doc,
             text,
         });
     }
 
-    const { validIndexes, extraFiles } = selectChapterFiles(spineFiles);
+    const flaggedFiles = detectFilesWithAssets(spineFiles);
 
-    const validChapters = spineFiles
-        .filter((file) => validIndexes.includes(file.index))
-        .sort((a, b) => a.index - b.index)
-        .map((f) => ({
-            title: f.title,
-            text: f.text,
-        }));
+    let assetDecisions = new Map();
+    if (flaggedFiles.length > 0) {
+        assetDecisions = await showAssetDecisionDialog(flaggedFiles);
+    }
+
+    const { contentFiles, descriptionFiles, skippedFiles } =
+        applyAssetDecisions(spineFiles, assetDecisions);
+
+    const allContentFiles = [...contentFiles].sort((a, b) => a.index - b.index);
+
+    const validChapters = allContentFiles.map((f) => ({
+        title: f.title,
+        text: f.text,
+    }));
+
+    const extraDescription = descriptionFiles.map((f) => f.text).join("\n\n");
 
     return {
         title,
         creator,
         genre,
-        description,
-        spine,
+        description: description
+            ? `${description}\n\n${extraDescription}`.trim()
+            : extraDescription,
+        spine: detectedChapters.map((c) => c.href),
         characters,
         validChapters,
-        extraFiles,
+        extraFiles: skippedFiles,
+        contentFiles,
+        descriptionFiles,
+        skippedFiles,
+        assetDecisions: Object.fromEntries(assetDecisions),
     };
 }
 
@@ -365,22 +379,15 @@ export const parseEpub = async (file, t) => {
         .filter(Boolean)
         .join(", ");
 
-    const manifestItems = {};
-    opfXml.querySelectorAll("manifest item").forEach((item) => {
-        manifestItems[item.getAttribute("id")] = item.getAttribute("href");
-    });
-
-    const spine = [];
-    opfXml.querySelectorAll("spine itemref").forEach((item) => {
-        const idref = item.getAttribute("idref");
-        if (manifestItems[idref]) spine.push(manifestItems[idref]);
-    });
-
     const basePath = opfPath.split("/").slice(0, -1).join("/");
+    const detectedChapters = detectChaptersFromOpf(opfXml, basePath);
+    const spine = detectedChapters.map((c) => c.href);
+
     const spineFiles = [];
 
-    for (let i = 0; i < spine.length; i++) {
-        const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
+    for (let i = 0; i < detectedChapters.length; i++) {
+        const chapter = detectedChapters[i];
+        const filePath = chapter.fullPath;
         const resolvedPath = resolveZipPath(zip, filePath);
         const file = resolvedPath ? zip.file(resolvedPath) : null;
         if (!file) continue;
@@ -401,7 +408,7 @@ export const parseEpub = async (file, t) => {
         spineFiles.push({
             index: i,
             fullPath: filePath,
-            relativePath: spine[i],
+            relativePath: chapter.href,
             title: chapterTitle,
             doc,
             text,

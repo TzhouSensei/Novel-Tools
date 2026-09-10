@@ -1,0 +1,79 @@
+body {
+    color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+th,
+.card-title {
+    color: var(--text);
+}
+
+.card,
+.modal-content {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border);
+    color: var(--text);
+}
+
+.card-body {
+    background-color: var(--card-bg);
+    color: var(--text);
+}
+
+.section {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.section-title {
+    color: var(--text);
+    border-bottom-color: var(--border);
+}
+
+.toc-block {
+    background: var(--hover-bg);
+    border-color: var(--border);
+}
+
+.info-badge {
+    background-color: var(--hover-bg);
+    color: var(--text);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+textarea,
+select,
+.form-control,
+.form-select {
+    background-color: var(--card-bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.progress {
+    background-color: var(--hover-bg);
+}

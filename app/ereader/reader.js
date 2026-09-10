@@ -36,14 +36,6 @@ const state = {
     pinchStartDist: 0,
     currentUtterance: null,
     bookId: null,
-    tts: {
-        voices: [],
-        voice: null,
-        rate: 1,
-        volume: 1,
-        enabled: false,
-        paused: false,
-    },
     blobUrls: [],
     orientationHandler: null,
     ux: {
@@ -943,19 +935,6 @@ function setupGlobalInteractions() {
         }
     };
     window.addEventListener("deviceorientation", state.orientationHandler);
-    setTimeout(() => {
-        if ("speechSynthesis" in window) {
-            const voices = window.speechSynthesis.getVoices();
-            const selector = document.getElementById("tts-voice");
-            selector.innerHTML = voices
-                .map(
-                    (v) =>
-                        `<option value="${v.name}">${v.name} (${v.lang})</option>`,
-                )
-                .join("");
-        }
-    }, 500);
-    initTTS();
 }
 
 let tiltCooldown = false;
@@ -1068,85 +1047,6 @@ function toggleAutoScroll(secondsPerPage) {
         }, sec * 1000);
     }
 }
-
-function speakText(text) {
-    if (!text || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    if (state.currentUtterance) {
-        state.currentUtterance.onend = null;
-        state.currentUtterance.onerror = null;
-        state.currentUtterance = null;
-    }
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = state.tts.voice;
-    u.rate = state.tts.rate;
-    u.volume = state.tts.volume;
-    u.onend = () => {
-        state.tts.enabled = false;
-        state.currentUtterance = null;
-    };
-    state.currentUtterance = u;
-    window.speechSynthesis.speak(u);
-    state.tts.enabled = true;
-}
-
-function initTTS() {
-    if (!("speechSynthesis" in window)) return;
-    const selector = document.getElementById("tts-voice");
-    const loadVoices = () => {
-        state.tts.voices = window.speechSynthesis.getVoices();
-        if (state.tts.voices.length === 0) return false;
-        if (selector) {
-            selector.innerHTML = state.tts.voices
-                .map(
-                    (v) =>
-                        `<option value="${v.name}">${v.name} (${v.lang})</option>`,
-                )
-                .join("");
-        }
-        state.tts.voice =
-            state.tts.voices.find((v) => v.default) ||
-            state.tts.voices[0] ||
-            null;
-        return true;
-    };
-    const loaded = loadVoices();
-    window.speechSynthesis.onvoiceschanged = () => {
-        loadVoices();
-    };
-    if (!loaded) {
-        const voicesTimer = setInterval(() => {
-            const success = loadVoices();
-            if (success) {
-                clearInterval(voicesTimer);
-            }
-        }, 200);
-        setTimeout(() => clearInterval(voicesTimer), 5000);
-    }
-}
-
-document.getElementById("tts-voice").addEventListener("change", (e) => {
-    const name = e.target.value;
-    state.tts.voice = state.tts.voices.find((v) => v.name === name);
-});
-
-function toggleTTS() {
-    const text = document.getElementById("chapter-content").innerText;
-    if (!state.tts.enabled) {
-        speakText(text);
-    } else {
-        window.speechSynthesis.cancel();
-        state.tts.enabled = false;
-    }
-}
-
-document.getElementById("tts-volume").addEventListener("input", (e) => {
-    state.tts.volume = parseFloat(e.target.value);
-});
-
-document.getElementById("tts-speed").addEventListener("input", (e) => {
-    state.tts.rate = parseFloat(e.target.value);
-});
 
 function changeUXSetting(key, value) {
     state.ux[key] = value;

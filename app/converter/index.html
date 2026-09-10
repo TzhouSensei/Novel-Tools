@@ -2,223 +2,478 @@
 <html lang="vi">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <meta name="theme-color" content="#f5f7fa" />
         <title data-i18n="converter.title">Converter EPUB ➜ TXT</title>
-        <script src="../../libs/epub/jszip.min.js"></script>
+        <link rel="stylesheet" href="../../libs/theme/theme.css" />
+        <script src="../../libs/theme/theme.js"></script>
+        <script defer src="../../libs/epub/jszip.min.js"></script>
+        <script defer src="parser/asciiBox.js"></script>
+        <link rel="modulepreload" href="parser/epubChapterPipeline.js" />
+        <link rel="modulepreload" href="parser/epubAssetDecisionDialog.js" />
+        <script>
+            (function () {
+                var SCRIPT_MAP = {
+                    v1: "model/desktop/converter.js",
+                    v2: "model/desktop/converter-v2.js",
+                    v3: "model/mobile/converter-mobile.js",
+                    v4: "model/mobile/converter-v2-mobile.js",
+                };
+                var saved = null;
+                try {
+                    saved = localStorage.getItem("converterVersion");
+                } catch (e) {}
+                if (!saved || !SCRIPT_MAP[saved]) {
+                    var coarse =
+                        window.matchMedia &&
+                        window.matchMedia("(pointer: coarse)").matches;
+                    var small = Math.min(screen.width, screen.height) < 480;
+                    saved = coarse || small ? "v3" : "v1";
+                    try {
+                        localStorage.setItem("converterVersion", saved);
+                    } catch (e) {}
+                }
+                window.__converterVersion = saved;
+                window.__converterScriptMap = SCRIPT_MAP;
 
-        <link href="../../libs/i18n/language.css" rel="stylesheet" />
+                var link = document.createElement("link");
+                link.rel = "modulepreload";
+                link.href = SCRIPT_MAP[saved];
+                document.head.appendChild(link);
+            })();
+        </script>
+
         <style>
+            * {
+                box-sizing: border-box;
+            }
+
             body {
                 margin: 0;
-                padding: 32px;
-
+                padding: clamp(16px, 4vw, 32px);
+                padding-top: max(clamp(16px, 4vw, 32px), var(--safe-top, 0px));
+                padding-bottom: max(
+                    clamp(16px, 4vw, 32px),
+                    var(--safe-bottom, 0px)
+                );
+                padding-left: max(
+                    clamp(16px, 4vw, 32px),
+                    var(--safe-left, 0px)
+                );
+                padding-right: max(
+                    clamp(16px, 4vw, 32px),
+                    var(--safe-right, 0px)
+                );
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: center;
-
                 min-height: 100vh;
-
+                min-height: 100dvh;
                 font-family:
                     Inter,
                     system-ui,
                     -apple-system,
                     BlinkMacSystemFont,
                     sans-serif;
+                color: var(--text);
+            }
 
-                background: radial-gradient(
-                    circle at top left,
-                    #2b3560 0%,
-                    #141824 40%,
-                    #090909 100%
-                );
+            .cv-shell {
+                width: min(760px, 100%);
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
 
-                color: rgba(255, 255, 255, 0.92);
+            .cv-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
 
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+            .cv-back-btn {
+                background: none;
+                border: none;
+                font-size: 1.4rem;
+                line-height: 1;
+                color: var(--text, #222);
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 10px;
+                flex: none;
+                transition: background 0.2s;
+            }
+            .cv-back-btn:hover {
+                background: var(--hover-bg, #e8f0fe);
+            }
+            .cv-head h2 {
+                margin: 0;
+                font-size: clamp(20px, 4.5vw, 26px);
+            }
+            .cv-appearance {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .cv-appearance label {
+                color: var(--text-muted);
+                font-size: 13px;
+            }
+
+            select {
+                padding: 7px 10px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: var(--card-bg);
+                color: var(--text);
+                cursor: pointer;
+                font-size: 13px;
+            }
+
+            .cv-card {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                padding: clamp(14px, 3vw, 22px);
+                box-shadow: var(--shadow-card);
+            }
+
+            .cv-file-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .cv-file-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 20px;
+                border-radius: 12px;
+                background: var(--primary);
+                color: #fff;
+                font-weight: 600;
+                cursor: pointer;
+                user-select: none;
+                box-shadow: var(--shadow-card);
+                transition:
+                    transform 0.15s ease,
+                    filter 0.2s ease;
+            }
+            .cv-file-btn:hover {
+                filter: brightness(1.08);
+            }
+            .cv-file-btn:active {
+                transform: translateY(1px);
+            }
+            .cv-file-name {
+                color: var(--text-muted);
+                font-size: 13px;
+                word-break: break-all;
+                min-width: 0;
+            }
+
+            .cv-versions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 16px 0 4px;
+                padding: 10px 12px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                min-width: 0;
+            }
+            .cv-versions legend {
+                font-size: 12px;
+                color: var(--text-muted);
+                padding: 0 6px;
+            }
+            .cv-versions label {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 12px;
+                margin: 0;
+                border: 1px solid transparent;
+                border-radius: 9px;
+                font-size: 13px;
+                cursor: pointer;
+                color: var(--text);
+            }
+            .cv-versions label:has(input:checked) {
+                border-color: var(--primary);
+                background: var(--hover-bg);
+            }
+            .cv-versions input {
+                accent-color: var(--primary);
+                margin: 0;
             }
 
             button {
-                padding: 12px 22px;
-                margin-top: 12px;
-
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 14px;
-
-                background: rgba(255, 255, 255, 0.08);
-                color: #fff;
-
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-
+                padding: 10px 20px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: var(--card-bg);
+                color: var(--text);
+                font: inherit;
+                font-weight: 600;
                 cursor: pointer;
-
                 transition:
-                    transform 0.2s ease,
+                    transform 0.15s ease,
                     background 0.2s ease,
                     border-color 0.2s ease,
                     box-shadow 0.2s ease;
-
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
             }
-
             button:hover {
-                background: rgba(255, 255, 255, 0.14);
-                border-color: rgba(255, 255, 255, 0.2);
-                transform: translateY(-2px);
+                background: var(--hover-bg);
+                border-color: var(--primary);
+            }
+            button:active {
+                transform: translateY(1px);
             }
 
-            button:active {
-                transform: translateY(0);
+            #download {
+                display: none;
+                margin-top: 14px;
+                background: var(--primary);
+                border-color: var(--primary);
+                color: #fff;
+                box-shadow: var(--shadow-card);
+            }
+            #download:hover {
+                background: var(--primary);
+                filter: brightness(1.08);
             }
 
             textarea {
                 width: 100%;
-                height: 420px;
-                margin-top: 20px;
-                padding: 16px;
-
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 18px;
-
-                background: rgba(15, 15, 20, 0.75);
-                color: #e8e8e8;
-
-                backdrop-filter: blur(24px);
-                -webkit-backdrop-filter: blur(24px);
-
-                font-family: "JetBrains Mono", "Cascadia Code", monospace;
-
-                font-size: 14px;
+                height: clamp(240px, 46vh, 460px);
+                height: clamp(240px, 46dvh, 460px);
+                margin-top: 14px;
+                padding: 14px;
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    "JetBrains Mono", "Cascadia Code", ui-monospace, Consolas,
+                    monospace;
+                font-size: 13.5px;
                 line-height: 1.7;
-
                 resize: vertical;
                 outline: none;
-
                 transition:
-                    border-color 0.25s ease,
-                    box-shadow 0.25s ease;
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease;
+                white-space: pre;
+                overflow-x: auto;
+                tab-size: 4;
+                -moz-tab-size: 4;
             }
-
             textarea:focus {
-                border-color: rgba(99, 102, 241, 0.6);
-                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+                border-color: var(--primary);
+                box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
             }
 
-            textarea::placeholder {
-                color: rgba(255, 255, 255, 0.35);
+            .cv-card label {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                margin: 4px 10px 4px 0;
+                font-size: 13.5px;
+                color: var(--text);
+            }
+            .cv-card label.cv-file-btn {
+                margin: 0;
+            }
+            .cv-card .cv-versions label {
+                margin: 0;
+            }
+            .cv-card input[type="number"] {
+                width: 80px;
+                padding: 6px 8px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--bg);
+                color: var(--text);
             }
 
             ::-webkit-scrollbar {
                 width: 10px;
+                height: 10px;
             }
-
             ::-webkit-scrollbar-track {
                 background: transparent;
             }
-
             ::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.18);
+                background: var(--border);
                 border-radius: 999px;
             }
-
             ::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.3);
+                background: var(--text-muted);
+            }
+            ::selection {
+                background: var(--primary);
+                color: #fff;
             }
 
-            ::selection {
-                background: rgba(99, 102, 241, 0.3);
+            @media (max-width: 560px) {
+                .cv-head {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .cv-versions {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                }
+                textarea {
+                    height: clamp(200px, 42vh, 380px);
+                    height: clamp(200px, 42dvh, 380px);
+                }
             }
         </style>
     </head>
 
     <body>
-        <a
-            href="../../index.html"
-            onclick="sessionStorage.setItem('reloaded_once', '1')"
-            style="
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                padding: 10px 14px;
-                background: rgba(0, 0, 0, 0.6);
-                color: white;
-                text-decoration: none;
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(6px);
-                z-index: 9999;
-            "
-        >
-            ⬅ Home
-        </a>
-        <h2>EPUB ➜ TXT</h2>
-        <div class="lang-wrapper"></div>
-        <input type="file" id="file" accept=".epub" />
-        <br />
-        <button
-            id="download"
-            style="display: none"
-            data-i18n="download.txt"
-        ></button>
-        <textarea id="output" readonly></textarea>
-        <noscript>
-            <div
-                style="text-align: center; color: red; margin: 20px 0"
-                data-i18n="noscript.tools"
-            ></div>
-        </noscript>
-        <input type="radio" name="ver" onclick="switchVersion('v1')" /> V1(MDT
-        Style)
-        <input type="radio" name="ver" onclick="switchVersion('v2')" />
-        V2(Reading TXT Style)
-        <input type="radio" name="ver" onclick="switchVersion('v3')" /> V1(MDT
-        Style) Mobile
-        <input type="radio" name="ver" onclick="switchVersion('v4')" />
-        V2(Reading TXT Style) Mobile
-        <script src="parser/asciiBox.js"></script>
-        <script id="converter-script">
-            const SCRIPT_MAP = {
-                v1: "model/desktop/converter.js",
-                v2: "model/desktop/converter-v2.js",
-                v3: "model/mobile/converter-mobile.js",
-                v4: "model/mobile/converter-v2-mobile.js",
-            };
-            function loadSavedVersion() {
-                let version = localStorage.getItem("converterVersion");
+        <main class="cv-shell">
+            <header class="cv-head">
+                <h2>EPUB ➜ TXT</h2>
+            </header>
 
-                if (!version) {
-                    version = "v1";
-                    localStorage.setItem("converterVersion", version);
+            <section class="cv-card">
+                <div class="cv-file-row">
+                    <label
+                        class="cv-file-btn"
+                        for="file"
+                        data-i18n="converter.choose_file"
+                        >📂 Choose EPUB file</label
+                    >
+                    <input type="file" id="file" accept=".epub" hidden />
+                    <span id="file-name" class="cv-file-name"></span>
+                </div>
+
+                <fieldset class="cv-versions">
+                    <legend data-i18n="converter.version">Output format</legend>
+                    <label>
+                        <input type="radio" name="ver" value="v1" /><span
+                            >V1 · MDT</span
+                        >
+                    </label>
+                    <label>
+                        <input type="radio" name="ver" value="v2" /><span
+                            >V2 · Reading TXT</span
+                        >
+                    </label>
+                    <label>
+                        <input type="radio" name="ver" value="v3" /><span
+                            >V1 · Mobile</span
+                        >
+                    </label>
+                    <label>
+                        <input type="radio" name="ver" value="v4" /><span
+                            >V2 · Mobile</span
+                        >
+                    </label>
+                </fieldset>
+
+                <button
+                    id="download"
+                    style="display: none"
+                    data-i18n="download.txt"
+                >
+                    ⬇ Download TXT
+                </button>
+                <textarea id="output" readonly spellcheck="false"></textarea>
+            </section>
+
+            <noscript>
+                <div
+                    style="text-align: center; color: red; margin: 20px 0"
+                    data-i18n="noscript.tools"
+                ></div>
+            </noscript>
+        </main>
+
+        <script defer src="../../libs/i18n/i18n.js"></script>
+        <script>
+            (function () {
+                var SCRIPT_MAP = window.__converterScriptMap;
+                var version = window.__converterVersion || "v1";
+
+                function loadScript(v) {
+                    var old = document.getElementById("converter-script");
+                    if (old) old.remove();
+
+                    var script = document.createElement("script");
+                    script.id = "converter-script";
+                    script.type = "module";
+                    script.src = SCRIPT_MAP[v];
+                    document.body.appendChild(script);
                 }
 
-                loadScript(version);
-            }
-            function loadScript(version) {
-                const old = document.getElementById("converter-script");
-                if (old) old.remove();
+                var radios = document.querySelectorAll('input[name="ver"]');
+                for (var i = 0; i < radios.length; i++) {
+                    radios[i].checked = radios[i].value === version;
+                    radios[i].addEventListener("change", function () {
+                        if (!this.checked) return;
+                        try {
+                            localStorage.setItem(
+                                "converterVersion",
+                                this.value,
+                            );
+                        } catch (e) {}
+                        location.reload();
+                    });
+                }
 
-                const script = document.createElement("script");
-                script.id = "converter-script";
-                script.type = "module";
-                script.src = SCRIPT_MAP[version];
+                var fileInput = document.getElementById("file");
+                var fileNameEl = document.getElementById("file-name");
+                if (fileInput && fileNameEl) {
+                    fileInput.addEventListener("change", function () {
+                        fileNameEl.textContent = fileInput.files[0]
+                            ? fileInput.files[0].name
+                            : "";
+                    });
+                }
 
-                script.onload = () => {
-                    console.log("Loaded:", version);
+                window.switchVersion = function (v) {
+                    if (SCRIPT_MAP[v]) {
+                        try {
+                            localStorage.setItem("converterVersion", v);
+                        } catch (e) {}
+                        location.reload();
+                    }
                 };
 
-                document.body.appendChild(script);
-            }
-            function switchVersion(version) {
-                localStorage.setItem("converterVersion", version);
-                location.reload();
-            }
-            document.addEventListener("DOMContentLoaded", () => {
-                loadSavedVersion();
-            });
+                loadScript(version);
+            })();
         </script>
-        <script src="../../libs/i18n/i18n.js"></script>
-        <script src="../../libs/i18n/lang.js"></script>
+        <script>
+            (function () {
+                var backBtn = document.getElementById("back-btn");
+                if (!backBtn) return;
+
+                backBtn.addEventListener("click", function () {
+                    try {
+                        if (
+                            window.parent &&
+                            window.parent !== window &&
+                            window.parent.spaTool &&
+                            window.parent.spaTool.go
+                        ) {
+                            window.parent.spaTool.go("converter", true);
+                            return;
+                        }
+                    } catch (e) {}
+
+                    window.location.href = "../../index.html";
+                });
+            })();
+        </script>
     </body>
 </html>

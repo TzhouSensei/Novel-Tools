@@ -7,10 +7,11 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <script src="domer.js"></script>
+        <link rel="stylesheet" href="../../libs/theme/theme.css" />
+        <script src="../../libs/theme/theme.js"></script>
 
         <title>Advanced EPUB Reader</title>
         <script src="../../libs/epub/jszip.min.js"></script>
-        <link href="../../libs/i18n/language.css" rel="stylesheet" />
         <style>
             :root {
                 --bg-color: #f7f4ed;
@@ -60,6 +61,23 @@
                 padding: 0 20px;
                 background-color: var(--panel-bg);
                 z-index: 10;
+            }
+
+            .ereader-back-btn {
+                background: none;
+                border: none;
+                color: var(--text-color, #2b2b2b);
+                font-size: 1.3rem;
+                line-height: 1;
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 8px;
+                flex: none;
+                transition: background 0.2s;
+            }
+
+            .ereader-back-btn:hover {
+                background: var(--border-color, #d3cfc5);
             }
 
             #book-title {
@@ -453,20 +471,6 @@
                 gap: 10px;
                 padding: 15px;
             }
-            .lang-wrapper,
-            .home-btn {
-                opacity: 0;
-                transform: translateY(-10px);
-                pointer-events: none;
-                transition: 0.3s ease;
-            }
-
-            .ui-visible .lang-wrapper,
-            .ui-visible .home-btn {
-                opacity: 1;
-                transform: translateY(0);
-                pointer-events: auto;
-            }
             @media (max-width: 600px) {
                 body {
                     -webkit-tap-highlight-color: transparent;
@@ -480,9 +484,6 @@
                 z-index: 999999;
             }
 
-            .lang-wrapper {
-                top: 0 !important;
-            }
             .tool-menu {
                 position: absolute;
                 top: 60px;
@@ -696,31 +697,28 @@
                 text-align: left;
                 transition: background 0.2s;
             }
+
+            #top-bar,
+            .meta-sidebar,
+            #bottom-bar,
+            .dropdown-menu,
+            #viewer-toolbar,
+            #toc-panel,
+            #settings-panel,
+            .custom-floating-box {
+                --panel-bg: var(--card-bg, #ffffff);
+                --border-color: var(--border, #d3cfc5);
+                --text-color: var(--text, #2b2b2b);
+                --accent-color: var(--primary, #4a90e2);
+                --bg-color: var(--bg, #f7f4ed);
+                background-color: var(--card-bg, var(--panel-bg, #ffffff));
+                color: var(--text, var(--text-color, #2b2b2b));
+            }
         </style>
+        <script src="../../libs/i18n/lang.js"></script>
+        <!-- <link rel="stylesheet" href="../../libs/i18n/language.css" /> -->
     </head>
     <body class="mode-single">
-        <div class="lang-wrapper"></div>
-        <a
-            href="index.html"
-            onclick="sessionStorage.setItem('reloaded_once', '1')"
-            class="home-btn"
-            style="
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                padding: 10px 14px;
-                background: rgba(0, 0, 0, 0.6);
-                color: white;
-                text-decoration: none;
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(6px);
-                z-index: 11;
-            "
-        >
-            ⬅ Home
-        </a>
-
         <header id="top-bar">
             <input
                 type="file"
@@ -728,6 +726,14 @@
                 accept=".epub"
                 style="display: none"
             />
+            <button
+                id="back-btn"
+                class="ereader-back-btn"
+                data-i18n-title="ereader.back"
+                title="⬅"
+            >
+                ⬅
+            </button>
             <div id="book-title" data-i18n="ereader.no_book_loaded"></div>
             <button
                 class="btn"
@@ -910,13 +916,6 @@
                 <div class="control-group">
                     <button
                         class="btn"
-                        onclick="toggleTheme()"
-                        data-i18n="ereader.toggle_theme"
-                    ></button>
-                </div>
-                <div class="control-group">
-                    <button
-                        class="btn"
                         onclick="togglePageMode()"
                         data-i18n="ereader.toggle_page_mode"
                     ></button>
@@ -946,49 +945,81 @@
                         onchange="toggleTiltFlip(this.checked)"
                     />
                 </div>
+
                 <div class="control-group">
-                    <label data-i18n="ereader.volume_key_navigation"></label>
-                    <input
-                        type="checkbox"
-                        id="cfg-vol"
-                        checked
-                        onchange="state.overrideVol = this.checked"
-                    />
-                </div>
-                <div
-                    class="control-group"
-                    style="
-                        width: 100%;
-                        border-top: 1px solid #ccc;
-                        padding-top: 10px;
-                        margin-top: 5px;
-                    "
-                >
-                    <label data-i18n="ereader.tts"></label>
-                    <select id="tts-voice" style="max-width: 150px"></select>
-                    <label data-i18n="ereader.volume">
-                        <input
-                            type="range"
-                            id="tts-volume"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value="1"
-                    /></label>
-                    <label data-i18n="ereader.speed">
-                        <input
-                            type="range"
-                            id="tts-speed"
-                            min="0.5"
-                            max="2"
-                            step="0.1"
-                            value="1"
-                    /></label>
-                    <button
-                        class="btn"
-                        onclick="toggleTTS()"
-                        data-i18n="ereader.read_stop"
-                    ></button>
+                    <select
+                        id="themeSelect"
+                        class="theme-select"
+                        data-i18n-title="appearance.opt"
+                    >
+                        <option value="" data-i18n="appearance.opt.default">
+                            Default
+                        </option>
+                        <option value="ruby" data-i18n="appearance.opt.ruby">
+                            Ruby
+                        </option>
+                        <option
+                            value="navajo"
+                            data-i18n="appearance.opt.navajo"
+                        >
+                            Navajo
+                        </option>
+                        <option value="khaki" data-i18n="appearance.khaki">
+                            Khaki
+                        </option>
+                        <option value="dark" data-i18n="appearance.opt.dark">
+                            🌙 Dark
+                        </option>
+                        <option value="deep" data-i18n="appearance.opt.deep">
+                            🕳 Deep
+                        </option>
+                        <option value="anias" data-i18n="appearance.opt.anias">
+                            🍂 Anias
+                        </option>
+                        <option
+                            value="dark_neon"
+                            data-i18n="appearance.opt.dark_neon"
+                        >
+                            🌌 Neon
+                        </option>
+                        <option value="mint" data-i18n="appearance.opt.mint">
+                            🌿 Mint
+                        </option>
+                        <option
+                            value="sakura"
+                            data-i18n="appearance.opt.sakura"
+                        >
+                            🌸 Sakura
+                        </option>
+                        <option
+                            value="lavender"
+                            data-i18n="appearance.opt.lavender"
+                        >
+                            💜 Lavender
+                        </option>
+                        <option value="mocha" data-i18n="appearance.opt.mocha">
+                            ☕ Mocha
+                        </option>
+                        <option value="ocean" data-i18n="appearance.opt.ocean">
+                            🌊 Ocean
+                        </option>
+                        <option value="ember" data-i18n="appearance.opt.ember">
+                            🔥 Ember
+                        </option>
+                        <option
+                            value="universe"
+                            data-i18n="appearance.opt.universe"
+                        >
+                            🪐 Universe
+                        </option>
+                        <option
+                            value="frost_land"
+                            data-i18n="appearance.opt.frost_land"
+                        >
+                            ❄️ Frost Land
+                        </option>
+                    </select>
+                    <div class="lang-wrapper"></div>
                 </div>
             </div>
         </div>
@@ -1046,7 +1077,6 @@
         </div>
 
         <script src="../../libs/i18n/i18n.js"></script>
-        <script src="../../libs/i18n/lang.js"></script>
         <script src="reader.js"></script>
         <script>
             let uiVisible = false;
@@ -1087,6 +1117,28 @@
 
             updateBtnPos();
             window.addEventListener("resize", updateBtnPos);
+        </script>
+        <script>
+            (function () {
+                var backBtn = document.getElementById("back-btn");
+                if (!backBtn) return;
+
+                backBtn.addEventListener("click", function () {
+                    try {
+                        if (
+                            window.parent &&
+                            window.parent !== window &&
+                            window.parent.spaTool &&
+                            window.parent.spaTool.go
+                        ) {
+                            window.parent.spaTool.go("ereader", true);
+                            return;
+                        }
+                    } catch (e) {}
+
+                    window.location.href = "index.html";
+                });
+            })();
         </script>
     </body>
 </html>

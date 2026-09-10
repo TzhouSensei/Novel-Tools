@@ -132,7 +132,11 @@ ${cachedData.title}
     return result;
 };
 
-document.body.insertBefore(modeContainer, fileInput);
+if (fileInput && fileInput.parentNode) {
+    fileInput.parentNode.insertBefore(modeContainer, fileInput);
+} else {
+    document.body.appendChild(modeContainer);
+}
 renderModeUI();
 
 function renderModeUI() {

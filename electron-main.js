@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu } = require("electron");
 const path = require("path");
+const { registerSpaFileProtocol } = require("./electron-protocol");
 
 let win;
 
@@ -26,6 +27,9 @@ function createWindow() {
         const isMinimize = ctrl && key === "m";
         const isClose = ctrl && key === "w";
 
+        const isBack = input.alt && key === "arrowleft";
+        const isForward = input.alt && key === "arrowright";
+
         if (isReload) {
             win.reload();
             return;
@@ -46,6 +50,16 @@ function createWindow() {
             return;
         }
 
+        if (isBack) {
+            win.webContents.goBack();
+            return;
+        }
+
+        if (isForward) {
+            win.webContents.goForward();
+            return;
+        }
+
         event.preventDefault();
     });
 
@@ -59,6 +73,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+    registerSpaFileProtocol(__dirname);
+
     createWindow();
 
     app.on("activate", () => {

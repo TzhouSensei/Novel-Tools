@@ -14,47 +14,64 @@
             href="../../../../../libs/epub/bootstrap-icons.min.css"
             rel="stylesheet"
         />
+        <link
+            href="../../../../../libs/theme/theme.css"
+            rel="stylesheet"
+        />
 
         <script src="../../../../../libs/epub/jszip.min.js"></script>
 
         <script src="../../../../../libs/epub/FileSaver.min.js"></script>
-        <link href="../../../../../libs/i18n/language.css" rel="stylesheet" />
         <style>
             * {
                 box-sizing: border-box;
             }
 
             body {
-                background: #f5f6fa;
+                background: var(--bg, #f5f6fa);
                 font-family:
-                    Segoe UI,
-                    Tahoma,
-                    Geneva,
-                    Verdana,
+                    'Segoe UI',
+                    system-ui,
+                    -apple-system,
                     sans-serif;
-                color: #222;
+                color: var(--text, #222);
+                min-height: 100vh;
             }
 
             h1 {
                 font-weight: 700;
+                letter-spacing: -0.02em;
             }
 
             .card {
                 border: none;
-                border-radius: 14px;
+                border-radius: 16px;
+                background: var(--card-bg, #ffffff);
+                color: var(--text, #212529);
+                box-shadow: var(--shadow-card, 0 3px 12px rgba(0,0,0,0.06));
+                transition: box-shadow 0.3s ease;
+            }
+
+            .card:hover {
+                box-shadow: var(--shadow-pop, 0 8px 24px rgba(0,0,0,0.08));
             }
 
             .card-header {
                 font-weight: 600;
-                background: #ffffff;
-                border-bottom: 1px solid #ececec;
+                background: var(--card-bg, #ffffff);
+                color: var(--text, #212529);
+                border-bottom: 1px solid var(--border, #ececec);
+                padding: 16px 20px;
+                border-radius: 16px 16px 0 0 !important;
             }
 
             .card-body {
-                background: #ffffff;
+                background: var(--card-bg, #ffffff);
+                color: var(--text, #212529);
+                padding: 20px;
             }
             #dropZone {
-                border: 3px dashed #0d6efd;
+                border: 3px dashed var(--primary, #0d6efd);
 
                 border-radius: 16px;
 
@@ -66,31 +83,31 @@
 
                 transition: 0.25s;
 
-                background: #fafcff;
+                background: var(--bg, #fafcff);
 
                 user-select: none;
             }
 
             #dropZone:hover {
-                background: #eef5ff;
+                background: var(--hover-bg, #eef5ff);
             }
 
             #dropZone.dragover {
-                background: #dcecff;
+                background: var(--hover-bg, #dcecff);
 
-                border-color: #198754;
+                border-color: var(--success, #198754);
 
                 transform: scale(1.02);
             }
 
             #dropZone i {
-                color: #0d6efd;
+                color: var(--primary, #0d6efd);
 
                 transition: 0.2s;
             }
 
             #dropZone.dragover i {
-                color: #198754;
+                color: var(--success, #198754);
 
                 transform: scale(1.15);
             }
@@ -102,13 +119,48 @@
 
                 overflow: hidden;
 
-                background: #e5e5e5;
+                background: var(--hover-bg, #e5e5e5);
             }
 
             .progress-bar {
                 font-weight: bold;
 
+                background-color: var(--primary, #0d6efd);
+
+                color: #fff;
+
                 transition: width 0.3s;
+            }
+
+            .text-secondary {
+                color: var(--text-muted, #6c757d) !important;
+            }
+
+            .btn-primary {
+                --bs-btn-bg: var(--primary, #0d6efd);
+                --bs-btn-border-color: var(--primary, #0d6efd);
+                --bs-btn-hover-bg: color-mix(
+                    in srgb,
+                    var(--primary, #0d6efd) 85%,
+                    #000
+                );
+                --bs-btn-hover-border-color: color-mix(
+                    in srgb,
+                    var(--primary, #0d6efd) 85%,
+                    #000
+                );
+                --bs-btn-active-bg: color-mix(
+                    in srgb,
+                    var(--primary, #0d6efd) 80%,
+                    #000
+                );
+                --bs-btn-active-border-color: color-mix(
+                    in srgb,
+                    var(--primary, #0d6efd) 80%,
+                    #000
+                );
+                --bs-btn-disabled-bg: var(--primary, #0d6efd);
+                --bs-btn-disabled-border-color: var(--primary, #0d6efd);
             }
 
             #coverPreview {
@@ -118,17 +170,28 @@
 
                 object-fit: contain;
 
-                background: white;
+                background: var(--read-bg, #ffffff);
 
                 padding: 10px;
             }
 
             .table {
                 margin-bottom: 0;
+                --bs-table-bg: transparent;
+                --bs-table-color: var(--text, #212529);
+                --bs-table-border-color: var(--border, #dee2e6);
+                --bs-table-striped-color: var(--text, #212529);
+                --bs-table-striped-bg: color-mix(
+                    in srgb,
+                    var(--text, #212529) 4%,
+                    transparent
+                );
+                --bs-table-hover-color: var(--text, #212529);
+                --bs-table-hover-bg: var(--hover-bg, rgba(0, 0, 0, 0.05));
             }
 
             .table thead {
-                background: #f1f3f7;
+                background: var(--hover-bg, #f1f3f7);
             }
 
             .table th {
@@ -146,7 +209,9 @@
 
                 overflow: auto;
 
-                background: #fafafa;
+                background: var(--read-bg, #fafafa);
+
+                color: var(--text, #212529);
 
                 white-space: pre-wrap;
 
@@ -164,7 +229,7 @@
             .toc-folder-title {
                 font-weight: 700;
 
-                color: #0d6efd;
+                color: var(--primary, #0d6efd);
 
                 margin-bottom: 8px;
             }
@@ -188,13 +253,13 @@
             }
 
             .toc-item:hover {
-                background: #eef4ff;
+                background: var(--hover-bg, #eef4ff);
             }
 
             #logBox {
-                background: #1f1f1f;
+                background: var(--read-bg, #1f1f1f);
 
-                color: #6dff8c;
+                color: var(--success, #6dff8c);
 
                 font-size: 13px;
 
@@ -212,7 +277,7 @@
             #statusText {
                 font-weight: 600;
 
-                color: #555;
+                color: var(--text-muted, #555);
             }
 
             button {
@@ -234,45 +299,41 @@
             }
 
             .table-bordered th {
-                background: #f8f9fa;
+                background: var(--hover-bg, #f8f9fa);
+
+                color: var(--text, #212529);
             }
 
             .mime-image {
-                color: #198754;
+                color: var(--success, #198754);
 
                 font-weight: 600;
             }
 
             .mime-xhtml {
-                color: #0d6efd;
+                color: var(--primary, #0d6efd);
 
                 font-weight: 600;
             }
 
             .mime-unknown {
-                color: #dc3545;
+                color: var(--danger, #dc3545);
 
                 font-weight: 600;
             }
 
-            ::-webkit-scrollbar {
-                width: 10px;
-
-                height: 10px;
-            }
-
             ::-webkit-scrollbar-thumb {
-                background: #b5b5b5;
+                background: var(--border, #b5b5b5);
 
                 border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: #8d8d8d;
+                background: var(--text-muted, #8d8d8d);
             }
 
             ::-webkit-scrollbar-track {
-                background: #efefef;
+                background: var(--read-bg, #efefef);
             }
 
             .loading {
@@ -299,27 +360,32 @@
 
             @keyframes successFlash {
                 0% {
-                    background: #d1ffd8;
+                    background: color-mix(
+                        in srgb,
+                        var(--success, #198754) 22%,
+                        var(--card-bg, #ffffff)
+                    );
                 }
 
                 100% {
-                    background: white;
+                    background: var(--card-bg, white);
                 }
             }
+
             .error {
-                color: #dc3545;
+                color: var(--danger, #dc3545);
 
                 font-weight: bold;
             }
 
             .success {
-                color: #198754;
+                color: var(--success, #198754);
 
                 font-weight: bold;
             }
 
             .warning {
-                color: #fd7e14;
+                color: var(--warning, #fd7e14);
 
                 font-weight: bold;
             }
@@ -373,30 +439,14 @@
                 }
             }
         </style>
+        <link
+            rel="stylesheet"
+            href="../../../../../libs/theme/theme-bridge.css"
+        />
     </head>
 
     <body>
         <div class="container py-5">
-            <a
-                href="../index.html"
-                onclick="sessionStorage.setItem('reloaded_once', '1')"
-                style="
-                    position: fixed;
-                    top: 15px;
-                    left: 15px;
-                    padding: 10px 14px;
-                    background: rgba(0, 0, 0, 0.6);
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 10px;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    backdrop-filter: blur(6px);
-                    z-index: 9999;
-                "
-            >
-                ⬅ Back
-            </a>
-            <div class="lang-wrapper"></div>
             <div class="text-center mb-5">
                 <h1 class="fw-bold">
                     <i class="bi bi-book-half"></i>
@@ -522,7 +572,7 @@
 
                     <div
                         id="descriptionBox"
-                        class="border rounded p-3 bg-light"
+                        class="border rounded p-3"
                         style="min-height: 120px; white-space: pre-wrap"
                     ></div>
                 </div>
@@ -613,7 +663,7 @@
 
                     <pre
                         id="logBox"
-                        class="bg-dark text-white rounded p-3"
+                        class="rounded p-3"
                         style="height: 250px; overflow: auto"
                     >
 Ready.</pre
@@ -623,7 +673,7 @@ Ready.</pre
         </div>
 
         <script src="app.js"></script>
+        <script src="../../../../../libs/theme/theme.js"></script>
         <script src="../../../../../libs/i18n/i18n.js"></script>
-        <script src="../../../../../libs/i18n/lang.js"></script>
     </body>
 </html>

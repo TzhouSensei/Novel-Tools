@@ -633,6 +633,34 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>${escapeHTML(ch.title)}</title>
+<style type="text/css">
+    body {
+        margin: 5pt;
+        padding: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    p, div, span, h1, h2, h3, h4, h5, h6 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    pre, code {
+        white-space: pre-wrap;
+        word-break: break-all; 
+        overflow-wrap: break-word;
+    }
+
+    table {
+        max-width: 100%;
+        table-layout: fixed;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }</style>
 </head>
 <body>
 

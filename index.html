@@ -3,175 +3,245 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title data-i18n="app.title">TruyenChuTool by TzhouSensei</title>
-        <script src="libs/i18n/lang.js"></script>
-        <link href="libs/i18n/language.css" rel="stylesheet" />
-        <style>
-            body {
-                margin: 0;
-                font-family: system-ui, sans-serif;
-                background: radial-gradient(circle at top, #1a1a2e, #0f0f0f);
-                color: white;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                overflow: hidden;
-            }
-
-            h1 {
-                font-size: 42px;
-                margin-bottom: 10px;
-                background: linear-gradient(90deg, #00f5ff, #a855f7, #ff4ecd);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                animation: glow 3s infinite alternate;
-            }
-
-            p {
-                opacity: 0.7;
-                margin-bottom: 40px;
-            }
-
-            .container {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 20px;
-
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 0 14px;
-                box-sizing: border-box;
-            }
-
-            .card {
-                width: 220px;
-                flex-shrink: 0;
-
-                padding: 20px;
-                border-radius: 16px;
-                background: rgba(255, 255, 255, 0.05);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                text-align: center;
-                cursor: pointer;
-                transition: 0.3s;
-                text-decoration: none;
-                color: white;
-                box-sizing: border-box;
-            }
-
-            .card:hover {
-                transform: translateY(-8px) scale(1.05);
-                background: rgba(255, 255, 255, 0.1);
-                box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-            }
-
-            .icon {
-                font-size: 40px;
-                margin-bottom: 10px;
-            }
-
-            @keyframes glow {
-                from {
-                    filter: drop-shadow(0 0 5px #00f5ff);
-                }
-                to {
-                    filter: drop-shadow(0 0 20px #a855f7);
-                }
-            }
-
-            @media (max-width: 600px) {
-                body {
-                    height: auto;
-                    min-height: 100vh;
-                    overflow-y: auto;
-                    padding: 10px 0 30px 0;
-                }
-
-                h1 {
-                    text-align: center;
-                    font-size: 26px;
-                    margin-top: 15px;
-                    margin-bottom: 5px;
-                }
-
-                p {
-                    text-align: center;
-                    font-size: 13px;
-                    margin-bottom: 15px;
-                }
-
-                .container {
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: center;
-                    gap: 12px;
-                    padding: 0 14px;
-                    box-sizing: border-box;
-                }
-
-                .card {
-                    width: calc((100% - 12px) / 2);
-                    height: auto;
-                    min-height: 110px;
-                    padding: 14px;
-                    border-radius: 14px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                    box-sizing: border-box;
-
-                    transform: none !important;
-                }
-
-                .card:hover {
-                    transform: none !important;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                }
-
-                .icon {
-                    font-size: 30px;
-                    margin-bottom: 6px;
-                }
-            }
-        </style>
+        <meta name="theme-color" content="#111827" />
+        <title>Novel Tools</title>
+        <link rel="stylesheet" href="./libs/theme/theme.css" />
+        <link rel="stylesheet" href="./libs/spa/spa.css" />
+        <script src="./libs/theme/theme.js"></script>
+        <script src="./libs/i18n/lang.js"></script>
     </head>
-
     <body>
-        <h1 data-i18n="home.title"></h1>
-        <p data-i18n="home.subtitle"></p>
-        <div class="lang-wrapper"></div>
-        <div class="container">
-            <a class="card" href="app/mdt/library/index.html">
-                <div class="icon">📖</div>
-                <h3 data-i18n="tool.reader.title"></h3>
-                <p data-i18n="tool.reader.desc"></p>
-            </a>
+        <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-            <a class="card" href="app/ereader/index.html">
-                <div class="icon">📖</div>
-                <h3 data-i18n="tool.epub.reader"></h3>
-                <p data-i18n="tool.epub.reader.desc"></p>
-            </a>
+        <div id="app">
+            <aside class="sidebar">
+                <div class="brand" id="brand">
+                    <div class="brand-mark">✦</div>
+                    <div>
+                        <strong data-i18n="spa.brand.title">Novel Tools</strong
+                        ><small data-i18n="spa.brand.sub"
+                            >Bộ công cụ tiểu thuyết</small
+                        >
+                    </div>
+                </div>
+                <nav id="mainNav">
+                    <button data-route="" class="nav-btn">
+                        ⌂ <span data-i18n="spa.nav.overview">Tổng quan</span>
+                    </button>
+                    <button data-route="mdt" class="nav-btn">
+                        📚 <span data-i18n="spa.nav.mdt">MDT Library</span>
+                    </button>
+                    <button data-route="ereader" class="nav-btn">
+                        <span data-i18n="spa.nav.ereader">EPUB Reader</span>
+                    </button>
+                    <button data-route="converter" class="nav-btn">
+                        <span data-i18n="spa.nav.converter"
+                            >Converter EPUB ➜ TXT</span
+                        >
+                    </button>
+                    <button data-route="infoeditor" class="nav-btn">
+                        <span data-i18n="spa.nav.infoeditor"
+                            >EPUB Info Editor</span
+                        >
+                    </button>
+                    <button data-route="creator" class="nav-btn">
+                        <span data-i18n="spa.nav.creator">Story Studio</span>
+                    </button>
+                    <div id="creationDropdown" class="nav-dropdown">
+                        <button
+                            id="creationToggle"
+                            class="nav-btn drop-toggle"
+                            aria-expanded="false"
+                            aria-controls="creationDropMenu"
+                        >
+                            🛠
+                            <span data-i18n="spa.nav.creation"
+                                >EPUB Creation Tools</span
+                            >
+                            <span class="drop-arrow" aria-hidden="true">▸</span>
+                        </button>
+                        <div id="creationDropMenu" class="drop-menu">
+                            <button
+                                data-route="mdt/creation-tools/configuration"
+                                class="nav-btn drop-item"
+                            >
+                                ⚙️
+                                <span data-i18n="spa.nav.creation.config"
+                                    >EPUB Configuration</span
+                                >
+                            </button>
+                            <button
+                                data-route="mdt/creation-tools/parser"
+                                class="nav-btn drop-item"
+                            >
+                                🧩
+                                <span data-i18n="spa.nav.creation.parser"
+                                    >EPUB Parser</span
+                                >
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+                <div class="sidebar-section">
+                    <div class="section-label" data-i18n="spa.nav.section">
+                        Công cụ
+                    </div>
+                </div>
+                <div class="sidebar-pin-row">
+                    <button
+                        id="pinSidebar"
+                        class="icon-btn"
+                        data-i18n-title="spa.pin.title"
+                        title="Ghim sidebar"
+                    ></button>
+                </div>
+            </aside>
 
-            <a class="card" href="app/converter/index.html">
-                <div class="icon">🔁</div>
-                <h3 data-i18n="tool.converter.title"></h3>
-                <p data-i18n="tool.converter.desc"></p>
-            </a>
-            <a class="card" href="app/infoeditor/index.html">
-                <div class="icon">✍️</div>
-                <h3 data-i18n="tool.info.editor.title"></h3>
-                <p data-i18n="tool.info.editor.desc"></p>
-            </a>
+            <main class="main">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button id="mobileMenu" class="icon-btn" title="☰">
+                            ☰
+                        </button>
+                        <button
+                            id="backBtn"
+                            class="icon-btn"
+                            data-i18n-title="spa.back.title"
+                            title="Quay lại"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
+                        <div id="breadcrumb">Tổng quan</div>
+                    </div>
+                    <div class="top-actions">
+                        <select
+                            id="themeSelect"
+                            class="theme-select"
+                            data-i18n-title="appearance.opt"
+                        >
+                            <option value="" data-i18n="appearance.opt.default">
+                                Default
+                            </option>
+                            <option
+                                value="ruby"
+                                data-i18n="appearance.opt.ruby"
+                            >
+                                Ruby
+                            </option>
+                            <option
+                                value="navajo"
+                                data-i18n="appearance.opt.navajo"
+                            >
+                                Navajo
+                            </option>
+                            <option value="khaki" data-i18n="appearance.khaki">
+                                Khaki
+                            </option>
+                            <option
+                                value="dark"
+                                data-i18n="appearance.opt.dark"
+                            >
+                                🌙 Dark
+                            </option>
+                            <option
+                                value="deep"
+                                data-i18n="appearance.opt.deep"
+                            >
+                                🕳 Deep
+                            </option>
+                            <option
+                                value="anias"
+                                data-i18n="appearance.opt.anias"
+                            >
+                                🍂 Anias
+                            </option>
+                            <option
+                                value="dark_neon"
+                                data-i18n="appearance.opt.dark_neon"
+                            >
+                                🌌 Neon
+                            </option>
+                            <option
+                                value="mint"
+                                data-i18n="appearance.opt.mint"
+                            >
+                                🌿 Mint
+                            </option>
+                            <option
+                                value="sakura"
+                                data-i18n="appearance.opt.sakura"
+                            >
+                                🌸 Sakura
+                            </option>
+                            <option
+                                value="lavender"
+                                data-i18n="appearance.opt.lavender"
+                            >
+                                💜 Lavender
+                            </option>
+                            <option
+                                value="mocha"
+                                data-i18n="appearance.opt.mocha"
+                            >
+                                ☕ Mocha
+                            </option>
+                            <option
+                                value="ocean"
+                                data-i18n="appearance.opt.ocean"
+                            >
+                                🌊 Ocean
+                            </option>
+                            <option
+                                value="ember"
+                                data-i18n="appearance.opt.ember"
+                            >
+                                🔥 Ember
+                            </option>
+                            <option
+                                value="universe"
+                                data-i18n="appearance.opt.universe"
+                            >
+                                🪐 Universe
+                            </option>
+                            <option
+                                value="frost_land"
+                                data-i18n="appearance.opt.frost_land"
+                            >
+                                ❄️ Frost Land
+                            </option>
+                        </select>
+                        <div class="lang-wrapper"></div>
+                    </div>
+                </header>
+                <section id="content" class="content">
+                    <div id="homeView" class="home-view"></div>
+                    <iframe id="toolFrame" title="Novel Tool" hidden></iframe>
+                </section>
+            </main>
         </div>
+
+        <div id="toast" class="toast"></div>
+
         <noscript>
             <div
                 style="text-align: center; color: red; margin: 20px 0"
-                data-i18n="noscript.mdt"
+                data-i18n="noscript.tools"
             ></div>
         </noscript>
-        <script src="libs/i18n/i18n.js"></script>
+
+        <script src="./libs/i18n/i18n.js"></script>
+        <script src="./libs/spa/spa.js"></script>
     </body>
 </html>

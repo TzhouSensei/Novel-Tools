@@ -2,6 +2,8 @@ let translations = {};
 
 let langReady = false;
 
+let currentLang = "vi-vn";
+
 async function loadLang(lang) {
     let path = `libs/i18n/locale/${lang}.json`;
 
@@ -39,17 +41,54 @@ function t(key, fallback = key) {
         return translations[key];
     }
 
-    const value = key.split(".").reduce((obj, part) => {
+    const parts = key.split(".");
+
+    let value = parts.reduce((obj, part) => {
         return obj && obj[part] !== undefined ? obj[part] : undefined;
     }, translations);
 
-    return value ?? fallback;
+    if (value !== undefined && typeof value !== "object") {
+        return value;
+    }
+
+    let obj = translations;
+    for (let i = 0; i < parts.length - 1; i++) {
+        obj = obj && obj[parts[i]] !== undefined ? obj[parts[i]] : undefined;
+        if (!obj || typeof obj !== "object") break;
+
+        const rest = parts.slice(i + 1).join(".");
+        if (obj[rest] !== undefined && typeof obj[rest] !== "object") {
+            return obj[rest];
+        }
+    }
+
+    return typeof value === "object" ? fallback : (value ?? fallback);
 }
 
 function applyI18n() {
+    if (!translations || Object.keys(translations).length === 0) return;
+    const put = (el, val) => {
+        if (
+            val === undefined ||
+            val === null ||
+            val === el.getAttribute("data-i18n")
+        )
+            return;
+        el.innerText = val;
+    };
     document.querySelectorAll("[data-i18n]").forEach((el) => {
         const key = el.getAttribute("data-i18n");
-        el.innerText = t(key);
+        put(el, t(key));
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-title");
+        const val = t(key);
+        if (val !== key) el.title = val;
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        const val = t(key);
+        if (val !== key) el.placeholder = val;
     });
 }
 
@@ -65,7 +104,7 @@ function onI18nChange(fn) {
     i18nListeners.push(fn);
 }
 function syncLangSelect(lang) {
-    const select = document.querySelector("select");
+    const select = document.querySelector("#lang-select, .lang-select");
     if (select) {
         select.value = lang;
     }

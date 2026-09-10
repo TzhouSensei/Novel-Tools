@@ -22,7 +22,11 @@ const modes = [
 ];
 
 const container = document.createElement("div");
-document.body.insertBefore(container, fileInput);
+if (fileInput && fileInput.parentNode) {
+    fileInput.parentNode.insertBefore(container, fileInput);
+} else {
+    document.body.appendChild(container);
+}
 
 const modeContainer = document.createElement("div");
 container.appendChild(modeContainer);

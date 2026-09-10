@@ -5,8 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>EPUB Bulk Metadata Editor</title>
         <link href="../../libs/epub/bootstrap.min.css" rel="stylesheet" />
+        <link href="../../libs/theme/theme.css" rel="stylesheet" />
         <script src="../../libs/epub/jszip.min.js"></script>
-        <link rel="stylesheet" href="../../libs/i18n/language.css" />
+        <script src="../../libs/theme/theme.js"></script>
         <style>
             body {
                 background-color: #f8f9fa;
@@ -77,29 +78,9 @@
                 border-radius: 6px;
             }
         </style>
+        <link rel="stylesheet" href="../../libs/theme/theme-bridge.css" />
     </head>
     <body>
-        <a
-            id="homeBtn"
-            href="../../index.html"
-            onclick="sessionStorage.setItem('reloaded_once', '1')"
-            style="
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                padding: 10px 14px;
-                background: rgba(0, 0, 0, 0.6);
-                color: white;
-                text-decoration: none;
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(6px);
-                z-index: 9999;
-            "
-        >
-            ⬅ Home
-        </a>
-
         <!-- Nút đóng nhanh dành riêng cho chế độ Iframe -->
         <button
             id="closeIframeBtn"
@@ -109,7 +90,6 @@
             ✕ Đóng
         </button>
 
-        <div class="lang-wrapper"></div>
         <div class="container">
             <h2
                 class="mb-4 text-center fw-bold text-primary"
@@ -193,7 +173,6 @@
                 isIframeMode = true;
                 iframeBookId = urlParams.get("bookId");
 
-                document.getElementById("homeBtn").classList.add("hidden");
                 document.getElementById("uploadCard").classList.add("hidden");
                 document
                     .getElementById("closeIframeBtn")
@@ -871,6 +850,5 @@
             }
         </script>
         <script src="../../libs/i18n/i18n.js"></script>
-        <script src="../../libs/i18n/lang.js"></script>
     </body>
 </html>

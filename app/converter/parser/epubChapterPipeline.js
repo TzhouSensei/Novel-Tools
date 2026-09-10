@@ -316,3 +316,117 @@ export const selectChapterFiles = (spineFiles = []) => {
 
     return { validIndexes, extraFiles, descriptionIndexes };
 };
+
+export const EXCLUDED_DEFAULT_IDREFS = new Set([
+    "page_toc",
+    "page_desc",
+    "page_cover",
+]);
+
+export const detectChaptersFromOpf = (opfXml, basePath = "") => {
+    const manifestItems = {};
+    opfXml.querySelectorAll("manifest item").forEach((item) => {
+        const id = item.getAttribute("id");
+        const mediaType = item.getAttribute("media-type");
+        const properties = item.getAttribute("properties") || "";
+        const href = item.getAttribute("href");
+
+        if (!id || !href) return;
+        if (mediaType !== "application/xhtml+xml") return;
+        if (properties.includes("nav")) return;
+        if (EXCLUDED_DEFAULT_IDREFS.has(id)) return;
+
+        manifestItems[id] = {
+            idref: id,
+            href,
+            mediaType,
+            properties,
+        };
+    });
+
+    const chapters = [];
+    const seenIds = new Set();
+
+    opfXml.querySelectorAll("spine itemref").forEach((item) => {
+        const idref = item.getAttribute("idref");
+        if (!idref || !manifestItems[idref]) return;
+        if (seenIds.has(idref)) return;
+        seenIds.add(idref);
+
+        const manifestEntry = manifestItems[idref];
+        const fullPath = basePath
+            ? `${basePath}/${manifestEntry.href}`
+            : manifestEntry.href;
+
+        chapters.push({
+            idref,
+            href: manifestEntry.href,
+            fullPath,
+            order: chapters.length,
+        });
+    });
+
+    return chapters;
+};
+
+export const detectFilesWithAssets = (spineFiles = []) => {
+    const flagged = [];
+
+    spineFiles.forEach((file) => {
+        const doc = file.doc;
+        if (!doc) return;
+
+        const links = [...doc.querySelectorAll("a[href]")]
+            .map((a) => a.getAttribute("href"))
+            .filter(Boolean);
+
+        const images = [...doc.querySelectorAll("img[src], image[href]")]
+            .map((el) => el.getAttribute("src") || el.getAttribute("href"))
+            .filter(Boolean);
+
+        const svgElements = doc.querySelectorAll("svg").length;
+
+        const hasLinks = links.length > 0;
+        const hasImages = images.length > 0;
+        const hasSvg = svgElements > 0;
+
+        if (!hasLinks && !hasImages && !hasSvg) return;
+
+        flagged.push({
+            ...file,
+            assetInfo: {
+                hasLinks,
+                linkCount: links.length,
+                links,
+                hasImages,
+                imageCount: images.length + svgElements,
+                hasSvg,
+                images,
+            },
+        });
+    });
+
+    return flagged;
+};
+
+export const applyAssetDecisions = (spineFiles, decisions = new Map()) => {
+    const contentFiles = [];
+    const descriptionFiles = [];
+    const skippedFiles = [];
+
+    spineFiles.forEach((file) => {
+        const action = decisions.get(file.index);
+
+        if (!action || action === "content") {
+            contentFiles.push(file);
+        } else if (action === "description") {
+            descriptionFiles.push(file);
+        } else {
+            skippedFiles.push(file);
+        }
+    });
+
+    contentFiles.sort((a, b) => a.index - b.index);
+
+    return { contentFiles, descriptionFiles, skippedFiles };
+};

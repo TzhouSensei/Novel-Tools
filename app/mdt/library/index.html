@@ -5,8 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.library.title">MDT Library</title>
 
-        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
-        <link href="shared/theme.css" rel="stylesheet" />
+        <link href="../../../libs/theme/theme.css" rel="stylesheet" />
         <style>
             * {
                 box-sizing: border-box;
@@ -163,6 +162,20 @@
             .story-info {
                 flex: 1;
                 min-width: 0;
+            }
+
+            .btn.epub-btn {
+                padding: 14px 18px;
+                font-size: 15px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .btn.epub-btn:hover {
+                border-color: var(--primary);
             }
 
             .story-title {
@@ -326,25 +339,6 @@
                 margin-top: 20px;
             }
 
-            .lang-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .lang-label {
-                font-size: 13px;
-            }
-
-            .lang-select {
-                padding: 6px 10px;
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                font-size: 13px;
-                background: var(--card-bg);
-                color: var(--text);
-            }
-
             @media (max-width: 600px) {
                 body {
                     padding: 12px;
@@ -377,94 +371,120 @@
                     flex-direction: column;
                     align-items: flex-start;
                 }
-            }
 
-            @media (max-width: 600px) {
-                .lang-wrapper,
-                .home-btn {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                    pointer-events: none;
-                    transition: 0.3s ease;
-                }
-                .ui-visible .lang-wrapper,
-                .ui-visible .home-btn {
-                    opacity: 1;
-                    transform: translateY(0);
-                    pointer-events: auto;
-                }
                 body {
                     -webkit-tap-highlight-color: transparent;
                 }
+            }
+
+            .epub-tools-modal {
+                max-width: 460px;
+            }
+
+            .epub-tools-sub {
+                margin: -8px 0 16px;
+                font-size: 13px;
+                color: var(--text-muted, #666);
+            }
+
+            .epub-tools-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .epub-tool-card {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                padding: 16px;
+                border: 1px solid var(--border, #e0e0e0);
+                border-radius: 12px;
+                background: var(--bg, #f5f7fa);
+                color: var(--text, #222);
+                text-align: left;
+                cursor: pointer;
+                font: inherit;
+                transition:
+                    border-color 0.2s ease,
+                    background 0.2s ease,
+                    transform 0.2s ease;
+            }
+
+            .epub-tool-card:hover {
+                border-color: var(--primary, #4a90e2);
+                background: var(--hover-bg, #e8f0fe);
+                transform: translateY(-2px);
+            }
+
+            .epub-tool-card .icon {
+                font-size: 26px;
+            }
+
+            .epub-tool-card .name {
+                font-weight: 700;
+                font-size: 14px;
+            }
+
+            .epub-tool-card .desc {
+                font-size: 12px;
+                color: var(--text-muted, #666);
+            }
+
+            @media (max-width: 480px) {
+                .epub-tools-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            #chuy {
+                transition: opacity 1s ease;
+            }
+            .fade-out {
+                opacity: 0;
+            }
+            .fade-in {
+                opacity: 1;
+            }
+            .fade-line {
+                opacity: 0;
+                transform: translateX(80px);
+                transition:
+                    opacity 1s ease,
+                    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+                will-change: transform, opacity;
+            }
+            .fade-line.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .fade-line.exit {
+                opacity: 0;
+                transform: translateX(-120px);
+            }
+            .slide-item {
+                opacity: 0;
+                transform: translateX(120px);
+                transition:
+                    transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+                    opacity 1s ease;
+                will-change: transform, opacity;
+            }
+            .slide-item.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .slide-item.exit {
+                opacity: 0;
+                transform: translateX(-140px);
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <a
-                href="../../../index.html"
-                onclick="sessionStorage.setItem('reloaded_once', '1')"
-                style="
-                    position: fixed;
-                    top: 15px;
-                    left: 15px;
-                    padding: 10px 14px;
-                    background: #2e282891;
-                    color: var(--toast-color);
-                    text-decoration: none;
-                    border-radius: 10px;
-                    border: 1px solid var(--border);
-                    backdrop-filter: blur(6px);
-                    z-index: 9999;
-                "
-                class="home-btn"
-            >
-                ⬅ Home
-            </a>
             <header>
                 <h1 data-i18n="mdt.library.title">📚 MDT Library</h1>
                 <div class="header-actions">
-                    <div
-                        id="modes"
-                        style="text-align: center; margin-bottom: 16px"
-                    >
-                        <label data-i18n="appearance.opt"></label>
-                        <select id="themeSelect">
-                            <option
-                                value=""
-                                data-i18n="appearance.opt.default"
-                            ></option>
-                            <option
-                                value="ruby"
-                                data-i18n="appearance.opt.ruby"
-                            ></option>
-                            <option
-                                value="navajo"
-                                data-i18n="appearance.opt.navajo"
-                            ></option>
-                            <option
-                                value="khaki"
-                                data-i18n="appearance.khaki"
-                            ></option>
-                            <option
-                                value="dark"
-                                data-i18n="appearance.opt.dark"
-                            ></option>
-                            <option
-                                value="deep"
-                                data-i18n="appearance.opt.deep"
-                            ></option>
-                            <option
-                                value="anias"
-                                data-i18n="appearance.opt.anias"
-                            ></option>
-                            <option
-                                value="dark_neon"
-                                data-i18n="appearance.opt.dark_neon"
-                            ></option>
-                        </select>
-                    </div>
-                    <div class="lang-wrapper"></div>
                     <input
                         type="text"
                         id="search-input"
@@ -514,9 +534,24 @@
                         ➕ Tạo truyện mới
                     </button>
                 </div>
+                <button
+                    id="epub-tools-btn"
+                    class="btn epub-btn"
+                    data-i18n="epub_create"
+                >
+                    📚 Công cụ tạo EPUB
+                </button>
             </header>
 
             <div id="stories-list" class="stories-list"></div>
+            <h2 data-i18n="import.txt.notify"></h2>
+            <pre id="chuy" style="margin: 0px 0; line-height: 1.25">
+                <p data-i18n="note.1"></p>
+                <p data-i18n="note.2"></p>
+                <p data-i18n="note.3"></p>
+                <p data-i18n="note.4"></p>
+                <p data-i18n="note.5"></p>
+            </pre>
         </div>
 
         <div id="create-modal" class="modal-overlay">
@@ -559,6 +594,48 @@
             </div>
         </div>
 
+        <div id="epub-tools-overlay" class="modal-overlay">
+            <div class="modal epub-tools-modal">
+                <h3 data-i18n="epub_create">📚 Công cụ tạo EPUB</h3>
+                <p class="epub-tools-sub" data-i18n="epub_create.choose">
+                    Chọn một trong hai công cụ:
+                </p>
+                <div class="epub-tools-grid">
+                    <button
+                        class="epub-tool-card"
+                        data-goto="creation_tools/configuration/index.html"
+                    >
+                        <span class="icon">⚙️</span>
+                        <span class="name" data-i18n="tool.configuration"
+                            >Cấu hình</span
+                        >
+                        <span class="desc" data-i18n="tool.configuration.desc"
+                            >Cấu hình công cụ tạo EPUB</span
+                        >
+                    </button>
+                    <button
+                        class="epub-tool-card"
+                        data-goto="creation_tools/parser/index.html"
+                    >
+                        <span class="icon">🧩</span>
+                        <span class="name" data-i18n="tool.parser">Parser</span>
+                        <span class="desc" data-i18n="tool.parser.desc"
+                            >Chuyển đổi file EPUB sang định dạng MDT</span
+                        >
+                    </button>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        id="epub-tools-close"
+                        class="btn btn-ghost"
+                        data-i18n="ui.cancel"
+                    >
+                        Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast" class="toast"></div>
 
         <noscript>
@@ -569,11 +646,46 @@
         </noscript>
 
         <script src="../../../libs/i18n/i18n.js"></script>
-        <script src="../../../libs/i18n/lang.js"></script>
-        <script src="shared/theme.js"></script>
-        <script src="shared/mdt-parser.js"></script>
-        <script src="shared/mdt-db.js"></script>
-        <script src="library.js"></script>
+        <script src="../../../libs/theme/theme.js"></script>
+        <script src="./shared/mdt-parser.js"></script>
+        <script src="./shared/mdt-db.js"></script>
+        <script src="./library.js"></script>
+        <script src="introscr.js"></script>
+        <script>
+            (function () {
+                var overlay = document.getElementById("epub-tools-overlay");
+                var openBtn = document.getElementById("epub-tools-btn");
+                if (!overlay || !openBtn) return;
+
+                function openOverlay() {
+                    overlay.classList.add("show");
+                }
+
+                function closeOverlay() {
+                    overlay.classList.remove("show");
+                }
+
+                openBtn.addEventListener("click", openOverlay);
+
+                var closeBtn = document.getElementById("epub-tools-close");
+                if (closeBtn) closeBtn.addEventListener("click", closeOverlay);
+
+                overlay.addEventListener("click", function (e) {
+                    if (e.target === overlay) closeOverlay();
+                });
+
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") closeOverlay();
+                });
+
+                var cards = overlay.querySelectorAll("[data-goto]");
+                for (var i = 0; i < cards.length; i++) {
+                    cards[i].addEventListener("click", function () {
+                        window.location.href = this.getAttribute("data-goto");
+                    });
+                }
+            })();
+        </script>
         <script>
             let uiVisible = false;
             document.addEventListener("click", function (e) {

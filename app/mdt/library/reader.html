@@ -5,8 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.reader.title">Đọc truyện</title>
 
-        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
-        <link href="shared/theme.css" rel="stylesheet" />
+        <link href="../../../libs/theme/theme.css" rel="stylesheet" />
         <style>
             * {
                 box-sizing: border-box;
@@ -29,31 +28,46 @@
             }
 
             .container {
-                max-width: 1100px;
+                max-width: 1200px;
                 margin: 0 auto;
-                padding: 16px;
+                padding: 20px;
             }
 
-            header {
+            .top-bar {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
+                margin-bottom: 24px;
                 flex-wrap: wrap;
-                gap: 12px;
+                gap: 16px;
+                padding: 16px 20px;
+                background: var(--card-bg);
+                border-radius: 16px;
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--border);
+                backdrop-filter: blur(10px);
             }
 
             .back-btn {
-                padding: 8px 16px;
+                padding: 10px 18px;
                 border: 1px solid var(--border);
-                border-radius: 8px;
-                background: var(--card-bg);
+                border-radius: 10px;
+                background: var(--bg);
                 color: var(--text);
                 cursor: pointer;
-                font-weight: bold;
+                font-weight: 600;
                 font-size: 14px;
                 text-decoration: none;
-                transition: 0.2s;
+                transition: all 0.25s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .back-btn:hover {
+                background: var(--hover-bg);
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-sm);
             }
 
             .header-right {
@@ -62,57 +76,57 @@
                 gap: 12px;
             }
 
-            .lang-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .lang-label {
-                font-size: 13px;
-            }
-
-            .lang-select {
-                padding: 6px 10px;
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                font-size: 13px;
-            }
-
             .story-header {
                 background: var(--card-bg);
-                border-radius: 12px;
-                padding: 20px 24px;
-                box-shadow: var(--shadow-sm);
+                border-radius: 20px;
+                padding: 28px 32px;
+                box-shadow: var(--shadow-card);
                 border: 1px solid var(--border);
-                margin-bottom: 20px;
+                margin-bottom: 24px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .story-header::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, var(--primary), transparent);
             }
 
             .story-title {
-                font-size: 22px;
+                font-size: 26px;
                 font-weight: 700;
-                margin: 0 0 6px 0;
+                margin: 0 0 8px 0;
+                letter-spacing: -0.02em;
             }
 
             .story-desc {
-                font-size: 14px;
+                font-size: 15px;
                 margin: 0;
                 white-space: pre-wrap;
-                line-height: 1.6;
+                line-height: 1.7;
                 max-height: 120px;
                 overflow-y: auto;
+                color: var(--text-muted);
             }
 
             .chapter-list-title {
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: 600;
-                margin: 0 0 12px 0;
+                margin: 0 0 16px 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
 
             .chapter-list {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
+                gap: 10px;
             }
 
             @media (max-width: 999px) {
@@ -125,24 +139,25 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 10px 12px;
-                border-radius: 8px;
+                padding: 12px 16px;
+                border-radius: 12px;
                 cursor: pointer;
-                transition:
-                    background 0.2s,
-                    color 0.2s;
+                transition: all 0.25s ease;
                 background: var(--card-bg);
                 border: 1px solid var(--border);
                 font-weight: 500;
                 min-width: 0;
             }
 
-            .chapter-item.read {
-                font-weight: 400;
+            .chapter-item:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-sm);
+                border-color: var(--primary);
             }
 
-            .chapter-item.read .chapter-title {
-                text-decoration: line-through;
+            .chapter-item.read {
+                font-weight: 400;
+                opacity: 0.7;
             }
 
             .chapter-item .chapter-title {
@@ -155,36 +170,42 @@
 
             .chapter-item .chapter-status {
                 font-size: 11px;
-                padding: 2px 6px;
-                border-radius: 6px;
+                padding: 3px 8px;
+                border-radius: 8px;
                 flex-shrink: 0;
+                font-weight: 600;
             }
 
             .chapter-item.read .chapter-status {
                 background: var(--read-bg);
+                color: var(--read-color);
             }
 
             .chapter-item:not(.read) .chapter-status {
-                background: var(--success-bg);
-                color: var(--success-text);
+                background: var(--primary);
+                color: #fff;
             }
 
             .toast {
                 position: fixed;
-                bottom: 20px;
+                bottom: 24px;
                 left: 50%;
                 transform: translateX(-50%);
-                padding: 12px 24px;
-                border-radius: 8px;
-                box-shadow: var(--shadow-md);
+                padding: 14px 28px;
+                border-radius: 12px;
+                box-shadow: var(--shadow-pop);
                 z-index: 9999;
                 opacity: 0;
-                transition: opacity 0.3s;
+                transition:
+                    opacity 0.3s,
+                    transform 0.3s;
                 pointer-events: none;
+                font-weight: 500;
             }
 
             .toast.show {
                 opacity: 1;
+                transform: translateX(-50%) translateY(-8px);
             }
 
             @media (max-width: 600px) {
@@ -192,89 +213,22 @@
                     padding: 12px;
                 }
 
+                .top-bar {
+                    padding: 12px 16px;
+                }
+
                 .story-header {
-                    padding: 16px;
+                    padding: 20px;
                 }
 
                 .story-title {
-                    font-size: 18px;
-                }
-
-                header {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-            }
-
-            @media (max-width: 600px) {
-                .lang-wrapper,
-                .home-btn {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                    pointer-events: none;
-                    transition: 0.3s ease;
-                }
-                .ui-visible .lang-wrapper,
-                .ui-visible .home-btn {
-                    opacity: 1;
-                    transform: translateY(0);
-                    pointer-events: auto;
-                }
-                body {
-                    -webkit-tap-highlight-color: transparent;
+                    font-size: 20px;
                 }
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <header>
-                <a href="index.html" class="back-btn">⬅ Library</a>
-                <div class="header-right">
-                    <div
-                        id="modes"
-                        style="text-align: center; margin-bottom: 16px"
-                    >
-                        <label data-i18n="appearance.opt"></label>
-                        <select id="themeSelect">
-                            <option
-                                value=""
-                                data-i18n="appearance.opt.default"
-                            ></option>
-                            <option
-                                value="ruby"
-                                data-i18n="appearance.opt.ruby"
-                            ></option>
-                            <option
-                                value="navajo"
-                                data-i18n="appearance.opt.navajo"
-                            ></option>
-                            <option
-                                value="khaki"
-                                data-i18n="appearance.khaki"
-                            ></option>
-                            <option
-                                value="dark"
-                                data-i18n="appearance.opt.dark"
-                            ></option>
-                            <option
-                                value="deep"
-                                data-i18n="appearance.opt.deep"
-                            ></option>
-                            <option
-                                value="anias"
-                                data-i18n="appearance.opt.anias"
-                            ></option>
-                            <option
-                                value="dark_neon"
-                                data-i18n="appearance.opt.dark_neon"
-                            ></option>
-                        </select>
-                    </div>
-                    <div class="lang-wrapper"></div>
-                </div>
-            </header>
-
             <div id="story-header" class="story-header">
                 <h1 id="story-title" class="story-title"></h1>
                 <p id="story-desc" class="story-desc"></p>
@@ -296,22 +250,9 @@
         </noscript>
 
         <script src="../../../libs/i18n/i18n.js"></script>
-        <script src="../../../libs/i18n/lang.js"></script>
-        <script src="shared/theme.js"></script>
-        <script src="shared/mdt-parser.js"></script>
-        <script src="shared/mdt-db.js"></script>
-        <script src="reader.js"></script>
-        <script>
-            let uiVisible = false;
-            document.addEventListener("click", function (e) {
-                if (window.innerWidth > 600) return;
-                uiVisible = !uiVisible;
-                if (uiVisible) {
-                    document.body.classList.add("ui-visible");
-                } else {
-                    document.body.classList.remove("ui-visible");
-                }
-            });
-        </script>
+        <script src="../../../libs/theme/theme.js"></script>
+        <script src="./shared/mdt-parser.js"></script>
+        <script src="./shared/mdt-db.js"></script>
+        <script src="./reader.js"></script>
     </body>
 </html>

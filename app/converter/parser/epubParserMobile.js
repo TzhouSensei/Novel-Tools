@@ -1,10 +1,14 @@
 import {
+    applyAssetDecisions,
     cleanBodyText,
     collectMetaText,
+    detectChaptersFromOpf,
+    detectFilesWithAssets,
     getFirstHeading,
     resolveZipPath,
     selectChapterFiles,
 } from "./epubChapterPipeline.js";
+import { showAssetDecisionDialog } from "./epubAssetDecisionDialog.js";
 
 export const getDisplayWidth = (str = "") => {
     let width = 0;
@@ -87,20 +91,6 @@ export const makeInfoBox = (text, maxBoxWidth = 80) => {
         border
     );
 };
-
-const requestUserChoiceAsync = (filename, title) =>
-    new Promise((resolve) => {
-        setTimeout(() => {
-            const choice = prompt(
-                `Phát hiện FILE THỪA cấu trúc: "${filename}"\nTiêu đề: "${title}"\n\n` +
-                    `Vui lòng nhập số để xử lý:\n` +
-                    `1. Không render (Loại bỏ hoàn toàn)\n` +
-                    `2. Render vào phần mô tả (<info>)`,
-                "1",
-            );
-            resolve(choice || "1");
-        }, 50);
-    });
 
 function stripHTML(html) {
     const div = document.createElement("div");
@@ -257,20 +247,12 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
         "dc\\:comment",
     ]);
 
-    const manifest = {};
-    opfXml.querySelectorAll("manifest item").forEach((i) => {
-        manifest[i.getAttribute("id")] = i.getAttribute("href");
-    });
-
-    const spine = [];
-    opfXml.querySelectorAll("spine itemref").forEach((i) => {
-        const id = i.getAttribute("idref");
-        if (manifest[id]) spine.push(manifest[id]);
-    });
+    const detectedChapters = detectChaptersFromOpf(opfXml, basePath);
 
     const spineFiles = [];
-    for (let i = 0; i < spine.length; i++) {
-        const fullPath = basePath ? `${basePath}/${spine[i]}` : spine[i];
+    for (let i = 0; i < detectedChapters.length; i++) {
+        const chapter = detectedChapters[i];
+        const fullPath = chapter.fullPath;
         const resolvedPath = resolveZipPath(zip, fullPath);
         const fileData = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileData) continue;
@@ -280,59 +262,70 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
 
         const firstHeading = getFirstHeading(doc);
         const fileTitle =
-            firstHeading?.textContent?.trim() || doc.title?.trim() || spine[i];
+            firstHeading?.textContent?.trim() ||
+            doc.title?.trim() ||
+            chapter.href;
         const text = cleanBodyText(doc, fileTitle, stripHTML);
 
         spineFiles.push({
             index: i,
+            idref: chapter.idref,
             fullPath,
-            relativePath: spine[i],
+            relativePath: chapter.href,
             title: fileTitle,
             doc,
             text,
         });
     }
 
-    const { validIndexes, extraFiles } = selectChapterFiles(spineFiles);
+    const flaggedFiles = detectFilesWithAssets(spineFiles);
 
-    let extraFilesInfo = "";
-    for (const extraFile of extraFiles) {
-        const isCharacterException = state.characterFiles?.some(
-            (charPath) =>
-                charPath === extraFile.fullPath ||
-                charPath.endsWith(extraFile.relativePath),
-        );
-
-        if (isCharacterException) continue;
-
-        const choice = await requestUserChoiceAsync(
-            extraFile.relativePath,
-            extraFile.title,
-        );
-
-        if (choice === "2") {
-            extraFilesInfo += `--- File Th?a: ${extraFile.title || extraFile.relativePath} ---\n${extraFile.text}\n\n`;
-        }
+    let assetDecisions = new Map();
+    if (flaggedFiles.length > 0) {
+        assetDecisions = await showAssetDecisionDialog(flaggedFiles);
     }
 
-    const validChapters = spineFiles
-        .filter((file) => validIndexes.includes(file.index))
-        .sort((a, b) => a.index - b.index)
-        .map((f) => ({
-            title: f.title,
-            text: f.text,
-        }));
+    const { contentFiles, descriptionFiles, skippedFiles } =
+        applyAssetDecisions(spineFiles, assetDecisions);
+
+    const allContentFiles = [...contentFiles].sort((a, b) => a.index - b.index);
+
+    const validChapters = allContentFiles.map((f) => ({
+        title: f.title,
+        text: f.text,
+    }));
+
+    const extraDescription = descriptionFiles.map((f) => f.text).join("\n\n");
+
+    let extraFilesInfo = "";
+    skippedFiles.forEach((file) => {
+        const isCharacterException = state.characterFiles?.some(
+            (charPath) =>
+                charPath === file.fullPath ||
+                charPath.endsWith(file.relativePath),
+        );
+
+        if (isCharacterException) return;
+
+        extraFilesInfo += `--- File Thừa: ${file.title || file.relativePath} ---\n${file.text}\n\n`;
+    });
 
     return {
         title,
         creator,
         genre,
-        description,
-        spine,
+        description: description
+            ? `${description}\n\n${extraDescription}`.trim()
+            : extraDescription,
+        spine: detectedChapters.map((c) => c.href),
         characters,
         validChapters,
-        extraFiles,
+        extraFiles: skippedFiles,
         extraFilesInfo,
+        contentFiles,
+        descriptionFiles,
+        skippedFiles,
+        assetDecisions: Object.fromEntries(assetDecisions),
     };
 }
 
@@ -371,20 +364,13 @@ export async function parseEpubMobileV2(file, t) {
         .filter(Boolean)
         .join(", ");
 
-    const manifestItems = {};
-    opfXml.querySelectorAll("manifest item").forEach((item) => {
-        manifestItems[item.getAttribute("id")] = item.getAttribute("href");
-    });
-
-    const spine = [];
-    opfXml.querySelectorAll("spine itemref").forEach((item) => {
-        const idref = item.getAttribute("idref");
-        if (manifestItems[idref]) spine.push(manifestItems[idref]);
-    });
+    const detectedChapters = detectChaptersFromOpf(opfXml, basePath);
+    const spine = detectedChapters.map((c) => c.href);
 
     const spineFiles = [];
-    for (let i = 0; i < spine.length; i++) {
-        const filePath = basePath ? `${basePath}/${spine[i]}` : spine[i];
+    for (let i = 0; i < detectedChapters.length; i++) {
+        const chapter = detectedChapters[i];
+        const filePath = chapter.fullPath;
         const resolvedPath = resolveZipPath(zip, filePath);
         const fileObj = resolvedPath ? zip.file(resolvedPath) : null;
         if (!fileObj) continue;
@@ -396,7 +382,7 @@ export async function parseEpubMobileV2(file, t) {
             .map((el) => el.textContent?.trim())
             .filter(Boolean);
         const chapterTitle =
-            headings.find((t) => t.length < 120) ||
+            headings.find((h) => h.length < 120) ||
             doc.title?.trim() ||
             `${t("chapter")} ${i + 1}`;
 
@@ -405,7 +391,7 @@ export async function parseEpubMobileV2(file, t) {
         spineFiles.push({
             index: i,
             fullPath: filePath,
-            relativePath: spine[i],
+            relativePath: chapter.href,
             title: chapterTitle,
             doc,
             text,

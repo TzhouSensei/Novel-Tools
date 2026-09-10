@@ -126,7 +126,12 @@ splitterOptions.forEach((opt) => {
     splitterBox.appendChild(label);
 });
 splitterBox.appendChild(splitterLengthLabel);
-fileInput.parentNode.insertBefore(splitterBox, btn);
+
+if (btn && btn.parentNode === fileInput.parentNode) {
+    fileInput.parentNode.insertBefore(splitterBox, btn);
+} else {
+    fileInput.parentNode.insertBefore(splitterBox, fileInput);
+}
 
 const getSplitter = () => {
     const selected = document.querySelector("input[name='splitter']:checked");

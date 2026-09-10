@@ -5,8 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title data-i18n="mdt.reader.title">Đọc truyện</title>
 
-        <link href="../../../libs/i18n/language.css" rel="stylesheet" />
-        <link href="shared/theme.css" rel="stylesheet" />
+        <link href="../../../libs/theme/theme.css" rel="stylesheet" />
         <style>
             :root {
                 --primary: #4a90e2;
@@ -72,24 +71,6 @@
                 display: flex;
                 align-items: center;
                 gap: 12px;
-            }
-
-            .lang-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .lang-label {
-                font-size: 13px;
-                color: #666;
-            }
-
-            .lang-select {
-                padding: 6px 10px;
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                font-size: 13px;
             }
 
             .content-wrapper {
@@ -227,19 +208,6 @@
             }
 
             @media (max-width: 600px) {
-                .lang-wrapper,
-                .home-btn {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                    pointer-events: none;
-                    transition: 0.3s ease;
-                }
-                .ui-visible .lang-wrapper,
-                .ui-visible .home-btn {
-                    opacity: 1;
-                    transform: translateY(0);
-                    pointer-events: auto;
-                }
                 body {
                     -webkit-tap-highlight-color: transparent;
                 }
@@ -248,53 +216,6 @@
     </head>
     <body>
         <div class="container">
-            <header>
-                <a href="reader.html" class="back-btn">⬅ Danh sách chương</a>
-                <div class="header-right">
-                    <div
-                        id="modes"
-                        style="text-align: center; margin-bottom: 16px"
-                    >
-                        <label data-i18n="appearance.opt"></label>
-                        <select id="themeSelect">
-                            <option
-                                value=""
-                                data-i18n="appearance.opt.default"
-                            ></option>
-                            <option
-                                value="ruby"
-                                data-i18n="appearance.opt.ruby"
-                            ></option>
-                            <option
-                                value="navajo"
-                                data-i18n="appearance.opt.navajo"
-                            ></option>
-                            <option
-                                value="khaki"
-                                data-i18n="appearance.khaki"
-                            ></option>
-                            <option
-                                value="dark"
-                                data-i18n="appearance.opt.dark"
-                            ></option>
-                            <option
-                                value="deep"
-                                data-i18n="appearance.opt.deep"
-                            ></option>
-                            <option
-                                value="anias"
-                                data-i18n="appearance.opt.anias"
-                            ></option>
-                            <option
-                                value="dark_neon"
-                                data-i18n="appearance.opt.dark_neon"
-                            ></option>
-                        </select>
-                    </div>
-                    <div class="lang-wrapper"></div>
-                </div>
-            </header>
-
             <div id="content-wrapper" class="content-wrapper">
                 <div class="content-nav top">
                     <button
@@ -350,8 +271,7 @@
         </noscript>
 
         <script src="../../../libs/i18n/i18n.js"></script>
-        <script src="../../../libs/i18n/lang.js"></script>
-        <script src="shared/theme.js"></script>
+        <script src="../../../libs/theme/theme.js"></script>
         <script src="shared/mdt-parser.js"></script>
         <script src="shared/mdt-db.js"></script>
         <script src="chapter.js"></script>
