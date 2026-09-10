@@ -12,6 +12,7 @@
 
         <title>Advanced EPUB Reader</title>
         <script src="../../libs/epub/jszip.min.js"></script>
+        <script src="../../libs/capacitor/file-bridge.js"></script>
         <style>
             :root {
                 --bg-color: #f7f4ed;
@@ -1060,9 +1061,7 @@
                     Xuất dữ liệu
                 </button>
                 <button
-                    onclick="
-                        document.getElementById('hidden-import-file').click()
-                    "
+                    onclick="importUserDataBackup()"
                     data-i18n="ereader.btn_import"
                 >
                     Nhập dữ liệu

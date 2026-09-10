@@ -3585,6 +3585,40 @@ function updateGenreButtons() {
 }
 
 function bindPage() {
+    ["#dashImportCreator", "#importCreator", "#importJson"].forEach((selector) => {
+        const input = $(selector);
+        if (!input) return;
+        input.addEventListener("click", async (event) => {
+            if (!window.CapacitorFileBridge?.canPick()) return;
+            event.preventDefault();
+            let file;
+            try {
+                file = await window.CapacitorFileBridge.pickFile({
+                    types:
+                        input.accept === ".json,application/json"
+                            ? ["application/json"]
+                            : ["application/zip", "application/octet-stream"],
+                    name:
+                        input.accept === ".json,application/json"
+                            ? "book.json"
+                            : "book.creator",
+                });
+            } catch (error) {
+                alert(
+                    tFn(
+                        "creator.toast.import_fail",
+                        "Import thất bại: ",
+                    ) + error.message,
+                );
+                return;
+            }
+            if (!file) return;
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            input.files = transfer.files;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+    });
     $("#dashImportBtn")?.addEventListener("click", () =>
         $("#dashImportCreator")?.click(),
     );
@@ -7399,12 +7433,17 @@ function openRelationDialog(
         };
     });
 }
-function download(blob, name) {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+async function download(blob, name) {
+    if (window.CapacitorFileBridge) {
+        await window.CapacitorFileBridge.downloadFile(blob, name);
+        return;
+    }
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = name;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function bookText(b) {
     let out = `${b.title}\n\n${b.description || ""}\n\n${"=".repeat(70)}\n`;
@@ -7505,7 +7544,7 @@ async function exportCreator() {
         type: "blob",
         mimeType: "application/zip",
     });
-    download(blob, slugName + ".creator");
+    await download(blob, slugName + ".creator");
 }
 async function importCreator(e) {
     var file = e.target.files[0];
@@ -8921,7 +8960,7 @@ function openCreationConfiguration(b) {
                     "../mdt/library/creation_tools/parser/index.html?from=creator";
                 return;
             }
-            download(packageZip, "ebook_package.zip");
+            await download(packageZip, "ebook_package.zip");
         } catch (err) {
             alert(
                 fmt(
@@ -8955,7 +8994,7 @@ async function exportBook(format) {
     if (format === "txt") {
         const content = "\uFEFF" + bookText(b);
 
-        download(
+        await download(
             new Blob([content], {
                 type: "text/plain;charset=utf-8",
             }),
@@ -8968,7 +9007,7 @@ async function exportBook(format) {
         const out = JSON.parse(JSON.stringify(b));
         out.formulas = {};
         collectSystemFormulasInto(b, out.formulas);
-        download(
+        await download(
             new Blob([JSON.stringify(out, null, 2)], {
                 type: "application/json",
             }),
@@ -9049,7 +9088,7 @@ async function exportBook(format) {
         type: "blob",
         mimeType: "application/epub+zip",
     });
-    download(blob, base + ".epub");
+    await download(blob, base + ".epub");
 }
 async function importJSON(e) {
     const file = e.target.files[0];

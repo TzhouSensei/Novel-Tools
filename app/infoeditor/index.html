@@ -7,6 +7,7 @@
         <link href="../../libs/epub/bootstrap.min.css" rel="stylesheet" />
         <link href="../../libs/theme/theme.css" rel="stylesheet" />
         <script src="../../libs/epub/jszip.min.js"></script>
+        <script src="../../libs/capacitor/file-bridge.js"></script>
         <script src="../../libs/theme/theme.js"></script>
         <style>
             body {
@@ -773,15 +774,20 @@
                             }
 
                             await saveBookRecordToDB(db, updatedRecord);
+                        } else if (window.CapacitorFileBridge) {
+                            await window.CapacitorFileBridge.downloadFile(
+                                contentBlob,
+                                "[Edited] " + epub.filename,
+                            );
                         } else {
                             const downloadAnchor = document.createElement("a");
-                            downloadAnchor.href =
-                                URL.createObjectURL(contentBlob);
-                            downloadAnchor.download =
-                                "[Edited] " + epub.filename;
+                            const objectUrl = URL.createObjectURL(contentBlob);
+                            downloadAnchor.href = objectUrl;
+                            downloadAnchor.download = "[Edited] " + epub.filename;
                             document.body.appendChild(downloadAnchor);
                             downloadAnchor.click();
                             downloadAnchor.remove();
+                            URL.revokeObjectURL(objectUrl);
                         }
                     } catch (ex) {
                         console.error(ex);

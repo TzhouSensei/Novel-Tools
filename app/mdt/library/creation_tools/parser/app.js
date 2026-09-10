@@ -12,7 +12,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateBtn = document.getElementById("generateBtn");
     const downloadBtn = document.getElementById("downloadBtn");
 
-    selectZipBtn.addEventListener("click", () => zipInput.click());
+    selectZipBtn.addEventListener("click", async () => {
+        try {
+            if (!window.CapacitorFileBridge?.canPick()) {
+                zipInput.click();
+                return;
+            }
+            const file = await window.CapacitorFileBridge.pickFile({
+                types: ["application/zip", "application/octet-stream"],
+                name: "ebook_package.zip",
+            });
+            if (file) await processZipFile(file);
+        } catch (err) {
+            log(`Lỗi: ${err.message}`);
+            updateProgress(0, "Có lỗi xảy ra.");
+        }
+    });
     generateBtn.addEventListener("click", generateEpub);
     downloadBtn.addEventListener("click", downloadEpub);
 
@@ -21,27 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!file) return;
 
         try {
-            log(`Đang tải file: ${file.name}`);
-            updateProgress(10, "Đang giải nén tập tin ZIP...");
-            const arrayBuffer = await file.arrayBuffer();
-            const zip = await JSZip.loadAsync(arrayBuffer);
-            zipData = zip;
-
-            const configFile = zip.file("configuration.json");
-            if (!configFile) {
-                throw new Error(
-                    "Không tìm thấy file configuration.json trong ZIP!",
-                );
-            }
-
-            const configText = await configFile.async("string");
-            config = JSON.parse(configText);
-            log("Đã load configuration thành công.");
-
-            await processConfiguration(config);
-
-            generateBtn.disabled = false;
-            updateProgress(100, "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.");
+            await processZipFile(file);
         } catch (err) {
             log(`Lỗi: ${err.message}`);
             updateProgress(0, "Có lỗi xảy ra.");
@@ -60,6 +55,25 @@ document.addEventListener("DOMContentLoaded", () => {
             log(`Lỗi: ${err.message}`);
             updateProgress(0, "Có lỗi xảy ra.");
         });
+
+        async function processZipFile(file) {
+            const generateBtn = document.getElementById("generateBtn");
+            log(`Đang tải file: ${file.name}`);
+            updateProgress(10, "Đang giải nén tập tin ZIP...");
+            const arrayBuffer = await file.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            zipData = zip;
+            const configFile = zip.file("configuration.json");
+            if (!configFile) {
+                throw new Error("Không tìm thấy file configuration.json trong ZIP!");
+            }
+            const configText = await configFile.async("string");
+            config = JSON.parse(configText);
+            log("Đã load configuration thành công.");
+            await processConfiguration(config);
+            generateBtn.disabled = false;
+            updateProgress(100, "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.");
+        }
     }
 });
 
@@ -1743,7 +1757,7 @@ ${tocPageHtml}        </ul>
     }
 }
 
-function downloadEpub() {
+async function downloadEpub() {
     if (!finalEpubBlob || !config) return;
 
     const cleanName = (config.title || config.author || "ebook")
@@ -1751,6 +1765,13 @@ function downloadEpub() {
         .trim()
         .substring(0, 50);
 
-    saveAs(finalEpubBlob, `${cleanName}.epub`);
+    if (window.CapacitorFileBridge) {
+        await window.CapacitorFileBridge.downloadFile(
+            finalEpubBlob,
+            `${cleanName}.epub`,
+        );
+    } else {
+        saveAs(finalEpubBlob, `${cleanName}.epub`);
+    }
     log("Đã xuất và tải file EPUB thành công!");
 }

@@ -1107,7 +1107,7 @@ function applyTextureTheme(textureType) {
     }
 }
 
-function exportUserDataBackup() {
+async function exportUserDataBackup() {
     const backupData = {
         progress: JSON.parse(
             localStorage.getItem("epub_reader_progress") || "{}",
@@ -1144,19 +1144,35 @@ function exportUserDataBackup() {
         }
     }
 
-    const dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(backupData));
-    const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "epub_reader_all_backup.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const blob = new Blob([JSON.stringify(backupData)], {
+        type: "application/json",
+    });
+    if (window.CapacitorFileBridge) {
+        await window.CapacitorFileBridge.downloadFile(
+            blob,
+            "epub_reader_all_backup.json",
+        );
+    } else {
+        const dataStr =
+            "data:application/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(backupData));
+        const downloadAnchor = document.createElement("a");
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "epub_reader_all_backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
 }
 
-function importUserDataBackup(fileEvent) {
-    const file = fileEvent.target.files[0];
+async function importUserDataBackup(fileEvent) {
+    let file = fileEvent && fileEvent.target && fileEvent.target.files[0];
+    if (!file && window.CapacitorFileBridge?.canPick()) {
+        file = await window.CapacitorFileBridge.pickFile({
+            types: ["application/json"],
+            name: "epub_reader_backup.json",
+        });
+    }
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function (e) {

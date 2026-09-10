@@ -679,11 +679,15 @@ ${parsedBody}
 
         const blob = await zip.generateAsync({ type: "blob" });
 
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = folderName + ".zip";
-        a.click();
-        URL.revokeObjectURL(a.href);
+        if (window.CapacitorFileBridge) {
+            await window.CapacitorFileBridge.downloadFile(blob, folderName + ".zip");
+        } else {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = folderName + ".zip";
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
 
         toast(tFn("mdt.editor.other.zip_downloaded", "Đã tải file ZIP!"));
     }

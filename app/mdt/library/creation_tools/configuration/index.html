@@ -570,6 +570,7 @@
         </div>
         <script src="../../../../../libs/theme/theme.js"></script>
         <script src="../../../../../libs/i18n/i18n.js"></script>
+        <script src="../../../../../libs/capacitor/file-bridge.js"></script>
         <script>
             const appendixTypes = [
                 ["item", "config.appendix_type_item", "appendix/item"],
@@ -808,6 +809,43 @@
             let customTocLocked = false;
             let coverFileBuffer = null;
             let coverFileExt = "";
+
+            ["importFile", "importZip", "importCover"].forEach((id) => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                input.addEventListener("click", async (event) => {
+                    if (!window.CapacitorFileBridge?.canPick()) return;
+                    event.preventDefault();
+                    let file;
+                    try {
+                        file = await window.CapacitorFileBridge.pickFile({
+                            types:
+                                id === "importCover"
+                                    ? ["image/*"]
+                                    : id === "importZip"
+                                      ? [
+                                            "application/zip",
+                                            "application/octet-stream",
+                                        ]
+                                      : ["application/json"],
+                            name:
+                                id === "importCover"
+                                    ? "cover.jpg"
+                                    : id === "importZip"
+                                      ? "ebook_package.zip"
+                                      : "configuration.json",
+                        });
+                    } catch (error) {
+                        alert("Không thể chọn file native: " + error.message);
+                        return;
+                    }
+                    if (!file) return;
+                    const transfer = new DataTransfer();
+                    transfer.items.add(file);
+                    input.files = transfer.files;
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+            });
 
             window.onload = function () {};
 
@@ -1422,11 +1460,19 @@
 
             document
                 .getElementById("exportBtn")
-                .addEventListener("click", function () {
+                .addEventListener("click", async function () {
                     const config = getJsonConfigFromForm();
-                    const dataStr =
-                        "data:text/json;charset=utf-8," +
-                        encodeURIComponent(JSON.stringify(config, null, 4));
+                    const content = new Blob(
+                        [JSON.stringify(config, null, 4)],
+                        { type: "application/json" },
+                    );
+                    if (await window.CapacitorFileBridge?.saveFile(
+                        content,
+                        "configuration.json",
+                    )) {
+                        return;
+                    }
+                    const dataStr = URL.createObjectURL(content);
                     const downloadAnchor = document.createElement("a");
                     downloadAnchor.setAttribute("href", dataStr);
                     downloadAnchor.setAttribute(
@@ -1436,11 +1482,12 @@
                     document.body.appendChild(downloadAnchor);
                     downloadAnchor.click();
                     downloadAnchor.remove();
+                    URL.revokeObjectURL(dataStr);
                 });
 
             document
                 .getElementById("exportZipBtn")
-                .addEventListener("click", function () {
+                .addEventListener("click", async function () {
                     if (creatorLinked) {
                         window.parent.postMessage(
                             {
@@ -1472,13 +1519,20 @@
                     }
 
                     zip.generateAsync({ type: "blob" })
-                        .then(function (content) {
+                        .then(async function (content) {
+                            if (await window.CapacitorFileBridge?.saveFile(
+                                content,
+                                "ebook_package.zip",
+                            )) {
+                                return;
+                            }
                             const downloadAnchor = document.createElement("a");
                             downloadAnchor.href = URL.createObjectURL(content);
                             downloadAnchor.download = "ebook_package.zip";
                             document.body.appendChild(downloadAnchor);
                             downloadAnchor.click();
                             downloadAnchor.remove();
+                            URL.revokeObjectURL(downloadAnchor.href);
                         })
                         .catch(function (err) {
                             alert(
