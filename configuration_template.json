@@ -8,11 +8,56 @@
     "custom_toc": {
         "enabled": false,
         "comment": "when enabled=true, render chapters according to chapter_id order",
+        "override_appendix": "true/false",
+        "comment_override_appendix": "when enabled=true, override the appendix render setting in the configuration.json",
         "1": {
             "id": "",
             "chapter_id": {
                 "comment": "format: `id`: `file_location`",
                 "1": ""
+            }
+        },
+        "appendix": {
+            "comment": "always appears at the end of the table of contents, if location does not contain appendix path, move file to the appendix folder",
+            "item": "name in TOC",
+            "itemappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "itemset": "name in TOC",
+            "itemsetappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "character": "name in TOC",
+            "characterappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "faction": "name in TOC",
+            "factionappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "realms": "name in TOC",
+            "realmsappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "abilities": "name in TOC",
+            "abilitiesappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "skillset": "name in TOC",
+            "skillsetappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "definition": "name in TOC",
+            "definitionappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "relations": "name in TOC",
+            "relationsappendix": {
+                "1": "ecxactly location of file,based on root"
+            },
+            "timeline": "name in TOC",
+            "timelineappendix": {
+                "1": "ecxactly location of file,based on root"
             }
         }
     },
@@ -31,7 +76,40 @@
         "comment": "format: `(increase)`: `available value:toc,cover,desc`",
         "1": ""
     },
-    "parsing_type":"single|br-single|multiple|br-multiple",
-    "parent_tag":"pre|p|h1-h6|blockquote|span",
-    "child_tag":"pre|p|h1-h6|blockquote|span",
+    "expand_parsing": false,
+    "render_appendix": false,
+    "parse": {
+        "parsing_type": "single|br-single|multiple|br-multiple",
+        "parent_tag": "pre|p|h1-h6|blockquote|span",
+        "child_tag": "pre|p|h1-h6|blockquote|span"
+    },
+    "appendix": {
+        "is_from_creator": "true/false,if true, appendix only need render input of name ToC, if false, add the corresponding {tag}appendix structure",
+        "render": {
+            "item": "true/false",
+            "itemset": "true/false",
+            "character": "true/false",
+            "faction": "true/false",
+            "realms": "true/false",
+            "abilities": "true/false",
+            "skillset": "true/false",
+            "definition": "true/false",
+            "relations": "true/false",
+            "timeline": "true/false",
+            "comment": "based on display setting in the creator of novel, if the setting is hidden then the value is false, otherwise true"
+        },
+        "path": {
+            "item": "appendix/item",
+            "itemset": "appendix/itemset",
+            "character": "appendix/character",
+            "faction": "appendix/faction",
+            "realms": "appendix/realms",
+            "abilities": "appendix/abilities",
+            "skillset": "appendix/skillset",
+            "definition": "appendix/definition",
+            "relations": "appendix/relations",
+            "timeline": "appendix/timeline",
+            "comment": "All HTML/XHTML files will be placed in the corresponding directory."
+        }
+    }
 }
