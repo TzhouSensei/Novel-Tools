@@ -85,7 +85,30 @@ Allows editing EPUB metadata such as:
 - Author
 - Category
 - Description
-  
+
+---
+
+## 🧩 Story Creator & Wiki Appendix
+
+The Story Creator is an offline worldbuilding and EPUB creation workspace backed by
+browser-local IndexedDB storage. It supports:
+
+- Book metadata, chapters, characters, factions, realms, items, item sets, abilities, skill sets, and definitions
+- Relations, timeline entries, system data, stats, resources, currencies, effects, quests, and combat stats
+- Configurable Appendix sections and visibility through the existing creation configuration
+- Grouped item/item-set and ability/skill-set navigation
+- Wiki-style Appendix XHTML pages with semantic headings, infoboxes, tags, descriptions, lists, tables, formulas, references, relations, and optional change history
+- Reference links resolved from stored entity IDs to entity names and relative XHTML paths
+- Icon and portrait figures with localized alternative text
+- Safe escaping of stored text and paragraph-aware description rendering
+- Preserved `appendix-toc.xhtml`, custom TOC mappings, back-links, relative paths, and `configuration.json`
+
+Appendix generation reads the existing IndexedDB book data without changing the
+database schema. Entity creation/update timestamps are kept for storage and
+application behavior but are not printed inside Appendix entity pages.
+
+See [wiki.md](wiki.md) for the complete usage guide and workflow.
+
 ---
 
 # 🚀 Platform Support
@@ -359,8 +382,6 @@ Steps
 4. Enable localhost
 5. Open index.html
 6. Start reading
-
-
 
 # 🤝 Contribution
 
