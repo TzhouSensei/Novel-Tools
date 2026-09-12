@@ -1,6 +1,6 @@
 {
     "name": "tools-app",
-    "version": "1.2.0-Release",
+    "version": "1.3.0-Release",
     "main": "electron-main.js",
     "scripts": {
         "start": "electron .",
