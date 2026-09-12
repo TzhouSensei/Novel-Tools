@@ -55,28 +55,26 @@ document.addEventListener("DOMContentLoaded", () => {
             log(`Lỗi: ${err.message}`);
             updateProgress(0, "Có lỗi xảy ra.");
         });
-
-        async function processZipFile(file) {
-            const generateBtn = document.getElementById("generateBtn");
-            log(`Đang tải file: ${file.name}`);
-            updateProgress(10, "Đang giải nén tập tin ZIP...");
-            const arrayBuffer = await file.arrayBuffer();
-            const zip = await JSZip.loadAsync(arrayBuffer);
-            zipData = zip;
-            const configFile = zip.file("configuration.json");
-            if (!configFile) {
-                throw new Error("Không tìm thấy file configuration.json trong ZIP!");
-            }
-            const configText = await configFile.async("string");
-            config = JSON.parse(configText);
-            log("Đã load configuration thành công.");
-            await processConfiguration(config);
-            generateBtn.disabled = false;
-            updateProgress(100, "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.");
-        }
     }
 });
-
+async function processZipFile(file) {
+    const generateBtn = document.getElementById("generateBtn");
+    log(`Đang tải file: ${file.name}`);
+    updateProgress(10, "Đang giải nén tập tin ZIP...");
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    zipData = zip;
+    const configFile = zip.file("configuration.json");
+    if (!configFile) {
+        throw new Error("Không tìm thấy file configuration.json trong ZIP!");
+    }
+    const configText = await configFile.async("string");
+    config = JSON.parse(configText);
+    log("Đã load configuration thành công.");
+    await processConfiguration(config);
+    generateBtn.disabled = false;
+    updateProgress(100, "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.");
+}
 async function injectZipIntoInput(
     zipInput,
     source,
@@ -816,7 +814,12 @@ async function buildAppendixSectionFromStructure(sec, cfg, lang, parseConfig) {
             if (group.children.length > 0) section.children.push(group);
         } else {
             const title = child.title || getHtmlTitle(raw, tocName);
-            const optimized = cleanAndOptimizeHtml(raw, title, lang, parseConfig);
+            const optimized = cleanAndOptimizeHtml(
+                raw,
+                title,
+                lang,
+                parseConfig,
+            );
             section.children.push({
                 type: "appendix-entry",
                 id: `appendix_${sec.type}_${sIdx}`,
