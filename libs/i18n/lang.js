@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
             onchange="setLang(this.value)"
         >
             <option value="vi-vn">🇻🇳 Tiếng Việt</option>
-            <option value="en-us">🇺🇸 English</option>
+            <option value="en-us" selected>🇺🇸 English</option>
             <option value="ja-jp">🇯🇵 日本語</option>
             <option value="ko-kr">🇰🇷 한국어</option>
             <option value="zh-cn">🇨🇳 简体中文</option>
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentLang =
         localStorage.getItem("lang") ||
         localStorage.getItem("language") ||
-        "vi-vn";
+        "en-us";
 
     select.value = currentLang;
 });

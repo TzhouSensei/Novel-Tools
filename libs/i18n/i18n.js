@@ -2,40 +2,35 @@ let translations = {};
 
 let langReady = false;
 
-let currentLang = "vi-vn";
+let currentLang = "en-us";
+
+const currentScriptUrl = document.currentScript
+    ? document.currentScript.src
+    : "";
 
 async function loadLang(lang) {
-    let path = `libs/i18n/locale/${lang}.json`;
+    const path = new URL(`./locale/${lang}.json`, currentScriptUrl).href;
 
-    for (let i = 0; i < 7; i++) {
-        try {
-            const res = await fetch(path);
+    try {
+        const res = await fetch(path);
 
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
-            }
-
-            translations = await res.json();
-
-            currentLang = lang;
-            document.documentElement.lang = lang;
-
-            langReady = true;
-
-            applyI18n();
-
-            syncLangSelect(lang);
-
-            i18nListeners.forEach((fn) => fn(lang, translations));
-
-            return;
-        } catch (err) {
-            path = "../" + path;
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
         }
-    }
 
-    console.error(`Không thể tải file ngôn ngữ: ${lang}.json sau 7 lần thử.`);
+        translations = await res.json();
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        langReady = true;
+
+        applyI18n();
+        syncLangSelect(lang);
+        i18nListeners.forEach((fn) => fn(lang, translations));
+    } catch (err) {
+        console.error(`Không thể tải file ngôn ngữ: ${lang}.json`, err);
+    }
 }
+
 function t(key, fallback = key) {
     if (translations[key] !== undefined) {
         return translations[key];
@@ -98,7 +93,7 @@ function setLang(lang) {
 }
 
 const i18nListeners = [];
-loadLang(localStorage.getItem("lang") || "vi-vn");
+loadLang(localStorage.getItem("lang") || "en-us");
 
 function onI18nChange(fn) {
     i18nListeners.push(fn);

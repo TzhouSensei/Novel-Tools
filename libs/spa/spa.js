@@ -280,7 +280,7 @@
             const lang =
                 localStorage.getItem("lang") ||
                 localStorage.getItem("language") ||
-                "vi-vn";
+                "en-us";
             window.syncLangSelect(lang);
         }
     }

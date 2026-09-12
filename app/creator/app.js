@@ -77,7 +77,7 @@ function tFn(key, fallback) {
 function localeTag() {
     return typeof currentLang === "string" && currentLang
         ? currentLang
-        : "vi-VN";
+        : "en-us";
 }
 
 function fmt(s, ...args) {
@@ -3585,40 +3585,43 @@ function updateGenreButtons() {
 }
 
 function bindPage() {
-    ["#dashImportCreator", "#importCreator", "#importJson"].forEach((selector) => {
-        const input = $(selector);
-        if (!input) return;
-        input.addEventListener("click", async (event) => {
-            if (!window.CapacitorFileBridge?.canPick()) return;
-            event.preventDefault();
-            let file;
-            try {
-                file = await window.CapacitorFileBridge.pickFile({
-                    types:
-                        input.accept === ".json,application/json"
-                            ? ["application/json"]
-                            : ["application/zip", "application/octet-stream"],
-                    name:
-                        input.accept === ".json,application/json"
-                            ? "book.json"
-                            : "book.creator",
-                });
-            } catch (error) {
-                alert(
-                    tFn(
-                        "creator.toast.import_fail",
-                        "Import thất bại: ",
-                    ) + error.message,
-                );
-                return;
-            }
-            if (!file) return;
-            const transfer = new DataTransfer();
-            transfer.items.add(file);
-            input.files = transfer.files;
-            input.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-    });
+    ["#dashImportCreator", "#importCreator", "#importJson"].forEach(
+        (selector) => {
+            const input = $(selector);
+            if (!input) return;
+            input.addEventListener("click", async (event) => {
+                if (!window.CapacitorFileBridge?.canPick()) return;
+                event.preventDefault();
+                let file;
+                try {
+                    file = await window.CapacitorFileBridge.pickFile({
+                        types:
+                            input.accept === ".json,application/json"
+                                ? ["application/json"]
+                                : [
+                                      "application/zip",
+                                      "application/octet-stream",
+                                  ],
+                        name:
+                            input.accept === ".json,application/json"
+                                ? "book.json"
+                                : "book.creator",
+                    });
+                } catch (error) {
+                    alert(
+                        tFn("creator.toast.import_fail", "Import thất bại: ") +
+                            error.message,
+                    );
+                    return;
+                }
+                if (!file) return;
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                input.files = transfer.files;
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+        },
+    );
     $("#dashImportBtn")?.addEventListener("click", () =>
         $("#dashImportCreator")?.click(),
     );
@@ -7822,12 +7825,16 @@ function creatorWikiHumanize(key) {
         .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 function creatorWikiText(value) {
-    const text = String(value === undefined || value === null ? "" : value)
-        .trim();
+    const text = String(
+        value === undefined || value === null ? "" : value,
+    ).trim();
     if (!text) return "";
     return text
         .split(/\r?\n\s*\r?\n/)
-        .map((paragraph) => `<p>${creatorHtmlText(paragraph).replace(/\r?\n/g, "<br />")}</p>`)
+        .map(
+            (paragraph) =>
+                `<p>${creatorHtmlText(paragraph).replace(/\r?\n/g, "<br />")}</p>`,
+        )
         .join("");
 }
 function creatorWikiReference(st, key, value, fromPath) {
@@ -7855,22 +7862,35 @@ function creatorWikiReference(st, key, value, fromPath) {
     if (!st || !st.book || !st.entityPaths) return "";
     if (!type) return "";
     const ids = plural ? (Array.isArray(value) ? value : [value]) : [value];
-    const items = ids.map((id) => {
-        const entity = type === "stats"
-            ? (st.book.systems && st.book.systems.stats || []).find((entry) => entry.id === id)
-            : (st.book[type] || []).find((entry) => entry.id === id);
-        const label = entity && (entity.name || entity.title || entity.code ||
-            (type === "chapters" ? `${tFn("chapter", "Chapter")} ${entity.number || ""}`.trim() : ""));
-        const targetType = type === "definitions" ? "definition" : type;
-        const target = st.entityPaths[`${targetType}:${id}`];
-        if (!label) return "";
-        const text = creatorHtmlText(label);
-        return target
-            ? `<a href="${creatorHtmlText(creatorRelativeHref(fromPath, target))}">${text}</a>`
-            : text;
-    }).filter(Boolean);
+    const items = ids
+        .map((id) => {
+            const entity =
+                type === "stats"
+                    ? ((st.book.systems && st.book.systems.stats) || []).find(
+                          (entry) => entry.id === id,
+                      )
+                    : (st.book[type] || []).find((entry) => entry.id === id);
+            const label =
+                entity &&
+                (entity.name ||
+                    entity.title ||
+                    entity.code ||
+                    (type === "chapters"
+                        ? `${tFn("chapter", "Chapter")} ${entity.number || ""}`.trim()
+                        : ""));
+            const targetType = type === "definitions" ? "definition" : type;
+            const target = st.entityPaths[`${targetType}:${id}`];
+            if (!label) return "";
+            const text = creatorHtmlText(label);
+            return target
+                ? `<a href="${creatorHtmlText(creatorRelativeHref(fromPath, target))}">${text}</a>`
+                : text;
+        })
+        .filter(Boolean);
     if (!items.length) return "";
-    return plural ? `<ul class="wiki-related-list">${items.map((item) => `<li>${item}</li>`).join("")}</ul>` : items[0];
+    return plural
+        ? `<ul class="wiki-related-list">${items.map((item) => `<li>${item}</li>`).join("")}</ul>`
+        : items[0];
 }
 function creatorWikiValue(value, fromPath, st, key) {
     if (value === undefined || value === null || value === "") return "";
@@ -7886,7 +7906,18 @@ function creatorWikiValue(value, fromPath, st, key) {
     }
     if (typeof value === "object") {
         const rows = Object.entries(value)
-            .filter(([key]) => !new Set(["id", "createdAt", "updatedAt", "created_at", "updated_at", "created", "updated"]).has(key))
+            .filter(
+                ([key]) =>
+                    !new Set([
+                        "id",
+                        "createdAt",
+                        "updatedAt",
+                        "created_at",
+                        "updated_at",
+                        "created",
+                        "updated",
+                    ]).has(key),
+            )
             .map(([key, item]) => {
                 const rendered = creatorWikiValue(item, fromPath, st, key);
                 return rendered
@@ -7907,17 +7938,24 @@ function creatorWikiLinks(st, fromPath, type, ids, fallback) {
     const values = Array.isArray(ids) ? ids : ids ? [ids] : [];
     const items = values
         .map((id) => {
-            const entity = (st.book[type] || []).find((entry) => entry.id === id);
-            const label = entity && (entity.name || entity.title || entity.code);
+            const entity = (st.book[type] || []).find(
+                (entry) => entry.id === id,
+            );
+            const label =
+                entity && (entity.name || entity.title || entity.code);
             if (!label) return "";
             const target = st.entityPaths[`${type}:${id}`];
             return target
                 ? `<li><a href="${creatorHtmlText(creatorRelativeHref(fromPath, target))}">${creatorHtmlText(label || id)}</a></li>`
-                : label ? `<li>${creatorHtmlText(label)}</li>` : "";
+                : label
+                  ? `<li>${creatorHtmlText(label)}</li>`
+                  : "";
         })
         .filter(Boolean)
         .join("");
-    return items ? `<ul class="wiki-related-list">${items}</ul>` : fallback || "";
+    return items
+        ? `<ul class="wiki-related-list">${items}</ul>`
+        : fallback || "";
 }
 function creatorWikiChanges(src) {
     const changes = Array.isArray(src.changes)
@@ -7928,16 +7966,22 @@ function creatorWikiChanges(src) {
     if (!changes.length) return "";
     return `<ol class="wiki-change-list">${changes
         .map((change) => {
-            const value = typeof change === "object" ? change : { description: change };
+            const value =
+                typeof change === "object" ? change : { description: change };
             const when = value.chapter || value.time || value.at || value.date;
-            const before = value.from !== undefined ? ` — ${creatorHtmlText(value.from)} → ${creatorHtmlText(value.to)}` : "";
+            const before =
+                value.from !== undefined
+                    ? ` — ${creatorHtmlText(value.from)} → ${creatorHtmlText(value.to)}`
+                    : "";
             const text = value.description || value.note || value.text || "";
             return `<li>${when ? `<strong>${creatorHtmlText(when)}</strong> ` : ""}${creatorHtmlText(text)}${before}</li>`;
         })
         .join("")}</ol>`;
 }
 function creatorRelativeHref(fromPath, toPath) {
-    const fromDir = String(fromPath || "").split("/").slice(0, -1);
+    const fromDir = String(fromPath || "")
+        .split("/")
+        .slice(0, -1);
     const toParts = String(toPath || "").split("/");
     let shared = 0;
     while (
@@ -8050,40 +8094,115 @@ function creatorAppendixEntityPage(st, src, href, opts) {
         if (!image) return;
         const ext = creatorImageExtension(image.mime);
         st.zip.file(`${dir}/${base}-${kind}.${ext}`, image.data);
-        const altKey = kind === "icon"
-            ? "creator.appendix.wiki.icon_alt"
-            : "creator.appendix.wiki.portrait_alt";
-        images.push(`<figure class="wiki-illustration"><img src="${base}-${kind}.${ext}" alt="${creatorHtmlText(tFn(altKey, kind))}" /><figcaption>${creatorHtmlText(titleLabel)}</figcaption></figure>`);
+        const altKey =
+            kind === "icon"
+                ? "creator.appendix.wiki.icon_alt"
+                : "creator.appendix.wiki.portrait_alt";
+        images.push(
+            `<figure class="wiki-illustration"><img src="${base}-${kind}.${ext}" alt="${creatorHtmlText(tFn(altKey, kind))}" /><figcaption>${creatorHtmlText(titleLabel)}</figcaption></figure>`,
+        );
     });
     const tags = (Array.isArray(src.tags) ? src.tags : [])
         .filter((tag) => tag !== undefined && tag !== null && tag !== "")
         .map((tg) => `<li><span>#${creatorHtmlText(tg)}</span></li>`)
         .join("");
-    const excluded = new Set(["id", "name", "title", "description", "tags", "illustration", "icon", "portrait", "changes", "history", "createdAt", "updatedAt", "created_at", "updated_at", "created", "updated"]);
-    const fieldEntries = Object.entries(src).filter(([key, value]) =>
-        !excluded.has(key) && value !== undefined && value !== null && value !== "");
-    const infobox = fieldEntries.map(([key, value]) => {
-        const rendered = creatorWikiValue(value, href, st, key);
-        return rendered
-            ? `<div><dt>${creatorHtmlText(creatorWikiLabel(key, creatorWikiHumanize(key)))}</dt><dd>${rendered}</dd></div>`
-            : "";
-    }).filter(Boolean).join("");
+    const excluded = new Set([
+        "id",
+        "name",
+        "title",
+        "description",
+        "tags",
+        "illustration",
+        "icon",
+        "portrait",
+        "changes",
+        "history",
+        "createdAt",
+        "updatedAt",
+        "created_at",
+        "updated_at",
+        "created",
+        "updated",
+    ]);
+    const fieldEntries = Object.entries(src).filter(
+        ([key, value]) =>
+            !excluded.has(key) &&
+            value !== undefined &&
+            value !== null &&
+            value !== "",
+    );
+    const infobox = fieldEntries
+        .map(([key, value]) => {
+            const rendered = creatorWikiValue(value, href, st, key);
+            return rendered
+                ? `<div><dt>${creatorHtmlText(creatorWikiLabel(key, creatorWikiHumanize(key)))}</dt><dd>${rendered}</dd></div>`
+                : "";
+        })
+        .filter(Boolean)
+        .join("");
     const sections = [];
     if (images.length) sections.push(images.join(""));
-    if (tags) sections.push(`<section class="wiki-section" id="tags"><h2>${creatorHtmlText(tFn("creator.appendix.wiki.tags", "Tags"))}</h2><ul class="wiki-tags">${tags}</ul></section>`);
-    if (infobox) sections.push(creatorWikiSection(tFn("creator.appendix.wiki.info", "Information"), `<dl>${infobox}</dl>`, "information"));
+    if (tags)
+        sections.push(
+            `<section class="wiki-section" id="tags"><h2>${creatorHtmlText(tFn("creator.appendix.wiki.tags", "Tags"))}</h2><ul class="wiki-tags">${tags}</ul></section>`,
+        );
+    if (infobox)
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.info", "Information"),
+                `<dl>${infobox}</dl>`,
+                "information",
+            ),
+        );
     const description = creatorWikiText(src.description);
-    if (description) sections.push(creatorWikiSection(tFn("creator.appendix.wiki.description", "Description"), description, "overview"));
+    if (description)
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.description", "Description"),
+                description,
+                "overview",
+            ),
+        );
     if (opts.type === "item" && src.itemsetIds && src.itemsetIds.length) {
-        sections.push(creatorWikiSection(tFn("creator.appendix.wiki.belongs_to", "Belongs to"), creatorWikiLinks(st, href, "itemsets", src.itemsetIds), "belongs-to"));
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.belongs_to", "Belongs to"),
+                creatorWikiLinks(st, href, "itemsets", src.itemsetIds),
+                "belongs-to",
+            ),
+        );
     }
-    if ((opts.type === "abilities" || opts.type === "ability") && src.skillsetIds && src.skillsetIds.length) {
-        sections.push(creatorWikiSection(tFn("creator.appendix.wiki.belongs_to", "Belongs to"), creatorWikiLinks(st, href, "skillsets", src.skillsetIds), "belongs-to"));
+    if (
+        (opts.type === "abilities" || opts.type === "ability") &&
+        src.skillsetIds &&
+        src.skillsetIds.length
+    ) {
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.belongs_to", "Belongs to"),
+                creatorWikiLinks(st, href, "skillsets", src.skillsetIds),
+                "belongs-to",
+            ),
+        );
     }
     const relations = src.relations || src.related || src.relatedIds;
-    if (relations) sections.push(creatorWikiSection(tFn("creator.appendix.wiki.related", "Related"), creatorWikiValue(relations, href, st, "related"), "relations"));
+    if (relations)
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.related", "Related"),
+                creatorWikiValue(relations, href, st, "related"),
+                "relations",
+            ),
+        );
     const changes = creatorWikiChanges(src);
-    if (changes) sections.push(creatorWikiSection(tFn("creator.appendix.wiki.changes", "Changes"), changes, "changes"));
+    if (changes)
+        sections.push(
+            creatorWikiSection(
+                tFn("creator.appendix.wiki.changes", "Changes"),
+                changes,
+                "changes",
+            ),
+        );
     if (opts.extra) sections.push(opts.extra);
     const body = `<header class="wiki-header"><h1>${creatorHtmlText(titleLabel)}</h1></header><div class="wiki-layout"><main class="wiki-content">${sections.join("")}</main></div>`;
     st.zip.file(
@@ -8098,7 +8217,14 @@ function creatorAppendixEntityPage(st, src, href, opts) {
     );
     return { title: titleLabel, href: href };
 }
-function creatorAppendixIndexPage(st, indexHref, title, backHref, backTitle, members) {
+function creatorAppendixIndexPage(
+    st,
+    indexHref,
+    title,
+    backHref,
+    backTitle,
+    members,
+) {
     st.zip.file(
         indexHref,
         creatorAppendixPageHTML({
@@ -8145,8 +8271,10 @@ function buildCreatorGroupedAppendixSection(st, section) {
         );
         const grpHref = `${grpFolder}/index.xhtml`;
         st.entityPaths = st.entityPaths || {};
-        const groupType = section.type === "abilities" ? "skillsets" : "itemsets";
-        if (grp.id !== undefined) st.entityPaths[`${groupType}:${grp.id}`] = grpHref;
+        const groupType =
+            section.type === "abilities" ? "skillsets" : "itemsets";
+        if (grp.id !== undefined)
+            st.entityPaths[`${groupType}:${grp.id}`] = grpHref;
         const groupChildren = members.map((m, i) => {
             assigned.add(m.id);
             return creatorAppendixEntityPage(
@@ -8154,7 +8282,10 @@ function buildCreatorGroupedAppendixSection(st, section) {
                 m,
                 creatorEntityHref(st.taken, grpFolder, m, i, section.type),
                 {
-                    type: section.type === "abilities" ? "abilities" : section.type,
+                    type:
+                        section.type === "abilities"
+                            ? "abilities"
+                            : section.type,
                     backHref: grpHref,
                     backTitle: grp.name || "",
                     fallbackTitle: `${section.title} ${gIndex + 1}-${i + 1}`,
@@ -8356,11 +8487,7 @@ function buildCreatorDefinitionsAppendixSection(st) {
     if (!defs.length || st.render.definition === false) return null;
     const folder = st.path.definition || "appendix/definition";
     const title = tFn("creator.appendix.definition", "Định nghĩa");
-    const indexHref = creatorUniquePath(
-        st.taken,
-        `${folder}/index`,
-        ".xhtml",
-    );
+    const indexHref = creatorUniquePath(st.taken, `${folder}/index`, ".xhtml");
     const children = defs.map((d, i) =>
         creatorAppendixEntityPage(
             st,
@@ -8404,11 +8531,7 @@ function buildCreatorRelationsAppendixSection(st) {
     );
     if (!chars.length) return null;
     const title = tFn("creator.appendix.relations", "Quan hệ");
-    const indexHref = creatorUniquePath(
-        st.taken,
-        `${folder}/index`,
-        ".xhtml",
-    );
+    const indexHref = creatorUniquePath(st.taken, `${folder}/index`, ".xhtml");
     const children = appendRelationsToZip(st.book, st.zip, folder, {
         lang: st.lang,
         backHref: indexHref,
@@ -8438,11 +8561,7 @@ function buildCreatorTimelineAppendixSection(st) {
     if (!(st.book.timeline || []).length) return null;
     const folder = st.path.timeline || "appendix/timeline";
     const title = tFn("creator.appendix.timeline", "Timeline");
-    const indexHref = creatorUniquePath(
-        st.taken,
-        `${folder}/index`,
-        ".xhtml",
-    );
+    const indexHref = creatorUniquePath(st.taken, `${folder}/index`, ".xhtml");
     const entry = appendTimelineToZip(st.book, st.zip, folder, {
         lang: st.lang,
         backHref: indexHref,
@@ -8474,28 +8593,40 @@ function buildCreatorSystemsAppendixSection(st) {
     const title = tFn("creator.appendix.systems", "Hệ thống / Stats");
     const tabs = [
         ["stats", tFn("creator.sys.tab_stats", "Stats"), sys.stats],
-        ["resources", tFn("creator.sys.tab_resources", "Tài nguyên"), sys.resources],
-        ["currencies", tFn("creator.sys.tab_currencies", "Tiền tệ"), sys.currencies],
-        ["effects", tFn("creator.sys.tab_effects", "Effects / Statuses"), sys.effects],
-        ["quests", tFn("creator.sys.tab_quests", "Quests / Missions"), sys.quests],
-        ["combat", tFn("creator.sys.tab_combat", "Combat Stats"), Array.isArray(sys.combat) ? sys.combat : []],
+        [
+            "resources",
+            tFn("creator.sys.tab_resources", "Tài nguyên"),
+            sys.resources,
+        ],
+        [
+            "currencies",
+            tFn("creator.sys.tab_currencies", "Tiền tệ"),
+            sys.currencies,
+        ],
+        [
+            "effects",
+            tFn("creator.sys.tab_effects", "Effects / Statuses"),
+            sys.effects,
+        ],
+        [
+            "quests",
+            tFn("creator.sys.tab_quests", "Quests / Missions"),
+            sys.quests,
+        ],
+        [
+            "combat",
+            tFn("creator.sys.tab_combat", "Combat Stats"),
+            Array.isArray(sys.combat) ? sys.combat : [],
+        ],
     ];
     const rendered = tabs.filter(
         ([k, , list]) => ds["sys" + k] !== "hidden" && list.length,
     );
     if (!rendered.length) return null;
     const folder = st.path.systems || "appendix/systems";
-    const indexHref = creatorUniquePath(
-        st.taken,
-        `${folder}/index`,
-        ".xhtml",
-    );
+    const indexHref = creatorUniquePath(st.taken, `${folder}/index`, ".xhtml");
     const children = rendered.map(([k, label, list]) => {
-        const href = creatorUniquePath(
-            st.taken,
-            `${folder}/${k}`,
-            ".xhtml",
-        );
+        const href = creatorUniquePath(st.taken, `${folder}/${k}`, ".xhtml");
         st.zip.file(
             href,
             creatorAppendixPageHTML({
@@ -8598,7 +8729,10 @@ function buildCreatorAppendixPackage(book, config, zip) {
     if (syss) structure.push(syss);
     if (structure.length) {
         const rootBody = creatorAppendixListUL(
-            structure.map((sec) => ({ href: sec.index_href, title: sec.title })),
+            structure.map((sec) => ({
+                href: sec.index_href,
+                title: sec.title,
+            })),
             st.appendixHref,
         );
         zip.file(
@@ -8637,12 +8771,16 @@ function appendRelationsToZip(book, zip, entityFolder, opts) {
                     otherKind === "faction"
                         ? (book.factions || []).find((f) => f.id === otherId)
                         : (book.characters || []).find((c) => c.id === otherId);
-                const otherTarget = otherEntity &&
-                    entityPaths[`${otherKind === "faction" ? "faction" : "character"}:${otherEntity.id}`];
+                const otherTarget =
+                    otherEntity &&
+                    entityPaths[
+                        `${otherKind === "faction" ? "faction" : "character"}:${otherEntity.id}`
+                    ];
                 const otherLabel = creatorHtmlText(
                     otherName && otherName !== otherId
                         ? otherName
-                        : otherEntity?.name || tFn("creator.appendix.wiki.unknown", "Unknown"),
+                        : otherEntity?.name ||
+                              tFn("creator.appendix.wiki.unknown", "Unknown"),
                 );
                 const otherLink = otherTarget
                     ? `<a href="${creatorHtmlText(creatorRelativeHref(`${entityFolder}/char-${index + 1}.xhtml`, otherTarget))}">${otherLabel}</a>`
