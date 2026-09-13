@@ -39,8 +39,27 @@ function restoreState() {
         const raw = localStorage.getItem("creatorState");
         if (!raw) return false;
         const s = JSON.parse(raw);
-        Object.assign(state, s);
+
+        // Story Studio should always open on the dashboard instead of reusing the
+        // last manage/create page from a prior session.
+        const fallback = {
+            view: "dashboard",
+            bookId: null,
+            tab: "chapters",
+            chapterTab: "list",
+            relTab: "list",
+            abilityTab: "list",
+            realmTab: "list",
+            systemsTab: "overview",
+            systemDslId: null,
+            returnTo: "dashboard",
+        };
+
+        Object.assign(state, fallback, s);
+        state.view = "dashboard";
+        state.bookId = null;
         state.systemDslId = null;
+        state.returnTo = "dashboard";
         return true;
     } catch (e) {
         return false;
@@ -9321,21 +9340,13 @@ try {
 (async () => {
     await openDB();
 
-    const restored = restoreState();
-    if (restored && state.view === "manage" && state.bookId) {
-        try {
-            const b = await getBook(state.bookId);
-            if (!b) {
-                state.view = "dashboard";
-                state.bookId = null;
-                state.tab = "chapters";
-                state.systemDslId = null;
-            }
-        } catch (e) {
-            state.view = "dashboard";
-            state.bookId = null;
-        }
-    }
+    restoreState();
+    state.view = "dashboard";
+    state.bookId = null;
+    state.tab = "chapters";
+    state.systemDslId = null;
+    state.returnTo = "dashboard";
+    saveState();
     render();
 })().catch((e) => {
     console.error(e);

@@ -103,7 +103,8 @@
 
     let currentRoute = null;
     let isNavigating = false;
-    let lastOriginPath = "";
+    let isGoingBack = false;
+    const routeOrigins = {};
     function tl(key) {
         return window.t && typeof window.t === "function" ? window.t(key) : key;
     }
@@ -264,10 +265,20 @@
             return;
         }
 
-        const parent = BACK_ROUTES[currentRoute.path];
+        const hasRouteOrigin = Object.prototype.hasOwnProperty.call(
+            routeOrigins,
+            currentRoute.path,
+        );
+        const parent =
+            hasRouteOrigin
+                ? routeOrigins[currentRoute.path]
+                : BACK_ROUTES[currentRoute.path];
 
         if (parent !== undefined) {
+            delete routeOrigins[currentRoute.path];
+            isGoingBack = true;
             go(parent, true);
+            isGoingBack = false;
             return;
         }
 
@@ -542,8 +553,12 @@
     function go(path, updateHistory) {
         const route = findRoute(path);
         if (!route) return;
-        if (currentRoute && currentRoute.path !== route.path) {
-            lastOriginPath = currentRoute.path;
+        if (
+            !isGoingBack &&
+            currentRoute &&
+            currentRoute.path !== route.path
+        ) {
+            routeOrigins[route.path] = currentRoute.path;
         }
         renderRoute(route);
         if (updateHistory && currentRoutePath() !== route.path) {
@@ -620,6 +635,9 @@
 
                     const r = routeForFrame(href);
                     if (r && (!currentRoute || currentRoute.path !== r.path)) {
+                        if (!isGoingBack && currentRoute) {
+                            routeOrigins[r.path] = currentRoute.path;
+                        }
                         currentRoute = r;
                         document.title = routeTitle(r) + " — Novel Tools";
                         setBreadcrumb(routeTitle(r));

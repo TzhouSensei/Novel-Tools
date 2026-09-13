@@ -537,6 +537,173 @@ body.frost_land {
     color: #1d3d52 !important;
 }
 
+body.heaven_moon {
+    --bg: #0f1320 !important;
+    --card-bg: #1a2035 !important;
+    --border: #2a3350 !important;
+    --text: #e8ecf5 !important;
+    --text-muted: #8892b0 !important;
+    --primary: #7b9fff !important;
+    --hover-bg: #252d4a !important;
+    --read-bg: #161b2c !important;
+    --read-color: #6a7a9e !important;
+    --unread-color: #e8ecf5 !important;
+    background: radial-gradient(circle at 80% 10%, #1e2a4a 0%, #0f1320 60%) !important;
+    color: #e8ecf5 !important;
+}
+
+body.bagua_field {
+    --bg: #1a1a1a !important;
+    --card-bg: #2a2a2a !important;
+    --border: #4a4a4a !important;
+    --text: #f5f5f5 !important;
+    --text-muted: #a0a0a0 !important;
+    --primary: #c4a35a !important;
+    --hover-bg: #3a3a3a !important;
+    --read-bg: #222222 !important;
+    --read-color: #707070 !important;
+    --unread-color: #f5f5f5 !important;
+    --danger: #c62828 !important;
+    --success: #558b2f !important;
+    background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #1a1a1a 70%) !important;
+    color: #f5f5f5 !important;
+}
+
+body.dark_fantasy {
+    --bg: #1a0f2e !important;
+    --card-bg: #251840 !important;
+    --border: #3d2860 !important;
+    --text: #f0e6ff !important;
+    --text-muted: #9b8ab8 !important;
+    --primary: #b388ff !important;
+    --hover-bg: #352560 !important;
+    --read-bg: #201535 !important;
+    --read-color: #7a6a98 !important;
+    --unread-color: #f0e6ff !important;
+    background: radial-gradient(circle at top, #2a1a4e, #1a0f2e 70%) !important;
+    color: #f0e6ff !important;
+}
+
+body.guild_lobby {
+    --bg: #2d1f14 !important;
+    --card-bg: #3d2a1a !important;
+    --border: #5a3d28 !important;
+    --text: #e8d5b8 !important;
+    --text-muted: #a89070 !important;
+    --primary: #c4943a !important;
+    --hover-bg: #4a3525 !important;
+    --read-bg: #251a10 !important;
+    --read-color: #7a6550 !important;
+    --unread-color: #e8d5b8 !important;
+    background: radial-gradient(circle at top, #3d2a1a, #2d1f14 70%) !important;
+    color: #e8d5b8 !important;
+}
+
+body.old_structure_ancient_china {
+    --bg: #3d2e1a !important;
+    --card-bg: #4a3820 !important;
+    --border: #6a5030 !important;
+    --text: #d4b896 !important;
+    --text-muted: #a08060 !important;
+    --primary: #d4a050 !important;
+    --hover-bg: #5a4528 !important;
+    --read-bg: #352818 !important;
+    --read-color: #806848 !important;
+    --unread-color: #d4b896 !important;
+    background: radial-gradient(circle at 30% 20%, #4a3820, #3d2e1a 70%) !important;
+    color: #d4b896 !important;
+}
+
+body.old_structure_modern_western {
+    --bg: #2a2520 !important;
+    --card-bg: #383028 !important;
+    --border: #504840 !important;
+    --text: #c8b898 !important;
+    --text-muted: #908068 !important;
+    --primary: #b89858 !important;
+    --hover-bg: #454038 !important;
+    --read-bg: #252018 !important;
+    --read-color: #706858 !important;
+    --unread-color: #c8b898 !important;
+    background: radial-gradient(circle at 20% 30%, #383028, #2a2520 70%) !important;
+    color: #c8b898 !important;
+}
+
+body.old_structure_ancient_western {
+    --bg: #2c2820 !important;
+    --card-bg: #3a342c !important;
+    --border: #544c40 !important;
+    --text: #d0c0a0 !important;
+    --text-muted: #988870 !important;
+    --primary: #b89868 !important;
+    --hover-bg: #484038 !important;
+    --read-bg: #24201a !important;
+    --read-color: #786c58 !important;
+    --unread-color: #d0c0a0 !important;
+    background: radial-gradient(circle at 40% 25%, #3a342c, #2c2820 70%) !important;
+    color: #d0c0a0 !important;
+}
+
+body.old_babel {
+    --bg: #2a2218 !important;
+    --card-bg: #382e20 !important;
+    --border: #504430 !important;
+    --text: #d8c8a0 !important;
+    --text-muted: #a09078 !important;
+    --primary: #c8a858 !important;
+    --hover-bg: #483c28 !important;
+    --read-bg: #221c14 !important;
+    --read-color: #807058 !important;
+    --unread-color: #d8c8a0 !important;
+    background: radial-gradient(circle at 25% 25%, #382e20, #2a2218 70%) !important;
+    color: #d8c8a0 !important;
+}
+
+body.black_beacon {
+    --bg: #1a1610 !important;
+    --card-bg: #252018 !important;
+    --border: #3e3428 !important;
+    --text: #c8b898 !important;
+    --text-muted: #887860 !important;
+    --primary: #d4a040 !important;
+    --hover-bg: #322a1e !important;
+    --read-bg: #141210 !important;
+    --read-color: #6a5e4a !important;
+    --unread-color: #c8b898 !important;
+    background: radial-gradient(circle at 30% 20%, #252018, #1a1610 60%, #0d0b08 100%) !important;
+    color: #c8b898 !important;
+}
+
+body.bamboo_forest {
+    --bg: #f0f5ec !important;
+    --card-bg: #f7faf3 !important;
+    --border: #c8d8b8 !important;
+    --text: #1a2e1a !important;
+    --text-muted: #5a7a5a !important;
+    --primary: #4a7c2e !important;
+    --hover-bg: #e0ecd8 !important;
+    --read-bg: #e8f0e0 !important;
+    --read-color: #7a9a6a !important;
+    --unread-color: #1a2e1a !important;
+    background: linear-gradient(135deg, #f0f5ec, #e4eedc) !important;
+    color: #1a2e1a !important;
+}
+
+body.pixelated {
+    --bg: #0d0d0d !important;
+    --card-bg: #1a1a2e !important;
+    --border: #2a2a4e !important;
+    --text: #00ff41 !important;
+    --text-muted: #00802b !important;
+    --primary: #ff6ac1 !important;
+    --hover-bg: #252548 !important;
+    --read-bg: #151528 !important;
+    --read-color: #005a1e !important;
+    --unread-color: #00ff41 !important;
+    background: linear-gradient(180deg, #0d0d1a 0%, #0d0d0d 100%) !important;
+    color: #00ff41 !important;
+}
+
 html.ocean {
     background: #0d2026;
 }
@@ -546,10 +713,50 @@ html.ember {
 html.universe {
     background: #0a0c1c;
 }
+html.heaven_moon {
+    background: #0f1320;
+}
+html.dark_fantasy {
+    background: #1a0f2e;
+}
+html.black_beacon {
+    background: #1a1610;
+}
+html.pixelated {
+    background: #0d0d0d;
+}
+html.bagua_field {
+    background: #1a1a1a;
+}
+html.guild_lobby {
+    background: #2d1f14;
+}
+html.old_structure_ancient_china {
+    background: #3d2e1a;
+}
+html.old_structure_modern_western {
+    background: #2a2520;
+}
+html.old_structure_ancient_western {
+    background: #2c2820;
+}
+html.old_babel {
+    background: #2a2218;
+}
 
 body.ocean,
 body.ember,
-body.universe {
+body.universe,
+body.heaven_moon,
+body.dark_fantasy,
+body.black_beacon,
+body.pixelated,
+body.bagua_field,
+body.guild_lobby,
+body.old_structure_ancient_china,
+body.old_structure_modern_western,
+body.old_structure_ancient_western,
+body.old_babel {
     --topbar-bg: var(--card-bg);
     --topbar-border: var(--border);
     --sidebar-bg: #0b0f17;
@@ -565,6 +772,13 @@ body.universe {
 body.theme-keep-bg {
     background: var(--bg-color, var(--bg)) !important;
     color: var(--text-color, var(--text)) !important;
+}
+
+body.theme-image {
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
 }
 
 html {
@@ -589,7 +803,18 @@ body.mocha,
 body.ocean,
 body.ember,
 body.universe,
-body.frost_land {
+body.frost_land,
+body.heaven_moon,
+body.bagua_field,
+body.dark_fantasy,
+body.guild_lobby,
+body.old_structure_ancient_china,
+body.old_structure_modern_western,
+body.old_structure_ancient_western,
+body.old_babel,
+body.black_beacon,
+body.bamboo_forest,
+body.pixelated {
     background-attachment: fixed !important;
 }
 
@@ -607,4 +832,7 @@ html.mocha {
 }
 html.frost_land {
     background: #eaf4fb;
+}
+html.bamboo_forest {
+    background: #f0f5ec;
 }
