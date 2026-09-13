@@ -26,6 +26,7 @@ async function loadLang(lang) {
         applyI18n();
         syncLangSelect(lang);
         i18nListeners.forEach((fn) => fn(lang, translations));
+        broadcastLang(lang);
     } catch (err) {
         console.error(`Không thể tải file ngôn ngữ: ${lang}.json`, err);
     }
@@ -104,3 +105,26 @@ function syncLangSelect(lang) {
         select.value = lang;
     }
 }
+
+function broadcastLang(lang) {
+    const payload = { action: "i18n_lang", lang: lang };
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage(payload, "*");
+        }
+    } catch (err) {}
+    try {
+        const frames = document.querySelectorAll("iframe");
+        for (let i = 0; i < frames.length; i++) {
+            const win = frames[i].contentWindow;
+            if (win) win.postMessage(payload, "*");
+        }
+    } catch (err) {}
+}
+
+window.addEventListener("message", (e) => {
+    const data = e.data;
+    if (!data || data.action !== "i18n_lang") return;
+    if (typeof data.lang !== "string" || data.lang === currentLang) return;
+    setLang(data.lang);
+});

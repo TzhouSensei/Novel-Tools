@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             if (file) await processZipFile(file);
         } catch (err) {
-            log(`Lỗi: ${err.message}`);
-            updateProgress(0, "Có lỗi xảy ra.");
+            log(fmtTpl("epub.parser.err_prefix", "Lỗi: {0}", err.message));
+            updateProgress(0, _t("epub.parser.status_error", "Có lỗi xảy ra."));
         }
     });
     generateBtn.addEventListener("click", generateEpub);
@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             await processZipFile(file);
         } catch (err) {
-            log(`Lỗi: ${err.message}`);
-            updateProgress(0, "Có lỗi xảy ra.");
+            log(fmtTpl("epub.parser.err_prefix", "Lỗi: {0}", err.message));
+            updateProgress(0, _t("epub.parser.status_error", "Có lỗi xảy ra."));
         }
     });
     const temporaryZip =
@@ -52,28 +52,28 @@ document.addEventListener("DOMContentLoaded", () => {
             window.parent.creatorParserZipUrl = null;
         }
         injectZipIntoInput(zipInput, temporaryZip).catch((err) => {
-            log(`Lỗi: ${err.message}`);
-            updateProgress(0, "Có lỗi xảy ra.");
+            log(fmtTpl("epub.parser.err_prefix", "Lỗi: {0}", err.message));
+            updateProgress(0, _t("epub.parser.status_error", "Có lỗi xảy ra."));
         });
     }
 });
 async function processZipFile(file) {
     const generateBtn = document.getElementById("generateBtn");
-    log(`Đang tải file: ${file.name}`);
-    updateProgress(10, "Đang giải nén tập tin ZIP...");
+    log(fmtTpl("epub.parser.log_loading_file", "Đang tải file: {0}", file.name));
+    updateProgress(10, _t("epub.parser.progress_unzip", "Đang giải nén tập tin ZIP..."));
     const arrayBuffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
     zipData = zip;
     const configFile = zip.file("configuration.json");
     if (!configFile) {
-        throw new Error("Không tìm thấy file configuration.json trong ZIP!");
+        throw new Error(_t("epub.parser.err_missing_config", "Không tìm thấy file configuration.json trong ZIP!"));
     }
     const configText = await configFile.async("string");
     config = JSON.parse(configText);
-    log("Đã load configuration thành công.");
+    log(_t("epub.parser.log_config_loaded", "Đã load configuration thành công."));
     await processConfiguration(config);
     generateBtn.disabled = false;
-    updateProgress(100, "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.");
+    updateProgress(100, _t("epub.parser.progress_ready", "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB."));
 }
 async function injectZipIntoInput(
     zipInput,
@@ -84,7 +84,7 @@ async function injectZipIntoInput(
         typeof source === "string"
             ? await fetch(source).then((response) => {
                   if (!response.ok)
-                      throw new Error("Không thể đọc file ZIP tạm từ creator");
+                      throw new Error(_t("epub.parser.err_zip_read", "Không thể đọc file ZIP tạm từ creator"));
                   return response.blob();
               })
             : source;
@@ -116,6 +116,19 @@ function updateProgress(percent, statusMsg) {
         const txt = document.getElementById("statusText");
         if (txt) txt.textContent = statusMsg;
     }
+}
+
+function _t(key, fallback) {
+    return typeof t === "function" ? t(key, fallback) : fallback;
+}
+
+function fmtTpl(key, fallback) {
+    const tpl = _t(key, fallback);
+    const args = Array.prototype.slice.call(arguments, 2);
+    return tpl.replace(/\{\d+\}/g, (match) => {
+        const idx = parseInt(match.replace(/\D/g, ""), 10);
+        return args[idx] !== undefined ? String(args[idx]) : match;
+    });
 }
 
 function getMimeType(filename) {
@@ -1091,7 +1104,10 @@ async function processConfiguration(cfg) {
 
     if (cfg.custom_toc && cfg.custom_toc.enabled) {
         log(
-            "Custom TOC enabled, đang sắp xếp lại thứ tự theo cấu trúc thư mục mới...",
+            _t(
+                "epub.parser.log_custom_toc",
+                "Custom TOC enabled, đang sắp xếp lại thứ tự theo cấu trúc thư mục mới...",
+            ),
         );
 
         const sortedFolderKeys = Object.keys(cfg.custom_toc)
@@ -1133,8 +1149,8 @@ async function processConfiguration(cfg) {
                             title =
                                 tocNames[folder] ||
                                 (folder
-                                    ? `Mục ${folder}`
-                                    : `Chương ${customDisplayId}_${chKey}`);
+                                    ? fmtTpl("epub.parser.ui_item", "Mục {0}", folder)
+                                    : fmtTpl("epub.parser.ui_chapter_id", "Chương {0}_{1}", customDisplayId, chKey));
                         }
 
                         const parseConfig =
@@ -1158,7 +1174,7 @@ async function processConfiguration(cfg) {
             }
         }
     } else {
-        log("Render TOC theo mặc định (tên file chứa số tăng dần)");
+        log(_t("epub.parser.log_toc_default", "Render TOC theo mặc định (tên file chứa số tăng dần)"));
         let fileOrderPairs = [];
         xhtmlFiles.forEach((path) => {
             if (isAppendixResource(appendixResourceIndex, path)) return;
@@ -1182,8 +1198,8 @@ async function processConfiguration(cfg) {
             let title = getHtmlTitle(content, "");
             if (!title) {
                 title = folder
-                    ? `Chương thuộc ${tocNames[folder] || folder}`
-                    : `Chương ${virtualId}`;
+                    ? fmtTpl("epub.parser.ui_chapter_in", "Chương thuộc {0}", tocNames[folder] || folder)
+                    : fmtTpl("epub.parser.ui_chapter_n", "Chương {0}", virtualId);
             }
 
             const parseConfig =
@@ -1210,7 +1226,12 @@ async function processConfiguration(cfg) {
     if (parsedAppendixTree) {
         collectAppendixEntries(parsedAppendixTree);
         log(
-            `Đã nạp phụ lục: ${parsedAppendixTree.children.length} nhóm, ${parsedAppendixEntries.length} file. Appendix TOC sẽ nằm sau chương cuối.`,
+            fmtTpl(
+                "epub.parser.log_appendix_loaded",
+                "Đã nạp phụ lục: {0} nhóm, {1} file. Appendix TOC sẽ nằm sau chương cuối.",
+                parsedAppendixTree.children.length,
+                parsedAppendixEntries.length,
+            ),
         );
     }
 
@@ -1220,7 +1241,10 @@ async function processConfiguration(cfg) {
 
 async function detectImagesFiles(zip) {
     log(
-        "Bắt đầu quét phân tích mã XHTML để trích xuất và xử lý đường dẫn ảnh...",
+        _t(
+            "epub.parser.log_scan_images",
+            "Bắt đầu quét phân tích mã XHTML để trích xuất và xử lý đường dẫn ảnh...",
+        ),
     );
     detectedImages = [];
     let imgIndex = 1;
@@ -1272,7 +1296,9 @@ function renderTablesUI(tocNames) {
     Object.keys(groups).forEach((folder) => {
         const folderTitle =
             tocNames[folder] ||
-            (folder === "Root_Files" ? "Thư mục gốc" : `Thư mục: ${folder}`);
+            (folder === "Root_Files"
+                ? _t("epub.parser.ui_root_folder", "Thư mục gốc")
+                : fmtTpl("epub.parser.ui_folder", "Thư mục: {0}", folder));
         treeHtml += `<div class="fw-bold text-dark mt-2"><i class="bi bi-folder-fill text-warning"></i> ${folderTitle}</div>`;
 
         const maxTreePreview = 20;
@@ -1287,14 +1313,14 @@ function renderTablesUI(tocNames) {
         });
 
         if (groups[folder].length > maxTreePreview) {
-            treeHtml += `<div class="py-1 px-4 text-muted small fst-italic">... và ${groups[folder].length - maxTreePreview} file khác</div>`;
+            treeHtml += `<div class="py-1 px-4 text-muted small fst-italic">${fmtTpl("epub.parser.ui_more_files", "... và {0} file khác", groups[folder].length - maxTreePreview)}</div>`;
         }
     });
 
     if (parsedAppendixTree) {
         treeHtml += `<div class="fw-bold text-dark mt-2"><i class="bi bi-folder-fill text-warning"></i> ${parsedAppendixTree.title}</div>`;
         parsedAppendixTree.children.forEach((section) => {
-            treeHtml += `<div class="py-1 px-4 border-bottom text-secondary small"><i class="bi bi-collection text-danger"></i> <span>${section.title} (${section.children.length} mục)</span></div>`;
+            treeHtml += `<div class="py-1 px-4 border-bottom text-secondary small"><i class="bi bi-collection text-danger"></i> <span>${fmtTpl("epub.parser.ui_section_items", "{0} ({1} mục)", section.title, section.children.length)}</span></div>`;
             section.children.slice(0, 20).forEach((entry) => {
                 treeHtml += `<div class="py-1 px-4 border-bottom text-secondary small"><i class="bi bi-file-earmark-code text-primary"></i> <span>${entry.href.split("/").pop()} [${entry.title}]</span></div>`;
                 if (entry.type === "appendix-group" && entry.children) {
@@ -1320,7 +1346,7 @@ function renderTablesUI(tocNames) {
             <tr>
                 <td>${idx + 1}</td>
                 <td><span class="badge bg-dark">${ch.id}</span> ➔ ${ch.href}<br><small class="text-muted">${ch.title}</small></td>
-                <td><span class="badge bg-info">${ch.detectedImgsCount || 0} ảnh</span></td>
+                <td><span class="badge bg-info">${fmtTpl("epub.parser.ui_img_count", "{0} ảnh", ch.detectedImgsCount || 0)}</span></td>
             </tr>`,
             )
             .join("");
@@ -1329,7 +1355,7 @@ function renderTablesUI(tocNames) {
             chapterHtml += `
                 <tr>
                     <td colspan="3" class="text-center text-muted fst-italic bg-light">
-                        Hiển thị preview ${MAX_PREVIEW_ROWS}/${parsedChapters.length} chương để tối ưu bộ nhớ RAM. Toàn bộ chương vẫn sẽ được đóng gói đầy đủ vào file EPUB.
+                        ${fmtTpl("epub.parser.ui_preview_chapters", "Hiển thị preview {0}/{1} chương để tối ưu bộ nhớ RAM. Toàn bộ chương vẫn sẽ được đóng gói đầy đủ vào file EPUB.", MAX_PREVIEW_ROWS, parsedChapters.length)}
                     </td>
                 </tr>`;
         }
@@ -1353,7 +1379,7 @@ function renderTablesUI(tocNames) {
             imageHtml += `
                 <tr>
                     <td colspan="3" class="text-center text-muted fst-italic bg-light">
-                        Hiển thị preview ${MAX_PREVIEW_ROWS}/${detectedImages.length} ảnh để tối ưu bộ nhớ RAM. Toàn bộ ảnh vẫn sẽ được đóng gói đầy đủ vào file EPUB.
+                        ${fmtTpl("epub.parser.ui_preview_images", "Hiển thị preview {0}/{1} ảnh để tối ưu bộ nhớ RAM. Toàn bộ ảnh vẫn sẽ được đóng gói đầy đủ vào file EPUB.", MAX_PREVIEW_ROWS, detectedImages.length)}
                     </td>
                 </tr>`;
         }
@@ -1361,14 +1387,20 @@ function renderTablesUI(tocNames) {
     }
 
     log(
-        `Hoàn tất phân tích dữ liệu: tìm thấy ${parsedChapters.length} Chương, ${parsedAppendixEntries.length} File phụ lục, ${detectedImages.length} Tài nguyên ảnh.`,
+        fmtTpl(
+            "epub.parser.log_analysis_done",
+            "Hoàn tất phân tích dữ liệu: tìm thấy {0} Chương, {1} File phụ lục, {2} Tài nguyên ảnh.",
+            parsedChapters.length,
+            parsedAppendixEntries.length,
+            detectedImages.length,
+        ),
     );
 }
 
 async function generateEpub() {
     if (!zipData || !config) return;
-    log("Bắt đầu khởi tạo cấu trúc đóng gói EPUB chuẩn...");
-    updateProgress(30, "Đang xây dựng manifest & spine...");
+    log(_t("epub.parser.log_start_pack", "Bắt đầu khởi tạo cấu trúc đóng gói EPUB chuẩn..."));
+    updateProgress(30, _t("epub.parser.progress_spine", "Đang xây dựng manifest & spine..."));
 
     const epub = new JSZip();
     epub.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -1529,7 +1561,7 @@ async function generateEpub() {
 </package>`;
     epub.file("OEBPS/content.opf", contentOpf);
 
-    updateProgress(60, "Đang khởi tạo các trang nội dung đặc biệt...");
+    updateProgress(60, _t("epub.parser.progress_special", "Đang khởi tạo các trang nội dung đặc biệt..."));
 
     if (allowedTargets.includes("cover") && config.cover_href) {
         const coverHtml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -1728,7 +1760,10 @@ ${tocPageHtml}        </ul>
 
     updateProgress(
         80,
-        "Đang biên dịch gom các chương và tệp ảnh đính kèm vào sách...",
+        _t(
+            "epub.parser.progress_compile",
+            "Đang biên dịch gom các chương và tệp ảnh đính kèm vào sách...",
+        ),
     );
 
     for (let img of detectedImages) {
@@ -1751,12 +1786,12 @@ ${tocPageHtml}        </ul>
             type: "blob",
             mimeType: "application/epub+zip",
         });
-        log("Thành công! File EPUB đã được cấu trúc và đóng gói thành công.");
-        updateProgress(100, "Hoàn tất! Sẵn sàng tải xuống.");
+        log(_t("epub.parser.log_success", "Thành công! File EPUB đã được cấu trúc và đóng gói thành công."));
+        updateProgress(100, _t("epub.parser.progress_done", "Hoàn tất! Sẵn sàng tải xuống."));
         if (document.getElementById("downloadBtn"))
             document.getElementById("downloadBtn").disabled = false;
     } catch (err) {
-        log(`Lỗi khi đóng gói: ${err.message}`);
+        log(fmtTpl("epub.parser.err_zip_pack", "Lỗi khi đóng gói: {0}", err.message));
     }
 }
 
@@ -1776,5 +1811,5 @@ async function downloadEpub() {
     } else {
         saveAs(finalEpubBlob, `${cleanName}.epub`);
     }
-    log("Đã xuất và tải file EPUB thành công!");
+    log(_t("epub.parser.log_downloaded", "Đã xuất và tải file EPUB thành công!"));
 }

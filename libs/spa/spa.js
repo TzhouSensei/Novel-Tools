@@ -560,17 +560,6 @@
         }
         if (currentRoute && !currentRoute.frame) renderHome();
         updatePinButton();
-
-        const f = document.getElementById("toolFrame");
-        if (f && !f.hidden && currentRoute && currentRoute.frame) {
-            if (frameCurrentLoaded(currentRoute)) {
-                const src = f.src;
-                f.src = "about:blank";
-                requestAnimationFrame(() => {
-                    f.src = src;
-                });
-            }
-        }
     }
 
     function init() {
