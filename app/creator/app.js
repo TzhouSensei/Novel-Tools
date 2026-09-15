@@ -1,4 +1,31 @@
-﻿const DB_NAME = "StoryStudioDB",
+﻿const capacitorFile = (() => {
+    return {
+        canPick: () => nativeBridge.canPick(),
+        pickFile: async (options = {}) => nativeBridge.pickFile(options),
+        downloadFile: async (blob, name) =>
+            nativeBridge.downloadFile(blob, name),
+    };
+})();
+document.addEventListener("click", async (event) => {
+    const input = event.target;
+    if (
+        !(input instanceof HTMLInputElement) ||
+        input.type !== "file" ||
+        !capacitorFile.canPick()
+    )
+        return;
+    event.preventDefault();
+    const file = await capacitorFile.pickFile({
+        types: input.accept ? input.accept.split(",") : undefined,
+    });
+    if (!file) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    input.files = transfer.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+});
+
+const DB_NAME = "StoryStudioDB",
     DB_VERSION = 1,
     STORE = "books";
 let db,
@@ -15,7 +42,7 @@ let db,
         editing: null,
         returnTo: "dashboard",
     };
-
+let dbReady;
 function saveState() {
     try {
         localStorage.setItem(
@@ -334,53 +361,80 @@ function normalizeBook(b) {
 }
 
 function openDB() {
-    return new Promise((resolve, reject) => {
+    if (dbReady) return dbReady;
+
+    dbReady = new Promise((resolve, reject) => {
         const r = indexedDB.open(DB_NAME, DB_VERSION);
+
         r.onupgradeneeded = (e) => {
             const d = e.target.result;
+
             if (!d.objectStoreNames.contains(STORE)) {
                 const st = d.createObjectStore(STORE, { keyPath: "id" });
                 st.createIndex("updatedAt", "updatedAt");
             }
         };
+
         r.onsuccess = (e) => {
             db = e.target.result;
             resolve(db);
         };
-        r.onerror = () => reject(r.error);
+
+        r.onerror = () => {
+            dbReady = null;
+            reject(r.error);
+        };
     });
+
+    return dbReady;
 }
-function allBooks() {
+async function allBooks() {
+    const database = await openDB();
+
     return new Promise((res, rej) => {
-        const r = db.transaction(STORE).objectStore(STORE).getAll();
-        r.onsuccess = () => res((r.result || []).map(normalizeBook));
+        const r = database.transaction(STORE).objectStore(STORE).getAll();
+
+        r.onsuccess = () => {
+            res((r.result || []).map(normalizeBook));
+        };
+
         r.onerror = () => rej(r.error);
     });
 }
-function getBook(id) {
+async function getBook(id) {
+    const database = await openDB();
+
     return new Promise((res, rej) => {
-        const r = db.transaction(STORE).objectStore(STORE).get(id);
+        const r = database.transaction(STORE).objectStore(STORE).get(id);
+
         r.onsuccess = () => res(normalizeBook(r.result));
         r.onerror = () => rej(r.error);
     });
 }
-function putBook(book) {
+async function putBook(book) {
     book.updatedAt = now();
+
+    const database = await openDB();
+
     return new Promise((res, rej) => {
-        const r = db
+        const r = database
             .transaction(STORE, "readwrite")
             .objectStore(STORE)
             .put(book);
+
         r.onsuccess = () => res(book);
         r.onerror = () => rej(r.error);
     });
 }
-function deleteBook(id) {
+async function deleteBook(id) {
+    const database = await openDB();
+
     return new Promise((res, rej) => {
-        const r = db
+        const r = database
             .transaction(STORE, "readwrite")
             .objectStore(STORE)
             .delete(id);
+
         r.onsuccess = () => res();
         r.onerror = () => rej(r.error);
     });
@@ -403,6 +457,7 @@ function defaultBook() {
         createdAt: now(),
         updatedAt: now(),
         chapters: [],
+        daiCuong: [],
         items: [],
         characters: [],
         factions: [],
@@ -605,6 +660,7 @@ function chaptersSectionHTML(b) {
         ["stats", tFn("creator.sub.stats", "Thống kê")],
         ["arcs", tFn("creator.sub.arcs", "Arc / Phần / Tập")],
         ["timeline", tFn("creator.sub.timeline", "Timeline")],
+        ["daiCuong", tFn("creator.tab.daiCuong", "Đại cương")],
     ].filter(([k]) => k !== "timeline" || ds.timeline !== "hidden");
     const body =
         state.chapterTab === "stats"
@@ -613,13 +669,42 @@ function chaptersSectionHTML(b) {
               ? arcsHTML(b)
               : state.chapterTab === "timeline"
                 ? timelineHTML(b)
-                : chaptersHTML(b);
+                : state.chapterTab === "daiCuong"
+                  ? daiCuongSectionHTML(b)
+                  : chaptersHTML(b);
     return `<div class="tabs subtabs">${subs
         .map(
             ([k, t]) =>
                 `<button class="tab ${state.chapterTab === k ? "active" : ""}" data-chaptertab="${k}">${t}</button>`,
         )
         .join("")}</div>${body}`;
+}
+function daiCuongSectionHTML(b) {
+    const list = b.daiCuong || [];
+    const rows = list
+        .map(
+            (
+                d,
+                i,
+            ) => `<div class="card dai-cuong-row" data-dragrow="${d.id}" data-daicuong-id="${d.id}">
+                <span class="drag-handle" data-draghandle title="${tFn("creator.drag.hint", "Kéo để di chuyển thứ tự")}">⁝⁝</span>
+                <div class="dai-cuong-body">
+                    <input type="text" class="dai-cuong-name-input" data-daicuong-name="${d.id}" value="${esc(d.name || "")}" placeholder="${tFn("creator.daiCuong.name_ph", "VD: Phần mở đầu, Hồi 1...")}" aria-label="${tFn("creator.daiCuong.name", "Tên đại cương")}">
+                    <textarea class="dai-cuong-content-input" data-daicuong-content="${d.id}" rows="8" placeholder="${tFn("creator.daiCuong.content_ph", "Nhập nội dung đại cương...")}" aria-label="${tFn("creator.daiCuong.content", "Nội dung")}">${esc(d.content || "")}</textarea>
+                </div>
+                <div class="actions">
+                    <button type="button" class="btn small danger" data-deldaicuong="${d.id}">${tFn("creator.daiCuong.delete", "Xóa")}</button>
+                </div>
+            </div>`,
+        )
+        .join("");
+    return `<div class="toolbar">
+        <div class="muted">${list.length} ${tFn("creator.daiCuong.unit", "đại cương")}</div>
+        <button class="btn primary" id="addDaiCuong">${tFn("creator.daiCuong.add", "＋ Thêm đại cương")}</button>
+    </div>
+    <div class="dai-cuong-list" data-draglist="daiCuong">
+        ${rows || `<div class="card empty"><strong>${tFn("creator.daiCuong.empty_title", "Chưa có đại cương nào.")}</strong>${tFn("creator.daiCuong.empty_hint", "Thêm đại cương để tổng hợp nội dung truyện.")}</div>`}
+    </div>`;
 }
 function chapterStatsHTML(b) {
     const chapters = [...b.chapters].sort((a, c) => a.number - c.number);
@@ -878,65 +963,78 @@ function characterCard(b, c) {
     const tags = (c.tags || [])
         .map((t) => `<span class="badge">${esc(t)}</span>`)
         .join("");
-    const ageBadge = c.age
-        ? `<span class="badge">${tFn("creator.card.age", "Tuổi")}: ${esc(c.age)}</span>`
-        : "";
+    const aliases = (c.aliases || []).filter((a) => a && a.trim());
+    const aliasesHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.aliases", "Tên gọi khác")}:</span> <span class="char-detail-value ${aliases.length ? "" : "muted"}">${aliases.length ? aliases.map((a) => esc(a)).join(", ") : tFn("creator.card.empty_none", "Chưa có")}</span></div>`;
+    const ageHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.age", "Tuổi")}:</span> <span class="char-detail-value ${c.age ? "" : "muted"}">${c.age ? esc(c.age) : tFn("creator.card.empty_unknown", "Chưa rõ")}</span></div>`;
     const ch = (b.chapters || []).find((x) => x.id === c.firstChapterId);
-    const firstBadge = c.firstChapterId
-        ? `<span class="badge">${tFn("creator.card.first_appearance", "Xuất hiện lần đầu")}: ${
-              ch
-                  ? `${tFn("creator.unit.chapter_prefix", "Chương")} ${ch.number}${ch.title ? ": " + esc(ch.title) : ""}`
-                  : tFn("creator.arc.miss_ch", "(chương không tồn tại)")
-          }</span>`
-        : "";
-    const facBadges = (c.factions || [])
+    const firstHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.first_appearance", "Xuất hiện lần đầu")}:</span> <span class="char-detail-value ${c.firstChapterId ? "" : "muted"}">${
+        c.firstChapterId
+            ? ch
+                ? `${tFn("creator.unit.chapter_prefix", "Chương")} ${ch.number}${ch.title ? ": " + esc(ch.title) : ""}`
+                : tFn("creator.arc.miss_ch", "(chương không tồn tại)")
+            : tFn("creator.card.empty_unknown", "Chưa rõ")
+    }</span></div>`;
+    const home = (b.realms || []).find((x) => x.id === c.homeRealmId) || null;
+    const homeHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.home_realm", "Quê quán")}:</span> <span class="char-detail-value ${c.homeRealmId ? "" : "muted"}">${
+        c.homeRealmId
+            ? home
+                ? esc(home.name)
+                : tFn("creator.card.missing_realm", "(giới vực không tồn tại)")
+            : tFn("creator.card.empty_unknown", "Chưa rõ")
+    }</span></div>`;
+    const visitedRealms = (c.visitedRealmIds || [])
+        .map((rid) => {
+            const r = (b.realms || []).find((x) => x.id === rid);
+            return r
+                ? r.name
+                : tFn("creator.card.missing_realm", "(giới vực không tồn tại)");
+        })
+        .filter(Boolean);
+    const visitedHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.visited_realms", "Đã qua giới vực")}:</span> <span class="char-detail-value ${visitedRealms.length ? "" : "muted"}">${visitedRealms.length ? visitedRealms.map((r) => esc(r)).join(", ") : tFn("creator.card.empty_none", "Chưa có")}</span></div>`;
+    const hobbies = (c.hobbies || []).filter((h) => h && h.trim());
+    const hobbiesHTML = `<div class="char-detail-row"><span class="char-detail-label">${tFn("creator.card.hobbies", "Sở thích")}:</span> <span class="char-detail-value ${hobbies.length ? "" : "muted"}">${hobbies.length ? hobbies.map((h) => esc(h)).join(", ") : tFn("creator.card.empty_none", "Chưa có")}</span></div>`;
+    const factionsHTML = (c.factions || [])
         .map((m) => {
             const f = (b.factions || []).find((x) => x.id === m.factionId);
-            const base = f
+            const name = f
                 ? f.name
                 : tFn(
                       "creator.card.missing_faction",
                       "(thế lực không tồn tại)",
                   );
-            return `<span class="badge">${esc(base + (m.role ? ` — ${m.role}` : ""))}</span>`;
+            const role = m.role ? ` — ${m.role}` : "";
+            return `<div class="char-faction-item"><span class="badge">${esc(name + role)}</span></div>`;
         })
         .join("");
-    const hobbyBadges = (c.hobbies || [])
-        .map((h) => `<span class="badge">${esc(h)}</span>`)
-        .join("");
-    const home = (b.realms || []).find((x) => x.id === c.homeRealmId) || null;
-    const homeBadge = c.homeRealmId
-        ? `<span class="badge">${tFn("creator.card.home_realm", "Quê quán")}: ${esc(
-              home
-                  ? home.name
-                  : tFn(
-                        "creator.card.missing_realm",
-                        "(giới vực không tồn tại)",
-                    ),
-          )}</span>`
-        : "";
-    const visitedBadges = (c.visitedRealmIds || [])
-        .map((rid) => {
-            const r = (b.realms || []).find((x) => x.id === rid);
-            return `<span class="badge">${tFn("creator.card.visited", "Đã qua")}: ${esc(
-                r
-                    ? r.name
-                    : tFn(
-                          "creator.card.missing_realm",
-                          "(giới vực không tồn tại)",
-                      ),
-            )}</span>`;
+    const abilitiesHTML = (c.abilityIds || [])
+        .map((aid) => {
+            const a = (b.abilities || []).find((x) => x.id === aid);
+            return a
+                ? `<div class="char-ability-item"><span class="badge">${esc(a.name)}</span>${a.description ? `<span class="muted">${esc(a.description)}</span>` : ""}</div>`
+                : "";
         })
         .join("");
-    const meta =
-        ageBadge +
-        firstBadge +
-        homeBadge +
-        facBadges +
-        visitedBadges +
-        hobbyBadges;
     const sh = entRowShell(c, c.name, c.tags || [], "character", c.id);
-    return `${sh.open}${tags ? `<div class="meta ent-tags">${tags}</div>` : ""}</div>${sh.actions}</div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="muted">${esc(c.description || "") || tFn("creator.nodesc", "Chưa có mô tả.")}</div>${meta ? `<div class="meta">${meta}</div>` : ""}</div></div></div>`;
+    const descHTML = `<div class="char-description ${c.description ? "" : "muted"}">${c.description ? esc(c.description).replace(/\r?\n/g, "<br>") : tFn("creator.nodesc", "Chưa có mô tả.")}</div>`;
+    const detailsSection = [
+        aliasesHTML,
+        ageHTML,
+        firstHTML,
+        homeHTML,
+        visitedHTML,
+        hobbiesHTML,
+    ].join("");
+    const factionsSection =
+        factionsHTML ||
+        `<div class="muted">${tFn("creator.card.empty_none", "Chưa có")}</div>`;
+    const abilitiesSection =
+        abilitiesHTML ||
+        `<div class="muted">${tFn("creator.card.empty_none", "Chưa có")}</div>`;
+    return `${sh.open}${tags ? `<div class="meta ent-tags">${tags}</div>` : ""}</div>${sh.actions}</div><div class="entity-collapse"><div class="entity-collapse-inner">
+        <div class="char-section"><h4>${tFn("creator.card.section_info", "Thông tin cơ bản")}</h4>${descHTML}<div class="char-details">${detailsSection}</div></div>
+        <div class="char-section"><h4>${tFn("creator.card.section_factions", "Thế lực")}</h4><div class="char-sub-list">${factionsSection}</div></div>
+        <div class="char-section"><h4>${tFn("creator.card.section_abilities", "Năng lực / Kỹ năng")}</h4><div class="char-sub-list">${abilitiesSection}</div></div>
+    </div></div></div>`;
 }
 function factionCard(b, f) {
     const tags = (f.tags || [])
@@ -3429,7 +3527,6 @@ function collectDSLFromDOM(root) {
 }
 function settingsSectionHTML(b) {
     const rows = [
-        ["chapters", tFn("creator.tab.chapters", "Chương"), true],
         ["items", tFn("creator.tab.items", "Vật phẩm"), false],
         ["itemsets", tFn("creator.tab.itemsets", "Bộ vật phẩm"), false],
         ["characters", tFn("creator.tab.characters", "Nhân vật"), false],
@@ -3609,11 +3706,11 @@ function bindPage() {
             const input = $(selector);
             if (!input) return;
             input.addEventListener("click", async (event) => {
-                if (!window.CapacitorFileBridge?.canPick()) return;
+                if (!capacitorFile.canPick()) return;
                 event.preventDefault();
                 let file;
                 try {
-                    file = await window.CapacitorFileBridge.pickFile({
+                    file = await capacitorFile.pickFile({
                         types:
                             input.accept === ".json,application/json"
                                 ? ["application/json"]
@@ -4007,6 +4104,22 @@ function bindPage() {
     $$("[data-delarc]").forEach(
         (x) => (x.onclick = () => deleteArc(x.dataset.delarc)),
     );
+    $("#addDaiCuong") && ($("#addDaiCuong").onclick = () => addDaiCuong());
+    $$("[data-deldaicuong]").forEach(
+        (x) => (x.onclick = () => deleteDaiCuong(x.dataset.deldaicuong)),
+    );
+    $$("[data-daicuong-name]").forEach((input) => {
+        input.addEventListener("input", (e) => {
+            const id = e.target.dataset.daicuongName;
+            saveDaiCuongInline(id, "name", e.target.value);
+        });
+    });
+    $$("[data-daicuong-content]").forEach((textarea) => {
+        textarea.addEventListener("input", (e) => {
+            const id = e.target.dataset.daicuongContent;
+            saveDaiCuongInline(id, "content", e.target.value);
+        });
+    });
     $$("[data-addchild]").forEach(
         (x) =>
             (x.onclick = () =>
@@ -5695,9 +5808,7 @@ function openArcModal(id = null) {
                     arcTlRowHTML(
                         r,
                         r.entryId
-                            ? `<span class="badge">${esc(
-                                  arcTargetLabel(b, r.target),
-                              )}</span>`
+                            ? `<span class="badge">${esc(arcTargetLabel(b, r.target))}</span>`
                             : `<select name="tltarget_${r.key}">${arcTlTargetOptions(
                                   b,
                                   arcId,
@@ -6281,6 +6392,49 @@ function openTimelineModal(id = null, presetTarget = null) {
             render();
         };
     });
+}
+
+async function addDaiCuong() {
+    const b = await getBook(state.bookId);
+    b.daiCuong = b.daiCuong || [];
+    const newEntry = {
+        id: uid(),
+        name: "",
+        content: "",
+    };
+    b.daiCuong.push(newEntry);
+    b.updatedAt = now();
+    await putBook(b);
+    toast(tFn("creator.daiCuong.toast_added", "Đã thêm đại cương"));
+    render();
+    setTimeout(() => {
+        const input = document.querySelector(
+            `[data-daicuong-name="${newEntry.id}"]`,
+        );
+        if (input) input.focus();
+    }, 50);
+}
+
+async function saveDaiCuongInline(id, field, value) {
+    const b = await getBook(state.bookId);
+    b.daiCuong = b.daiCuong || [];
+    const entry = b.daiCuong.find((x) => x.id === id);
+    if (!entry) return;
+    if (field === "name") entry.name = value.trim();
+    if (field === "content") entry.content = value.trim();
+    b.updatedAt = now();
+    await putBook(b);
+}
+
+async function deleteDaiCuong(id) {
+    if (!confirm(tFn("creator.daiCuong.confirm_delete", "Xóa đại cương này?")))
+        return;
+    const b = await getBook(state.bookId);
+    b.daiCuong = (b.daiCuong || []).filter((x) => x.id !== id);
+    b.updatedAt = now();
+    await putBook(b);
+    toast(tFn("creator.daiCuong.toast_deleted", "Đã xóa đại cương"));
+    render();
 }
 
 let relDraft = null;
@@ -7478,8 +7632,8 @@ function openRelationDialog(
     });
 }
 async function download(blob, name) {
-    if (window.CapacitorFileBridge) {
-        await window.CapacitorFileBridge.downloadFile(blob, name);
+    if (await capacitorFile.downloadFile(blob, name)) {
+        return;
         return;
     }
     const url = URL.createObjectURL(blob);
@@ -9338,22 +9492,25 @@ try {
     }
 } catch (e) {}
 (async () => {
-    await openDB();
+    try {
+        await openDB();
 
-    restoreState();
-    state.view = "dashboard";
-    state.bookId = null;
-    state.tab = "chapters";
-    state.systemDslId = null;
-    state.returnTo = "dashboard";
-    saveState();
-    render();
-})().catch((e) => {
-    console.error(e);
-    alert(
-        fmt(
-            tFn("creator.startup.idb_fail", "Không thể mở IndexedDB: {0}"),
-            e.message,
-        ),
-    );
-});
+        restoreState();
+        state.view = "dashboard";
+        state.bookId = null;
+        state.tab = "chapters";
+        state.systemDslId = null;
+        state.returnTo = "dashboard";
+        saveState();
+
+        await render();
+    } catch (e) {
+        console.error(e);
+        alert(
+            fmt(
+                tFn("creator.startup.idb_fail", "Không thể mở IndexedDB: {0}"),
+                e.message,
+            ),
+        );
+    }
+})();

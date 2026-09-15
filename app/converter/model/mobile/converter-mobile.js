@@ -4,13 +4,6 @@ const fileInput = document.getElementById("file");
 const output = document.getElementById("output");
 const btn = document.getElementById("download");
 
-let Filesystem = null;
-try {
-    Filesystem = Capacitor.Plugins.Filesystem;
-} catch {
-    console.log("Không có Capacitor");
-}
-
 let state = {
     characters: [],
     characterFiles: [],
@@ -213,15 +206,13 @@ btn.addEventListener("click", async () => {
         : "converted";
     const defaultFileName = `${safeTitle}.txt`;
 
-    if (Filesystem !== null) {
+    if (nativeBridge.isNative()) {
         try {
             output.value =
                 "Đang xuất file xử lý chuyên sâu cho thiết bị di động...";
 
             const headerTxt = makeFileHeaderText(state.characters);
-            await Filesystem.writeFile({
-                path: defaultFileName,
-                data: headerTxt,
+            await nativeBridge.writeFile(defaultFileName, headerTxt, {
                 directory: "Documents",
                 encoding: "utf8",
             });
@@ -240,17 +231,13 @@ btn.addEventListener("click", async () => {
                     chunkMerged += `• ${renderMode.close}\n\n`;
                 }
 
-                await Filesystem.appendFile({
-                    path: defaultFileName,
-                    data: chunkMerged,
+                await nativeBridge.appendFile(defaultFileName, chunkMerged, {
                     directory: "Documents",
                     encoding: "utf8",
                 });
             }
 
-            await Filesystem.appendFile({
-                path: defaultFileName,
-                data: `</list>`,
+            await nativeBridge.appendFile(defaultFileName, `</list>`, {
                 directory: "Documents",
                 encoding: "utf8",
             });
@@ -260,7 +247,6 @@ btn.addEventListener("click", async () => {
                 `Đã xuất file an toàn thành công vào mục:\nDocuments/${defaultFileName}`,
             );
         } catch (err) {
-            console.log("[CAPACITOR-WRITE-ERROR]", err);
             alert(
                 "Sập quy trình ghi file Native. Vui lòng kiểm tra quyền truy cập ổ đĩa.",
             );
@@ -287,8 +273,6 @@ btn.addEventListener("click", async () => {
             a.click();
 
             setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
-        } catch (err) {
-            console.log("[DEBUG][WEB-DOWNLOAD-ERROR]", err);
-        }
+        } catch (err) {}
     }
 });

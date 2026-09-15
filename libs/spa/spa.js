@@ -269,10 +269,9 @@
             routeOrigins,
             currentRoute.path,
         );
-        const parent =
-            hasRouteOrigin
-                ? routeOrigins[currentRoute.path]
-                : BACK_ROUTES[currentRoute.path];
+        const parent = hasRouteOrigin
+            ? routeOrigins[currentRoute.path]
+            : BACK_ROUTES[currentRoute.path];
 
         if (parent !== undefined) {
             delete routeOrigins[currentRoute.path];
@@ -553,11 +552,7 @@
     function go(path, updateHistory) {
         const route = findRoute(path);
         if (!route) return;
-        if (
-            !isGoingBack &&
-            currentRoute &&
-            currentRoute.path !== route.path
-        ) {
+        if (!isGoingBack && currentRoute && currentRoute.path !== route.path) {
             routeOrigins[route.path] = currentRoute.path;
         }
         renderRoute(route);
@@ -667,7 +662,7 @@
             window.onI18nChange(onLangChanged);
         }
 
-        window.spaTool = { go: go, toast: toast };
+        window.spaTool = { go: go, back: goBack, toast: toast };
 
         const reloadRoute = routeForReload(currentRoutePath());
         go(reloadRoute ? reloadRoute.path : "", false);

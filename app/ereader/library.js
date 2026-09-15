@@ -395,12 +395,8 @@ async function askDeleteBook(id) {
     renderLibraryGrid();
 }
 async function openBookInReader(bookId) {
-    console.log("[RECENT] opening:", bookId);
-
     try {
         await updateLastRead(bookId);
-
-        console.log("[RECENT] saved successfully:", bookId);
     } catch (err) {
         console.error("[RECENT] save failed:", err);
     }

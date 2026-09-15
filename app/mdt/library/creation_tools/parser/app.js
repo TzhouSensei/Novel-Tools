@@ -1,4 +1,9 @@
 ﻿let zipData = null;
+const capacitorFile = {
+    canPick: () => nativeBridge.canPick(),
+    pickFile: async (options = {}) => nativeBridge.pickFile(options),
+    save: async (blob, name) => nativeBridge.downloadFile(blob, name),
+};
 let config = null;
 let parsedChapters = [];
 let parsedAppendixTree = null;
@@ -14,11 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     selectZipBtn.addEventListener("click", async () => {
         try {
-            if (!window.CapacitorFileBridge?.canPick()) {
+            if (!capacitorFile.canPick()) {
                 zipInput.click();
                 return;
             }
-            const file = await window.CapacitorFileBridge.pickFile({
+            const file = await capacitorFile.pickFile({
                 types: ["application/zip", "application/octet-stream"],
                 name: "ebook_package.zip",
             });
@@ -59,21 +64,42 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 async function processZipFile(file) {
     const generateBtn = document.getElementById("generateBtn");
-    log(fmtTpl("epub.parser.log_loading_file", "Đang tải file: {0}", file.name));
-    updateProgress(10, _t("epub.parser.progress_unzip", "Đang giải nén tập tin ZIP..."));
+    log(
+        fmtTpl("epub.parser.log_loading_file", "Đang tải file: {0}", file.name),
+    );
+    updateProgress(
+        10,
+        _t("epub.parser.progress_unzip", "Đang giải nén tập tin ZIP..."),
+    );
     const arrayBuffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
     zipData = zip;
     const configFile = zip.file("configuration.json");
     if (!configFile) {
-        throw new Error(_t("epub.parser.err_missing_config", "Không tìm thấy file configuration.json trong ZIP!"));
+        throw new Error(
+            _t(
+                "epub.parser.err_missing_config",
+                "Không tìm thấy file configuration.json trong ZIP!",
+            ),
+        );
     }
     const configText = await configFile.async("string");
     config = JSON.parse(configText);
-    log(_t("epub.parser.log_config_loaded", "Đã load configuration thành công."));
+    log(
+        _t(
+            "epub.parser.log_config_loaded",
+            "Đã load configuration thành công.",
+        ),
+    );
     await processConfiguration(config);
     generateBtn.disabled = false;
-    updateProgress(100, _t("epub.parser.progress_ready", "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB."));
+    updateProgress(
+        100,
+        _t(
+            "epub.parser.progress_ready",
+            "Nạp dữ liệu thành công! Sẵn sàng tạo EPUB.",
+        ),
+    );
 }
 async function injectZipIntoInput(
     zipInput,
@@ -84,7 +110,12 @@ async function injectZipIntoInput(
         typeof source === "string"
             ? await fetch(source).then((response) => {
                   if (!response.ok)
-                      throw new Error(_t("epub.parser.err_zip_read", "Không thể đọc file ZIP tạm từ creator"));
+                      throw new Error(
+                          _t(
+                              "epub.parser.err_zip_read",
+                              "Không thể đọc file ZIP tạm từ creator",
+                          ),
+                      );
                   return response.blob();
               })
             : source;
@@ -1149,8 +1180,17 @@ async function processConfiguration(cfg) {
                             title =
                                 tocNames[folder] ||
                                 (folder
-                                    ? fmtTpl("epub.parser.ui_item", "Mục {0}", folder)
-                                    : fmtTpl("epub.parser.ui_chapter_id", "Chương {0}_{1}", customDisplayId, chKey));
+                                    ? fmtTpl(
+                                          "epub.parser.ui_item",
+                                          "Mục {0}",
+                                          folder,
+                                      )
+                                    : fmtTpl(
+                                          "epub.parser.ui_chapter_id",
+                                          "Chương {0}_{1}",
+                                          customDisplayId,
+                                          chKey,
+                                      ));
                         }
 
                         const parseConfig =
@@ -1174,7 +1214,12 @@ async function processConfiguration(cfg) {
             }
         }
     } else {
-        log(_t("epub.parser.log_toc_default", "Render TOC theo mặc định (tên file chứa số tăng dần)"));
+        log(
+            _t(
+                "epub.parser.log_toc_default",
+                "Render TOC theo mặc định (tên file chứa số tăng dần)",
+            ),
+        );
         let fileOrderPairs = [];
         xhtmlFiles.forEach((path) => {
             if (isAppendixResource(appendixResourceIndex, path)) return;
@@ -1198,8 +1243,16 @@ async function processConfiguration(cfg) {
             let title = getHtmlTitle(content, "");
             if (!title) {
                 title = folder
-                    ? fmtTpl("epub.parser.ui_chapter_in", "Chương thuộc {0}", tocNames[folder] || folder)
-                    : fmtTpl("epub.parser.ui_chapter_n", "Chương {0}", virtualId);
+                    ? fmtTpl(
+                          "epub.parser.ui_chapter_in",
+                          "Chương thuộc {0}",
+                          tocNames[folder] || folder,
+                      )
+                    : fmtTpl(
+                          "epub.parser.ui_chapter_n",
+                          "Chương {0}",
+                          virtualId,
+                      );
             }
 
             const parseConfig =
@@ -1399,8 +1452,16 @@ function renderTablesUI(tocNames) {
 
 async function generateEpub() {
     if (!zipData || !config) return;
-    log(_t("epub.parser.log_start_pack", "Bắt đầu khởi tạo cấu trúc đóng gói EPUB chuẩn..."));
-    updateProgress(30, _t("epub.parser.progress_spine", "Đang xây dựng manifest & spine..."));
+    log(
+        _t(
+            "epub.parser.log_start_pack",
+            "Bắt đầu khởi tạo cấu trúc đóng gói EPUB chuẩn...",
+        ),
+    );
+    updateProgress(
+        30,
+        _t("epub.parser.progress_spine", "Đang xây dựng manifest & spine..."),
+    );
 
     const epub = new JSZip();
     epub.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -1561,7 +1622,13 @@ async function generateEpub() {
 </package>`;
     epub.file("OEBPS/content.opf", contentOpf);
 
-    updateProgress(60, _t("epub.parser.progress_special", "Đang khởi tạo các trang nội dung đặc biệt..."));
+    updateProgress(
+        60,
+        _t(
+            "epub.parser.progress_special",
+            "Đang khởi tạo các trang nội dung đặc biệt...",
+        ),
+    );
 
     if (allowedTargets.includes("cover") && config.cover_href) {
         const coverHtml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -1786,12 +1853,26 @@ ${tocPageHtml}        </ul>
             type: "blob",
             mimeType: "application/epub+zip",
         });
-        log(_t("epub.parser.log_success", "Thành công! File EPUB đã được cấu trúc và đóng gói thành công."));
-        updateProgress(100, _t("epub.parser.progress_done", "Hoàn tất! Sẵn sàng tải xuống."));
+        log(
+            _t(
+                "epub.parser.log_success",
+                "Thành công! File EPUB đã được cấu trúc và đóng gói thành công.",
+            ),
+        );
+        updateProgress(
+            100,
+            _t("epub.parser.progress_done", "Hoàn tất! Sẵn sàng tải xuống."),
+        );
         if (document.getElementById("downloadBtn"))
             document.getElementById("downloadBtn").disabled = false;
     } catch (err) {
-        log(fmtTpl("epub.parser.err_zip_pack", "Lỗi khi đóng gói: {0}", err.message));
+        log(
+            fmtTpl(
+                "epub.parser.err_zip_pack",
+                "Lỗi khi đóng gói: {0}",
+                err.message,
+            ),
+        );
     }
 }
 
@@ -1803,13 +1884,17 @@ async function downloadEpub() {
         .trim()
         .substring(0, 50);
 
-    if (window.CapacitorFileBridge) {
-        await window.CapacitorFileBridge.downloadFile(
-            finalEpubBlob,
-            `${cleanName}.epub`,
-        );
-    } else {
+    const savedToDevice = await capacitorFile.save(
+        finalEpubBlob,
+        `${cleanName}.epub`,
+    );
+    if (!savedToDevice) {
         saveAs(finalEpubBlob, `${cleanName}.epub`);
     }
-    log(_t("epub.parser.log_downloaded", "Đã xuất và tải file EPUB thành công!"));
+    log(
+        _t(
+            "epub.parser.log_downloaded",
+            "Đã xuất và tải file EPUB thành công!",
+        ),
+    );
 }

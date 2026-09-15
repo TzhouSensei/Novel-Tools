@@ -548,7 +548,11 @@ body.heaven_moon {
     --read-bg: #161b2c !important;
     --read-color: #6a7a9e !important;
     --unread-color: #e8ecf5 !important;
-    background: radial-gradient(circle at 80% 10%, #1e2a4a 0%, #0f1320 60%) !important;
+    background: radial-gradient(
+        circle at 80% 10%,
+        #1e2a4a 0%,
+        #0f1320 60%
+    ) !important;
     color: #e8ecf5 !important;
 }
 
@@ -565,7 +569,11 @@ body.bagua_field {
     --unread-color: #f5f5f5 !important;
     --danger: #c62828 !important;
     --success: #558b2f !important;
-    background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #1a1a1a 70%) !important;
+    background: radial-gradient(
+        circle at 50% 50%,
+        #2a2a2a 0%,
+        #1a1a1a 70%
+    ) !important;
     color: #f5f5f5 !important;
 }
 
@@ -610,7 +618,11 @@ body.old_structure_ancient_china {
     --read-bg: #352818 !important;
     --read-color: #806848 !important;
     --unread-color: #d4b896 !important;
-    background: radial-gradient(circle at 30% 20%, #4a3820, #3d2e1a 70%) !important;
+    background: radial-gradient(
+        circle at 30% 20%,
+        #4a3820,
+        #3d2e1a 70%
+    ) !important;
     color: #d4b896 !important;
 }
 
@@ -625,7 +637,11 @@ body.old_structure_modern_western {
     --read-bg: #252018 !important;
     --read-color: #706858 !important;
     --unread-color: #c8b898 !important;
-    background: radial-gradient(circle at 20% 30%, #383028, #2a2520 70%) !important;
+    background: radial-gradient(
+        circle at 20% 30%,
+        #383028,
+        #2a2520 70%
+    ) !important;
     color: #c8b898 !important;
 }
 
@@ -640,7 +656,11 @@ body.old_structure_ancient_western {
     --read-bg: #24201a !important;
     --read-color: #786c58 !important;
     --unread-color: #d0c0a0 !important;
-    background: radial-gradient(circle at 40% 25%, #3a342c, #2c2820 70%) !important;
+    background: radial-gradient(
+        circle at 40% 25%,
+        #3a342c,
+        #2c2820 70%
+    ) !important;
     color: #d0c0a0 !important;
 }
 
@@ -655,7 +675,11 @@ body.old_babel {
     --read-bg: #221c14 !important;
     --read-color: #807058 !important;
     --unread-color: #d8c8a0 !important;
-    background: radial-gradient(circle at 25% 25%, #382e20, #2a2218 70%) !important;
+    background: radial-gradient(
+        circle at 25% 25%,
+        #382e20,
+        #2a2218 70%
+    ) !important;
     color: #d8c8a0 !important;
 }
 
@@ -670,7 +694,12 @@ body.black_beacon {
     --read-bg: #141210 !important;
     --read-color: #6a5e4a !important;
     --unread-color: #c8b898 !important;
-    background: radial-gradient(circle at 30% 20%, #252018, #1a1610 60%, #0d0b08 100%) !important;
+    background: radial-gradient(
+        circle at 30% 20%,
+        #252018,
+        #1a1610 60%,
+        #0d0b08 100%
+    ) !important;
     color: #c8b898 !important;
 }
 

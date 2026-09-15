@@ -75,7 +75,7 @@
             arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : p;
         t && t(e, null);
         let i = o.length;
-        for (; i--; ) {
+        for (; i--;) {
             let t = o[i];
             if ("string" == typeof t) {
                 const e = r(t);
@@ -91,7 +91,7 @@
         return n;
     }
     function R(e, t) {
-        for (; null !== e; ) {
+        for (; null !== e;) {
             const n = r(e, t);
             if (n) {
                 if (n.get) return N(n.get);
@@ -1259,26 +1259,23 @@
                 if (be && !_e[t] && E(ue, t));
                 else if (Ne && E(me, t));
                 else if (!Te[t] || _e[t]) {
-                    if (
-                        !(
-                            (_t(e) &&
-                                ((Ee.tagNameCheck instanceof RegExp &&
-                                    E(Ee.tagNameCheck, e)) ||
-                                    (Ee.tagNameCheck instanceof Function &&
-                                        Ee.tagNameCheck(e))) &&
-                                ((Ee.attributeNameCheck instanceof RegExp &&
-                                    E(Ee.attributeNameCheck, t)) ||
-                                    (Ee.attributeNameCheck instanceof
-                                        Function &&
-                                        Ee.attributeNameCheck(t)))) ||
-                            ("is" === t &&
-                                Ee.allowCustomizedBuiltInElements &&
-                                ((Ee.tagNameCheck instanceof RegExp &&
-                                    E(Ee.tagNameCheck, n)) ||
-                                    (Ee.tagNameCheck instanceof Function &&
-                                        Ee.tagNameCheck(n))))
-                        )
-                    )
+                    if (!(
+                        (_t(e) &&
+                            ((Ee.tagNameCheck instanceof RegExp &&
+                                E(Ee.tagNameCheck, e)) ||
+                                (Ee.tagNameCheck instanceof Function &&
+                                    Ee.tagNameCheck(e))) &&
+                            ((Ee.attributeNameCheck instanceof RegExp &&
+                                E(Ee.attributeNameCheck, t)) ||
+                                (Ee.attributeNameCheck instanceof Function &&
+                                    Ee.attributeNameCheck(t)))) ||
+                        ("is" === t &&
+                            Ee.allowCustomizedBuiltInElements &&
+                            ((Ee.tagNameCheck instanceof RegExp &&
+                                E(Ee.tagNameCheck, n)) ||
+                                (Ee.tagNameCheck instanceof Function &&
+                                    Ee.tagNameCheck(n))))
+                    ))
                         return !1;
                 } else if (Ge[t]);
                 else if (E(de, g(n, pe, "")));
@@ -1307,7 +1304,7 @@
                     allowedAttributes: Te,
                 };
                 let r = t.length;
-                for (; r--; ) {
+                for (; r--;) {
                     const i = t[r],
                         { name: a, namespaceURI: l, value: c } = i,
                         s = tt(a);
@@ -1420,12 +1417,12 @@
                 }
                 n && ve && ft(n.firstChild);
                 const c = ht(Pe ? e : n);
-                for (; (i = c.nextNode()); )
+                for (; (i = c.nextNode());)
                     Et(i) || (i.content instanceof s && bt(i.content), Nt(i));
                 if (Pe) return e;
                 if (xe) {
                     if (ke)
-                        for (l = oe.call(n.ownerDocument); n.firstChild; )
+                        for (l = oe.call(n.ownerDocument); n.firstChild;)
                             l.appendChild(n.firstChild);
                     else l = n;
                     return (

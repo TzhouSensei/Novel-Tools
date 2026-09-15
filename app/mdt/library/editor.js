@@ -1,6 +1,10 @@
 (function () {
     "use strict";
 
+    const capacitorFile = {
+        save: async (blob, name) => nativeBridge.downloadFile(blob, name),
+    };
+
     let currentBook = null;
     let currentChapters = [];
     let editingChapterId = null;
@@ -364,7 +368,7 @@
         );
     }
 
-    function downloadFullTxt() {
+    async function downloadFullTxt() {
         const story = {
             title: currentBook.title,
             description: currentBook.description,
@@ -376,15 +380,20 @@
         };
         const text = buildMDTText(story);
         const blob = new Blob([text], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
         const safeName = String(story.title)
             .trim()
             .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
             .replace(/\s+/g, "_");
-        a.download = safeName + "_full.txt";
-        a.click();
-        URL.revokeObjectURL(a.href);
+        const fileName = safeName + "_full.txt";
+        if (await capacitorFile.save(blob, fileName)) {
+            return;
+        } else {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
         toast(tFn("mdt.editor.other.downloaded", "Đã tải file TXT!"));
     }
 
@@ -679,8 +688,8 @@ ${parsedBody}
 
         const blob = await zip.generateAsync({ type: "blob" });
 
-        if (window.CapacitorFileBridge) {
-            await window.CapacitorFileBridge.downloadFile(blob, folderName + ".zip");
+        if (await capacitorFile.save(blob, folderName + ".zip")) {
+            return;
         } else {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);

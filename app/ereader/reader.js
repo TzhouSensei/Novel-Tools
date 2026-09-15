@@ -1,3 +1,12 @@
+const capacitorFile = (() => {
+    return {
+        canPick: () => nativeBridge.canPick(),
+        pickFile: async (options = {}) => nativeBridge.pickFile(options),
+        downloadFile: async (blob, name) =>
+            nativeBridge.downloadFile(blob, name),
+    };
+})();
+
 const DB_NAME = "EpubReaderLocalDB";
 const ASSET_STORE_NAME = "assets";
 let box = null;
@@ -441,7 +450,6 @@ function isImageBlob(blob, path) {
 }
 
 async function getAssetByPath(assetPath) {
-    console.log("[DB] lookup:", assetPath);
     try {
         const db = await openAssetDB();
         const result = await new Promise((resolve, reject) => {
@@ -484,13 +492,11 @@ function clearBlobUrls() {
 
 async function loadChapter(index, preservePage = false, initialPage = 0) {
     if (index < 0 || index >= state.spine.length) return;
-    console.log("[CHAPTER] 👉 loadChapter index:", index);
+
     state.currentChapterIndex = index;
     const chapterHref = state.spine[index];
     const fullPath = resolveRelativePath(state.basePath, chapterHref);
-    console.log("[CHAPTER] spine href:", chapterHref);
-    console.log("[CHAPTER] basePath:", state.basePath);
-    console.log("[CHAPTER] resolved fullPath:", fullPath);
+
     clearBlobUrls();
     const fileEntry = state.zip.file(fullPath);
     if (!fileEntry) {
@@ -503,7 +509,7 @@ async function loadChapter(index, preservePage = false, initialPage = 0) {
     const parser = new DOMParser();
     let doc = parser.parseFromString(htmlStr, "text/html");
     const hasImages = !!doc.querySelector("img, image");
-    console.log("[CHAPTER] 🖼 hasImages:", hasImages);
+
     const bodyContent = doc.body ? doc.body.innerHTML : htmlStr;
     const contentEl = document.getElementById("chapter-content");
     contentEl.innerHTML = DOMPurify.sanitize(bodyContent);
@@ -1147,12 +1153,11 @@ async function exportUserDataBackup() {
     const blob = new Blob([JSON.stringify(backupData)], {
         type: "application/json",
     });
-    if (window.CapacitorFileBridge) {
-        await window.CapacitorFileBridge.downloadFile(
-            blob,
-            "epub_reader_all_backup.json",
-        );
-    } else {
+    const savedToDevice = await capacitorFile.downloadFile(
+        blob,
+        "epub_reader_all_backup.json",
+    );
+    if (!savedToDevice) {
         const dataStr =
             "data:application/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(backupData));
@@ -1167,8 +1172,8 @@ async function exportUserDataBackup() {
 
 async function importUserDataBackup(fileEvent) {
     let file = fileEvent && fileEvent.target && fileEvent.target.files[0];
-    if (!file && window.CapacitorFileBridge?.canPick()) {
-        file = await window.CapacitorFileBridge.pickFile({
+    if (!file && capacitorFile.canPick()) {
+        file = await capacitorFile.pickFile({
             types: ["application/json"],
             name: "epub_reader_backup.json",
         });
@@ -1376,9 +1381,8 @@ async function hydrateImages(contentEl, chapterFullPath) {
 }
 
 function toggleToolMenu() {
-    console.log("click");
     const menu = document.getElementById("tool-menu");
-    console.log(menu);
+
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
 
@@ -2425,7 +2429,6 @@ function toggleHighlightSelection() {
         document.addEventListener("mouseup", handlePCSelectionMenu);
         document.addEventListener("touchend", handleMobileSelectionMenu);
     } else {
-        console.log("Chế độ Highlight hủy kích hoạt: Bật lại swipe.");
         removeHighlightMenu();
         document.removeEventListener("contextmenu", handleContextMenuBlock);
         document.removeEventListener("mouseup", handlePCSelectionMenu);

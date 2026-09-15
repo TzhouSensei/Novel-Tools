@@ -499,7 +499,7 @@
             function D(t, e, i) {
                 var n = document.createTreeWalker(t, i, null, !1);
                 let s;
-                for (; (s = n.nextNode()); ) e(s);
+                for (; (s = n.nextNode());) e(s);
             }
             function P(t, e) {
                 if (e(t)) return !0;
@@ -570,7 +570,7 @@
             function W(t, e) {
                 let i;
                 if (null !== t && "" !== e)
-                    for (i = t.parentNode; 1 === i.nodeType; ) {
+                    for (i = t.parentNode; 1 === i.nodeType;) {
                         if (i.tagName.toLowerCase() === e) return i;
                         i = i.parentNode;
                     }
@@ -2113,7 +2113,7 @@
                             : void 0;
                 }
                 dump() {
-                    for (; this._q.length; ) this.dequeue();
+                    for (; this._q.length;) this.dequeue();
                 }
                 run() {
                     return (
@@ -3490,7 +3490,7 @@
                     return n;
                 }
                 findStart(t, e, i) {
-                    for (var n, r, o = [t], a = t; o.length; )
+                    for (var n, r, o = [t], a = t; o.length;)
                         if (
                             ((n = o.shift()),
                             (r = this.walk(n, (t) => {
@@ -3536,7 +3536,7 @@
                     return this.findTextStartRange(a, e, i);
                 }
                 findEnd(t, e, i) {
-                    for (var n, r, o = [t], a = t; o.length; )
+                    for (var n, r, o = [t], a = t; o.length;)
                         if (
                             ((n = o.shift()),
                             (r = this.walk(n, (t) => {
@@ -4231,7 +4231,9 @@
                             this.document.addEventListener(
                                 t,
                                 this._triggerEvent,
-                                { passive: !0 },
+                                {
+                                    passive: !0,
+                                },
                             );
                         }, this));
                 }
@@ -4241,7 +4243,9 @@
                             this.document.removeEventListener(
                                 t,
                                 this._triggerEvent,
-                                { passive: !0 },
+                                {
+                                    passive: !0,
+                                },
                             );
                         }, this),
                         (this._triggerEvent = void 0));
@@ -4751,7 +4755,7 @@
                             {
                                 key: "render",
                                 value: function () {
-                                    for (; this.element.firstChild; )
+                                    for (; this.element.firstChild;)
                                         this.element.removeChild(
                                             this.element.firstChild,
                                         );
@@ -4811,7 +4815,7 @@
                         {
                             key: "render",
                             value: function () {
-                                for (; this.element.firstChild; )
+                                for (; this.element.firstChild;)
                                     this.element.removeChild(
                                         this.element.firstChild,
                                     );
@@ -6787,21 +6791,27 @@
                         this.scroller.addEventListener(
                             "touchstart",
                             this._onTouchStart,
-                            { passive: !0 },
+                            {
+                                passive: !0,
+                            },
                         ),
                         this.on("touchstart", this._onTouchStart),
                         (this._onTouchMove = this.onTouchMove.bind(this)),
                         this.scroller.addEventListener(
                             "touchmove",
                             this._onTouchMove,
-                            { passive: !0 },
+                            {
+                                passive: !0,
+                            },
                         ),
                         this.on("touchmove", this._onTouchMove),
                         (this._onTouchEnd = this.onTouchEnd.bind(this)),
                         this.scroller.addEventListener(
                             "touchend",
                             this._onTouchEnd,
-                            { passive: !0 },
+                            {
+                                passive: !0,
+                            },
                         ),
                         this.on("touchend", this._onTouchEnd),
                         (this._afterDisplayed = this.afterDisplayed.bind(this)),
@@ -6828,14 +6838,18 @@
                         this.scroller.removeEventListener(
                             "touchmove",
                             this._onTouchMove,
-                            { passive: !0 },
+                            {
+                                passive: !0,
+                            },
                         ),
                         this.off("touchmove", this._onTouchMove),
                         (this._onTouchMove = void 0),
                         this.scroller.removeEventListener(
                             "touchend",
                             this._onTouchEnd,
-                            { passive: !0 },
+                            {
+                                passive: !0,
+                            },
                         ),
                         this.off("touchend", this._onTouchEnd),
                         (this._onTouchEnd = void 0),
@@ -7505,7 +7519,7 @@
                                     function c() {
                                         var t, e;
                                         n = !0;
-                                        for (var i = l.length; i; ) {
+                                        for (var i = l.length; i;) {
                                             for (
                                                 e = l, l = [], t = -1;
                                                 ++t < i;
@@ -10945,7 +10959,7 @@
                         );
                     let a,
                         h = [];
-                    for (; (a = o.nextNode()); )
+                    for (; (a = o.nextNode());)
                         (h.push(a),
                             h.length == e &&
                                 (r(h.slice(0, e)), (h = h.slice(1, e))));
@@ -11048,7 +11062,7 @@
                                     "yes" === t.linear
                                         ? ((t.prev = function () {
                                               let e = t.index;
-                                              for (; e > 0; ) {
+                                              for (; e > 0;) {
                                                   let t = this.get(e - 1);
                                                   if (t && t.linear) return t;
                                                   e -= 1;
@@ -11076,7 +11090,7 @@
                     get(t) {
                         var e = 0;
                         if (void 0 === t)
-                            for (; e < this.spineItems.length; ) {
+                            for (; e < this.spineItems.length;) {
                                 let t = this.spineItems[e];
                                 if (t && t.linear) break;
                                 e += 1;
@@ -13375,7 +13389,7 @@
             }
             function k() {}
             function A(t, e) {
-                for (var i = t.length; i--; ) if (t[i] === e) return i;
+                for (var i = t.length; i--;) if (t[i] === e) return i;
             }
             function L(t, e, i, s) {
                 if ((s ? (e[A(e, s)] = i) : (e[e.length++] = i), t)) {
@@ -13394,7 +13408,7 @@
             function j(t, e, i) {
                 var n = A(e, i);
                 if (!(n >= 0)) throw C(_, new Error(t.tagName + "@" + i));
-                for (var s = e.length - 1; n < s; ) e[n] = e[++n];
+                for (var s = e.length - 1; n < s;) e[n] = e[++n];
                 if (((e.length = s), t)) {
                     var r = t.ownerDocument;
                     r && (q(r, t, i), (i.ownerElement = null));
@@ -13429,7 +13443,7 @@
                     var n = e.childNodes;
                     if (i) n[n.length++] = i;
                     else {
-                        for (var s = e.firstChild, r = 0; s; )
+                        for (var s = e.firstChild, r = 0; s;)
                             ((n[r++] = s), (s = s.nextSibling));
                         n.length = r;
                     }
@@ -13495,7 +13509,7 @@
                     r = t.namespaceURI;
                 if (!r) return !1;
                 if (("xml" === s && r === n.XML) || r === n.XMLNS) return !1;
-                for (var o = i.length; o--; ) {
+                for (var o = i.length; o--;) {
                     var a = i[o];
                     if (a.prefix === s) return a.namespace !== r;
                 }
@@ -13582,13 +13596,13 @@
                             (i && !/^(?:meta|link|img|br|hr|input)$/i.test(l))
                         ) {
                             if ((e.push(">"), i && /^script$/i.test(l)))
-                                for (; h; )
+                                for (; h;)
                                     (h.data
                                         ? e.push(h.data)
                                         : ot(h, e, i, s, r.slice()),
                                         (h = h.nextSibling));
                             else
-                                for (; h; )
+                                for (; h;)
                                     (ot(h, e, i, s, r.slice()),
                                         (h = h.nextSibling));
                             e.push("</", g, ">");
@@ -13596,7 +13610,7 @@
                         return;
                     case y:
                     case w:
-                        for (h = t.firstChild; h; )
+                        for (h = t.firstChild; h;)
                             (ot(h, e, i, s, r.slice()), (h = h.nextSibling));
                         return;
                     case u:
@@ -13656,7 +13670,7 @@
                     length: 0,
                     item: O.prototype.item,
                     getNamedItem: function (t) {
-                        for (var e = this.length; e--; ) {
+                        for (var e = this.length; e--;) {
                             var i = this[e];
                             if (i.nodeName == t) return i;
                         }
@@ -13689,7 +13703,7 @@
                         return (j(this._ownerElement, this, i), i);
                     },
                     getNamedItemNS: function (t, e) {
-                        for (var i = this.length; i--; ) {
+                        for (var i = this.length; i--;) {
                             var n = this[i];
                             if (n.localName == e && n.namespaceURI == t)
                                 return n;
@@ -13775,14 +13789,14 @@
                                     n = !0;
                             }
                             if (n)
-                                for (var f = i.firstChild; f; )
+                                for (var f = i.firstChild; f;)
                                     (s.appendChild(t(e, f, n)),
                                         (f = f.nextSibling));
                             return s;
                         })(this.ownerDocument || this, this, t);
                     },
                     normalize: function () {
-                        for (var t = this.firstChild; t; ) {
+                        for (var t = this.firstChild; t;) {
                             var e = t.nextSibling;
                             e && e.nodeType == d && t.nodeType == d
                                 ? (this.removeChild(e), t.appendData(e.data))
@@ -13799,7 +13813,7 @@
                         return this.attributes.length > 0;
                     },
                     lookupPrefix: function (t) {
-                        for (var e = this; e; ) {
+                        for (var e = this; e;) {
                             var i = e._nsMap;
                             if (i) for (var n in i) if (i[n] == t) return n;
                             e =
@@ -13810,7 +13824,7 @@
                         return null;
                     },
                     lookupNamespaceURI: function (t) {
-                        for (var e = this; e; ) {
+                        for (var e = this; e;) {
                             var i = e._nsMap;
                             if (i && t in i) return i[t];
                             e =
@@ -13834,7 +13848,7 @@
                     _inc: 1,
                     insertBefore: function (t, e) {
                         if (t.nodeType == w) {
-                            for (var i = t.firstChild; i; ) {
+                            for (var i = t.firstChild; i;) {
                                 var n = i.nextSibling;
                                 (this.insertBefore(i, e), (i = n));
                             }
@@ -13873,7 +13887,7 @@
                                 (s.parentNode = null),
                                 n)
                             )
-                                for (var r = i.firstChild; r; )
+                                for (var r = i.firstChild; r;)
                                     (s.appendChild(t(e, r, n)),
                                         (r = r.nextSibling));
                             return s;
@@ -14210,7 +14224,7 @@
                                         case c:
                                         case w:
                                             var i = [];
-                                            for (e = e.firstChild; e; )
+                                            for (e = e.firstChild; e;)
                                                 (7 !== e.nodeType &&
                                                     8 !== e.nodeType &&
                                                     i.push(t(e)),
@@ -14225,7 +14239,7 @@
                                 switch (this.nodeType) {
                                     case c:
                                     case w:
-                                        for (; this.firstChild; )
+                                        for (; this.firstChild;)
                                             this.removeChild(this.firstChild);
                                         (t || String(t)) &&
                                             this.appendChild(
@@ -14980,7 +14994,7 @@
                         o.fatalError("Attribute " + t + " redefined"),
                         i.addValue(t, e, n));
                 }
-                for (var h, l = ++e, c = 0; ; ) {
+                for (var h, l = ++e, c = 0; ;) {
                     var u = t.charAt(l);
                     switch (u) {
                         case "=":
@@ -15164,7 +15178,7 @@
                 }
             }
             function u(t, e, i) {
-                for (var s = t.tagName, r = null, o = t.length; o--; ) {
+                for (var s = t.tagName, r = null, o = t.length; o--;) {
                     var a = t[o],
                         h = a.qName,
                         l = a.value;
@@ -15180,7 +15194,7 @@
                             (a.uri = n.XMLNS),
                             e.startPrefixMapping(d, l)));
                 }
-                for (o = t.length; o--; ) {
+                for (o = t.length; o--;) {
                     (c = (a = t[o]).prefix) &&
                         ("xml" === c && (a.uri = n.XML),
                         "xmlns" !== c && (a.uri = i[c || ""]));
@@ -15246,7 +15260,7 @@
                                     s =
                                         /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
                                 ((s.lastIndex = e), s.exec(t));
-                                for (; (i = s.exec(t)); )
+                                for (; (i = s.exec(t));)
                                     if ((n.push(i), i[1])) return n;
                             })(t, e),
                             o = r.length;
@@ -15333,7 +15347,7 @@
                                     }
                                 }
                                 function p(e, i) {
-                                    for (; e >= b && (i = w.exec(t)); )
+                                    for (; e >= b && (i = w.exec(t));)
                                         ((y = i.index),
                                             (b = y + i[0].length),
                                             x.lineNumber++);
@@ -15685,7 +15699,7 @@
         function (t, e) {
             var i = /\s/;
             t.exports = function (t) {
-                for (var e = t.length; e-- && i.test(t.charAt(e)); );
+                for (var e = t.length; e-- && i.test(t.charAt(e)););
                 return e;
             };
         },

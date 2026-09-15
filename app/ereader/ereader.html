@@ -12,7 +12,6 @@
 
         <title>Advanced EPUB Reader</title>
         <script src="../../libs/epub/jszip.min.js"></script>
-        <script src="../../libs/capacitor/file-bridge.js"></script>
         <style>
             :root {
                 --bg-color: #f7f4ed;
@@ -1086,16 +1085,22 @@
                             👾 Pixelated
                         </option>
                     </select>
-                    <div class="theme-level-container" style="display:none">
+                    <div class="theme-level-container" style="display: none">
                         <select
                             id="themeLevelSelect"
                             class="theme-select"
                             data-i18n-title="appearance.level"
                         >
-                            <option value="minimal" data-i18n="appearance.level.minimal">
+                            <option
+                                value="minimal"
+                                data-i18n="appearance.level.minimal"
+                            >
                                 Tối giản
                             </option>
-                            <option value="image" data-i18n="appearance.level.image">
+                            <option
+                                value="image"
+                                data-i18n="appearance.level.image"
+                            >
                                 Hình ảnh
                             </option>
                         </select>
@@ -1208,9 +1213,9 @@
                             window.parent &&
                             window.parent !== window &&
                             window.parent.spaTool &&
-                            window.parent.spaTool.go
+                            window.parent.spaTool.back
                         ) {
-                            window.parent.spaTool.go("ereader", true);
+                            window.parent.spaTool.back();
                             return;
                         }
                     } catch (e) {}

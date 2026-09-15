@@ -4,12 +4,6 @@ import {
     makeInfoBox,
 } from "../../parser/epubParserMobile.js";
 
-let Filesystem = null;
-try {
-    Filesystem = Capacitor.Plugins.Filesystem;
-} catch {
-    console.log("Không có Capacitor");
-}
 let title = "";
 const fileInput = document.getElementById("file");
 const output = document.getElementById("output");
@@ -268,7 +262,7 @@ const generateFileHeader = async (meta) => {
     );
 };
 
-if (Filesystem !== null) {
+if (nativeBridge.isNative()) {
     btn.addEventListener("click", async () => {
         if (!output.value) {
             alert("Không có nội dung để lưu!");
@@ -286,9 +280,7 @@ if (Filesystem !== null) {
 
         try {
             const headerTxt = await generateFileHeader(meta);
-            await Filesystem.writeFile({
-                path: defaultFileName,
-                data: headerTxt,
+            await nativeBridge.writeFile(defaultFileName, headerTxt, {
                 directory: "Documents",
                 encoding: "utf8",
             });
@@ -319,12 +311,14 @@ if (Filesystem !== null) {
                             .map((ch) => `${ch.title}\n${ch.text}`)
                             .join(splitter) + splitter;
 
-                    await Filesystem.appendFile({
-                        path: defaultFileName,
-                        data: chunkMerged,
-                        directory: "Documents",
-                        encoding: "utf8",
-                    });
+                    await nativeBridge.appendFile(
+                        defaultFileName,
+                        chunkMerged,
+                        {
+                            directory: "Documents",
+                            encoding: "utf8",
+                        },
+                    );
                 }
             }
 
@@ -332,7 +326,7 @@ if (Filesystem !== null) {
                 `Đã lưu file thành công (Tối ưu hóa tránh OOM) vào:\nDocuments/${defaultFileName}`,
             );
         } catch (error) {
-            console.error("Lỗi khi ghi file Capacitor:", error);
+            console.error("[NATIVE-BRIDGE][ERROR]", error);
             alert("Lỗi bộ nhớ thiết bị hoặc phân quyền khi ghi file!");
         }
     });
@@ -393,9 +387,6 @@ if (Filesystem !== null) {
             a.click();
 
             setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
-            console.log("[DEBUG][DOWNLOAD] success");
-        } catch (err) {
-            console.log("[DEBUG][DOWNLOAD-ERROR]", err);
-        }
+        } catch (err) {}
     });
 }

@@ -568,10 +568,16 @@
                 </div>
             </form>
         </div>
+        <script src="../../../../../libs/capacitor/native-bridge.js"></script>
         <script src="../../../../../libs/theme/theme.js"></script>
         <script src="../../../../../libs/i18n/i18n.js"></script>
-        <script src="../../../../../libs/capacitor/file-bridge.js"></script>
         <script>
+            const capacitorConfigFile = {
+                canPick: () => nativeBridge.canPick(),
+                pick: async (options = {}) => nativeBridge.pickFile(options),
+                save: async (blob, name) =>
+                    nativeBridge.downloadFile(blob, name),
+            };
             const appendixTypes = [
                 ["item", "config.appendix_type_item", "appendix/item"],
                 ["itemset", "config.appendix_type_itemset", "appendix/itemset"],
@@ -814,11 +820,11 @@
                 const input = document.getElementById(id);
                 if (!input) return;
                 input.addEventListener("click", async (event) => {
-                    if (!window.CapacitorFileBridge?.canPick()) return;
+                    if (!capacitorConfigFile.canPick()) return;
                     event.preventDefault();
                     let file;
                     try {
-                        file = await window.CapacitorFileBridge.pickFile({
+                        file = await capacitorConfigFile.pick({
                             types:
                                 id === "importCover"
                                     ? ["image/*"]
@@ -1464,12 +1470,16 @@
                     const config = getJsonConfigFromForm();
                     const content = new Blob(
                         [JSON.stringify(config, null, 4)],
-                        { type: "application/json" },
+                        {
+                            type: "application/json",
+                        },
                     );
-                    if (await window.CapacitorFileBridge?.saveFile(
-                        content,
-                        "configuration.json",
-                    )) {
+                    if (
+                        await capacitorConfigFile.save(
+                            content,
+                            "configuration.json",
+                        )
+                    ) {
                         return;
                     }
                     const dataStr = URL.createObjectURL(content);
@@ -1520,10 +1530,12 @@
 
                     zip.generateAsync({ type: "blob" })
                         .then(async function (content) {
-                            if (await window.CapacitorFileBridge?.saveFile(
-                                content,
-                                "ebook_package.zip",
-                            )) {
+                            if (
+                                await capacitorConfigFile.save(
+                                    content,
+                                    "ebook_package.zip",
+                                )
+                            ) {
                                 return;
                             }
                             const downloadAnchor = document.createElement("a");

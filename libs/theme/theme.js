@@ -149,7 +149,8 @@
     function getImagePath(theme) {
         var prefix = IMAGE_THEMES[theme];
         if (!prefix) return null;
-        var suffix = window.innerWidth < window.innerHeight ? "mobile" : "desktop";
+        var suffix =
+            window.innerWidth < window.innerHeight ? "mobile" : "desktop";
         var file = prefix + "-" + suffix + ".jpg";
         if (prefix === "khaki" && suffix === "desktop") {
             file = "khaki-destop.jpg";
@@ -236,7 +237,7 @@
             if (path) {
                 body.style.setProperty(
                     "background-image",
-                    "url(\"" + path + "\")",
+                    'url("' + path + '")',
                     "important",
                 );
             }

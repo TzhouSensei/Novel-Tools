@@ -20,9 +20,7 @@ export const normalizeEpubPath = (value = "") => {
 
     try {
         normalized = decodeURIComponent(normalized);
-    } catch {
-        console.log("Cannot normalized");
-    }
+    } catch {}
 
     return normalized.replace(/\/+/g, "/").replace(/^\.\//, "");
 };

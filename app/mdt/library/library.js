@@ -1,6 +1,31 @@
 (function () {
     "use strict";
 
+    const capacitorLibraryPicker = async () => {
+        const native =
+            typeof Capacitor !== "undefined" &&
+            (typeof Capacitor.isNativePlatform !== "function" ||
+                Capacitor.isNativePlatform());
+        const picker = native && Capacitor.Plugins?.FilePicker;
+        if (!picker?.pickFiles) return null;
+        const result = await picker.pickFiles({
+            types: ["text/plain", "text/*"],
+            multiple: true,
+            readData: true,
+        });
+        return (result?.files || []).map((picked) => {
+            const raw = atob(
+                String(picked.data || "").replace(/^data:[^;]+;base64,/, ""),
+            );
+            return new File(
+                [Uint8Array.from(raw, (char) => char.charCodeAt(0))],
+                picked.name,
+                {
+                    type: picked.mimeType || "text/plain",
+                },
+            );
+        });
+    };
     let searchQuery = "";
     let sortMode = "recent";
 
@@ -212,11 +237,21 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        document
-            .getElementById("library-file-input")
-            .addEventListener("change", (e) => {
-                handleImportFiles(e.target.files);
-            });
+        const libraryFileInput = document.getElementById("library-file-input");
+        libraryFileInput.addEventListener("click", async (e) => {
+            const files = await capacitorLibraryPicker();
+            if (!files) return;
+            e.preventDefault();
+            const transfer = new DataTransfer();
+            files.forEach((file) => transfer.items.add(file));
+            libraryFileInput.files = transfer.files;
+            libraryFileInput.dispatchEvent(
+                new Event("change", { bubbles: true }),
+            );
+        });
+        libraryFileInput.addEventListener("change", (e) => {
+            handleImportFiles(e.target.files);
+        });
 
         document
             .getElementById("createStoryBtn")
