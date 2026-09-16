@@ -201,11 +201,22 @@ button {
 }
 .topbar-left {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 12px;
     min-width: 0;
 }
+#mobileMenu,
+#backBtn {
+    flex: none;
+}
+#mobileMenu {
+    position: relative;
+    z-index: 2;
+}
 .topbar #breadcrumb {
+    flex: 1 1 auto;
+    min-width: 0;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
@@ -224,7 +235,11 @@ body.back-hidden #backBtn {
     display: none;
 }
 .top-actions {
+    position: relative;
     display: flex;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+    min-width: 0;
     gap: 10px;
     align-items: center;
 }
@@ -313,18 +328,47 @@ body.back-hidden #backBtn {
     }
 }
 
-.lang-wrapper {
+.theme-level-container {
+    position: relative;
     display: flex;
+    flex: 0 1 auto;
     align-items: center;
+    min-width: 0;
+    gap: 10px;
+}
+.lang-wrapper {
+    position: relative;
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: 0;
     gap: 8px;
 }
+.topbar .lang-wrapper {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: row;
+    width: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+    color: inherit;
+    z-index: auto;
+}
 .lang-label {
+    flex: none;
     font-size: 12px;
     color: var(--text-muted);
     white-space: nowrap;
 }
 .lang-select,
 .theme-select {
+    min-width: 0;
     padding: 6px 10px;
     border: 1px solid var(--border);
     border-radius: 9px;
@@ -361,6 +405,38 @@ body.back-hidden #backBtn {
 #toolFrame[hidden],
 .home-view[hidden] {
     display: none !important;
+}
+.content.spa-view-enter-forward {
+    animation: spaViewInForward 0.26s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.content.spa-view-enter-back {
+    animation: spaViewInBack 0.26s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+@keyframes spaViewInForward {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes spaViewInBack {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .content.spa-view-enter-forward,
+    .content.spa-view-enter-back {
+        animation: none;
+    }
 }
 .page-head {
     display: flex;
@@ -460,6 +536,10 @@ body.back-hidden #backBtn {
     }
     .lang-label {
         display: none;
+    }
+    .theme-select,
+    .lang-select {
+        max-width: 150px;
     }
 }
 @media (max-width: 520px) {

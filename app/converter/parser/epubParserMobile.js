@@ -284,7 +284,25 @@ export async function parseEpubAdvancedMobile(file, JSZip, DOMParser, state) {
     if (flaggedFiles.length > 0) {
         assetDecisions = await showAssetDecisionDialog(flaggedFiles);
     }
+    console.log("[MOBILE] assetDecisions:", assetDecisions);
+    console.log(
+        "[MOBILE] entries:",
+        assetDecisions instanceof Map
+            ? [...assetDecisions.entries()]
+            : assetDecisions,
+    );
 
+    console.table(
+        spineFiles.map((file) => ({
+            index: file.index,
+            indexType: typeof file.index,
+            title: file.title,
+            decision:
+                assetDecisions instanceof Map
+                    ? assetDecisions.get(file.index)
+                    : undefined,
+        })),
+    );
     const { contentFiles, descriptionFiles, skippedFiles } =
         applyAssetDecisions(spineFiles, assetDecisions);
 

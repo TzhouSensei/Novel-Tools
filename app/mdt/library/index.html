@@ -39,6 +39,7 @@
                 margin-bottom: 24px;
                 flex-wrap: wrap;
                 gap: 12px;
+                background: transparent;
             }
 
             h1 {
@@ -439,6 +440,7 @@
             }
             #chuy {
                 transition: opacity 1s ease;
+                background: transparent;
             }
             .fade-out {
                 opacity: 0;
@@ -457,6 +459,15 @@
             .fade-line.show {
                 opacity: 1;
                 transform: translateX(0);
+                background: transparent;
+            }
+            body.theme-image header,
+            body.theme-image #chuy,
+            body.theme-image .fade-line.show {
+                background: var(--card-bg);
+                padding: 14px 16px;
+                border-radius: 14px;
+                border: 1px solid var(--border);
             }
             .fade-line.exit {
                 opacity: 0;

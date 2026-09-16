@@ -276,7 +276,7 @@
         if (parent !== undefined) {
             delete routeOrigins[currentRoute.path];
             isGoingBack = true;
-            go(parent, true);
+            go(parent, true, true);
             isGoingBack = false;
             return;
         }
@@ -493,7 +493,27 @@
         return p.substring(0, p.lastIndexOf("/") + 1) || "/";
     })();
 
-    function showFrame(route) {
+    function playViewTransition(isBack) {
+        const content = document.getElementById("content");
+        if (!content) return;
+        content.classList.remove(
+            "spa-view-enter-forward",
+            "spa-view-enter-back",
+        );
+        void content.offsetWidth;
+        content.classList.add(
+            isBack ? "spa-view-enter-back" : "spa-view-enter-forward",
+        );
+        clearTimeout(playViewTransition._timer);
+        playViewTransition._timer = setTimeout(() => {
+            content.classList.remove(
+                "spa-view-enter-forward",
+                "spa-view-enter-back",
+            );
+        }, 320);
+    }
+
+    function showFrame(route, isBack) {
         const frame = document.getElementById("toolFrame");
         const content = document.getElementById("content");
         const home = document.getElementById("homeView");
@@ -517,9 +537,10 @@
         setActive(route.nav);
         applyTopbarVisibility(route);
         updatePinButton();
+        playViewTransition(isBack);
     }
 
-    function showHome() {
+    function showHome(isBack) {
         const frame = document.getElementById("toolFrame");
         const content = document.getElementById("content");
         const home = document.getElementById("homeView");
@@ -540,22 +561,24 @@
         applyTopbarVisibility(homeRoute);
         applyShellI18n();
         updatePinButton();
+        playViewTransition(isBack);
     }
 
-    function renderRoute(route) {
-        if (route.frame) showFrame(route);
-        else showHome();
+    function renderRoute(route, isBack) {
+        if (route.frame) showFrame(route, !!isBack);
+        else showHome(!!isBack);
         openSidebar(false);
         setCreationDropdown(false);
     }
 
-    function go(path, updateHistory) {
+    function go(path, updateHistory, isBack) {
         const route = findRoute(path);
         if (!route) return;
         if (!isGoingBack && currentRoute && currentRoute.path !== route.path) {
             routeOrigins[route.path] = currentRoute.path;
         }
-        renderRoute(route);
+        if (route.frame) showFrame(route, !!isBack);
+        else showHome(!!isBack);
         if (updateHistory && currentRoutePath() !== route.path) {
             syncUrl(route.path, false);
         }
@@ -646,10 +669,10 @@
         }
 
         window.addEventListener("popstate", () => {
-            renderRoute(findRoute(currentRoutePath()));
+            renderRoute(findRoute(currentRoutePath()), true);
         });
         window.addEventListener("hashchange", () => {
-            renderRoute(findRoute(currentRoutePath()));
+            renderRoute(findRoute(currentRoutePath()), true);
         });
 
         window.addEventListener("message", (e) => {

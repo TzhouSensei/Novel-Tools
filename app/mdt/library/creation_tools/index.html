@@ -44,6 +44,17 @@
                 box-sizing: border-box;
             }
 
+            .header {
+                background: transparent;
+                text-align: center;
+            }
+            body.theme-image .header {
+                background: var(--card-bg);
+                padding: 0px 18px;
+                border-radius: 14px;
+                border: 1px solid var(--border);
+            }
+
             .card {
                 width: 220px;
                 flex-shrink: 0;
@@ -135,8 +146,10 @@
     </head>
 
     <body>
-        <h1 data-i18n="home.title"></h1>
-        <p data-i18n="home.subtitle"></p>
+        <div class="header">
+            <h1 data-i18n="home.title"></h1>
+            <p data-i18n="home.subtitle"></p>
+        </div>
         <div class="container">
             <a class="card" href="configuration/index.html">
                 <div class="icon">📖</div>
