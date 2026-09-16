@@ -21,7 +21,7 @@ Novel Tools is designed to work completely offline while providing a modern work
 - Book library management
 - Book search & filtering
 - Single-page & double-page mode
-- Basic Text-to-Speech (TTS)
+- Basic Text-to-Speech (TTS)(removed)
 - Mobile Action Button support
 - Theme customization
 - Responsive reading interface
@@ -88,20 +88,51 @@ Allows editing EPUB metadata such as:
 
 ---
 
-## 🧩 Story Creator & Wiki Appendix
+## 🧩 Story Creator (Story Studio)
 
-The Story Creator is an offline worldbuilding and EPUB creation workspace backed by
-browser-local IndexedDB storage. It supports:
+The Story Creator (`app/creator/`) is an offline worldbuilding and novel-production
+workspace backed by browser-local IndexedDB. No data is uploaded;
+EPUB/TXT/Kindle/`.creator` files are generated locally.
 
-- Book metadata, chapters, characters, factions, realms, items, item sets, abilities, skill sets, and definitions
-- Relations, timeline entries, system data, stats, resources, currencies, effects, quests, and combat stats
-- Configurable Appendix sections and visibility through the existing creation configuration
-- Grouped item/item-set and ability/skill-set navigation
-- Wiki-style Appendix XHTML pages with semantic headings, infoboxes, tags, descriptions, lists, tables, formulas, references, relations, and optional change history
-- Reference links resolved from stored entity IDs to entity names and relative XHTML paths
+### Library & book workspace
+
+- Dashboard: book grid, total chapters/characters stats, create book,
+  import `.creator` backup
+- Book form: title, genres with popular-genre shortcuts, description,
+  cover upload/preview/remove
+- Manage view: book header, 14 tabs, per-tab content area with fade transitions
+- State persisted locally; always reopens on dashboard
+- Backup/restore via `.creator` ZIP
+
+### Content tabs
+
+- Chapters: list, word-count stats, arcs/parts/volumes, timeline,
+  outline, drag-to-reorder, chapter CRUD
+- Items / Item sets, Characters, Factions, Realms, Locations:
+  search, cards, drag-to-reorder, generic entity forms
+- Abilities / Skill sets: grouped navigation, ability forms with stat bindings
+- Definitions, Rules: cards, scope/faction links, punishment,
+  establishment info
+- Relations: list + interactive canvas diagram, drag nodes, draw edges,
+  filter by arc/chapter, node detail panel, relation history snapshots
+- Systems / Stats: overview, stats, resources, currencies,
+  effects/statuses, quests/missions, combat stats; formula DSL editor
+  with live calculation
+- Display settings: show/hide each tab and each system sub-section
+- Export: EPUB 3 (metadata + cover + chapters + Appendix), TXT,
+  Kindle-optimized EPUB
+
+### Wiki Appendix generation
+
+- Wiki-style Appendix XHTML pages with semantic headings, infoboxes, tags,
+  descriptions, lists, tables, formulas, references, relations, and optional
+  change history
+- Reference links resolved from stored entity IDs to entity names and
+  relative XHTML paths
 - Icon and portrait figures with localized alternative text
 - Safe escaping of stored text and paragraph-aware description rendering
-- Preserved `appendix-toc.xhtml`, custom TOC mappings, back-links, relative paths, and `configuration.json`
+- Preserved `appendix-toc.xhtml`, custom TOC mappings, back-links,
+  relative paths, and `configuration.json`
 
 Appendix generation reads the existing IndexedDB book data without changing the
 database schema. Entity creation/update timestamps are kept for storage and
