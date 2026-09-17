@@ -551,20 +551,34 @@
                         <input
                             type="checkbox"
                             id="appendixIsFromCreator"
-                            checked
                             hidden
                         />
                     </label>
-                    <label>
+                    <label id="renderAppendixGroup">
                         <input type="checkbox" id="renderAppendix" />
                         <span data-i18n="config.render_appendix">
                             Render phụ lục worldbuilding vào EPUB
                         </span>
                     </label>
-                    <div
-                        id="appendixTypeContainer"
-                        style="margin-top: 8px"
-                    ></div>
+                    <div id="appendixCreatorBlock">
+                        <div
+                            id="appendixTypeContainer"
+                            style="margin-top: 8px"
+                        ></div>
+                    </div>
+                    <div id="customAppendixBlock" class="hidden">
+                        <div id="customAppendixContainer"></div>
+                        <button
+                            type="button"
+                            class="btn-success"
+                            data-i18n="config.btn_add_appendix_type"
+                            onclick="addCustomAppendixBlock()"
+                            style="margin-top: 6px"
+                        >
+                            Thêm phụ lục
+                        </button>
+                        <datalist id="customAppendixFileList"></datalist>
+                    </div>
                 </div>
             </form>
         </div>
@@ -765,9 +779,12 @@
             }
 
             function updateAppendixTocVisibility() {
+                const maker = document.getElementById("appendixIsFromCreator");
                 const on =
+                    maker &&
+                    maker.checked &&
                     document.getElementById("customTocEnabled").value ===
-                    "true";
+                        "true";
                 const container = document.getElementById(
                     "appendixTocContainer",
                 );
@@ -775,7 +792,13 @@
             }
             document
                 .getElementById("customTocEnabled")
-                .addEventListener("change", updateAppendixTocVisibility);
+                .addEventListener("change", () => {
+                    updateAppendixTocVisibility();
+                    updateCustomAppendixVisibility();
+                });
+            document
+                .getElementById("appendixIsFromCreator")
+                .addEventListener("change", updateAppendixModeVisibility);
 
             const defaultTemplate = {
                 toc_name: {},
@@ -797,6 +820,7 @@
                     is_from_creator: false,
                     render: {},
                     path: {},
+                    custom_appendix: {},
                 },
                 parse: {
                     parsing_type: "br-multiple",
@@ -819,10 +843,19 @@
             ["importFile", "importZip", "importCover"].forEach((id) => {
                 const input = document.getElementById(id);
                 if (!input) return;
+
                 input.addEventListener("click", async (event) => {
+                    if (!isCapacitorNative()) {
+                        return;
+                    }
+
                     if (!capacitorConfigFile.canPick()) return;
+
                     event.preventDefault();
+                    event.stopPropagation();
+
                     let file;
+
                     try {
                         file = await capacitorConfigFile.pick({
                             types:
@@ -845,10 +878,13 @@
                         alert("Không thể chọn file native: " + error.message);
                         return;
                     }
+
                     if (!file) return;
+
                     const transfer = new DataTransfer();
                     transfer.items.add(file);
                     input.files = transfer.files;
+
                     input.dispatchEvent(new Event("change", { bubbles: true }));
                 });
             });
@@ -889,6 +925,7 @@
                         JSZip.loadAsync(evt.target.result)
                             .then(function (zip) {
                                 importedZipInstance = zip;
+                                refreshCustomAppendixFileOptions();
                                 hasVerifiedFile = false;
                                 if (zip.file(".verified")) {
                                     hasVerifiedFile = true;
@@ -994,6 +1031,484 @@
                 }
             }
 
+            function updateAppendixModeVisibility() {
+                const maker = document.getElementById("appendixIsFromCreator");
+                const isFromCreator = maker ? maker.checked : false;
+                const renderGroup = document.getElementById(
+                    "renderAppendixGroup",
+                );
+                const creatorBlock = document.getElementById(
+                    "appendixCreatorBlock",
+                );
+                const customBlock = document.getElementById(
+                    "customAppendixBlock",
+                );
+                if (renderGroup)
+                    renderGroup.classList.toggle("hidden", !isFromCreator);
+                if (creatorBlock)
+                    creatorBlock.classList.toggle("hidden", !isFromCreator);
+                if (customBlock)
+                    customBlock.classList.toggle("hidden", isFromCreator);
+                updateAppendixTocVisibility();
+                updateCustomAppendixVisibility();
+            }
+
+            function customTocIsOn() {
+                const select = document.getElementById("customTocEnabled");
+                return select ? select.value === "true" : false;
+            }
+
+            function updateCustomAppendixVisibility() {
+                const customTocOn = customTocIsOn();
+
+                document
+                    .querySelectorAll(".custom-appendix-scan-hint")
+                    .forEach((el) =>
+                        el.classList.toggle("hidden", customTocOn),
+                    );
+
+                document
+                    .querySelectorAll(".custom-appendix-files-area")
+                    .forEach((el) =>
+                        el.classList.toggle("hidden", !customTocOn),
+                    );
+
+                document
+                    .querySelectorAll(".custom-appendix-contain")
+                    .forEach((input) => {
+                        input.disabled = !customTocOn;
+                    });
+                document
+                    .querySelectorAll(".custom-appendix-contain")
+                    .forEach((input) => {
+                        if (customTocOn) {
+                            input.disabled = false;
+                        } else {
+                            input.disabled = false;
+                            input.checked = true;
+                            input.disabled = true;
+                        }
+                    });
+            }
+
+            function customAppendixFileOrder(path) {
+                const match = String(path).split("/").pop().match(/\d+/);
+                return match ? parseInt(match[0], 10) : 999999;
+            }
+
+            function refreshCustomAppendixFileOptions() {
+                const list = document.getElementById("customAppendixFileList");
+                if (!list) return;
+                if (!importedZipInstance) {
+                    list.innerHTML = "";
+                    return;
+                }
+                const names = Object.keys(importedZipInstance.files)
+                    .filter(
+                        (f) =>
+                            /\.(?:xhtml|html)$/i.test(f) &&
+                            !importedZipInstance.files[f].dir,
+                    )
+                    .sort();
+                list.innerHTML = names
+                    .map((f) => `<option value="${f}"></option>`)
+                    .join("");
+            }
+
+            function normalizeCustomAppendixFolder(value) {
+                return String(value || "")
+                    .trim()
+                    .replace(/\\/g, "/")
+                    .replace(/\/+$/, "");
+            }
+
+            function refreshCustomAppendixFolderFiles(folder) {
+                const normalized = normalizeCustomAppendixFolder(folder);
+                if (!importedZipInstance || !normalized) return [];
+                return Object.keys(importedZipInstance.files)
+                    .filter(
+                        (f) =>
+                            f.startsWith(`${normalized}/`) &&
+                            /\.(?:xhtml|html)$/i.test(f) &&
+                            !importedZipInstance.files[f].dir,
+                    )
+                    .sort(
+                        (a, b) =>
+                            customAppendixFileOrder(a) -
+                            customAppendixFileOrder(b),
+                    );
+            }
+
+            function addCustomAppendixFileRow(block, path, tocName) {
+                const rows = block.querySelector(".custom-appendix-files");
+                if (!rows) return;
+                const row = document.createElement("div");
+                row.className = "dynamic-item custom-appendix-file-row";
+                const fileInput = document.createElement("input");
+                fileInput.type = "text";
+                fileInput.className = "custom-appendix-file";
+                fileInput.setAttribute("list", "customAppendixFileList");
+                fileInput.setAttribute(
+                    "data-i18n-placeholder",
+                    "config.custom_appendix_file_ph",
+                );
+                fileInput.placeholder = t(
+                    "config.custom_appendix_file_ph",
+                    "Đường dẫn file trong ZIP",
+                );
+                fileInput.value = path || "";
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.className = "custom-appendix-toc-name";
+                nameInput.setAttribute(
+                    "data-i18n-placeholder",
+                    "config.custom_appendix_toc_name_ph",
+                );
+                nameInput.placeholder = t(
+                    "config.custom_appendix_toc_name_ph",
+                    "Tên trong ToC",
+                );
+                nameInput.value = tocName || "";
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "btn-danger";
+                removeBtn.textContent = "✕";
+                removeBtn.addEventListener("click", () => row.remove());
+                row.appendChild(fileInput);
+                row.appendChild(nameInput);
+                row.appendChild(removeBtn);
+                rows.appendChild(row);
+            }
+
+            function selectCustomAppendixFolderFiles(btn) {
+                const block = btn.closest(".custom-appendix-type-block");
+                if (!block) return;
+                if (!importedZipInstance) {
+                    alert(t("config.custom_appendix_need_zip"));
+                    return;
+                }
+                const folderInput = block.querySelector(
+                    ".custom-appendix-folder",
+                );
+                const folder = normalizeCustomAppendixFolder(
+                    folderInput ? folderInput.value : "",
+                );
+                if (!folder) {
+                    alert(t("config.custom_appendix_need_folder"));
+                    return;
+                }
+                const existing = new Set(
+                    Array.from(
+                        block.querySelectorAll(".custom-appendix-file"),
+                    ).map((input) => input.value.trim()),
+                );
+                refreshCustomAppendixFolderFiles(folder).forEach((f) => {
+                    if (existing.has(f)) return;
+                    addCustomAppendixFileRow(block, f, "");
+                });
+            }
+
+            function removeCustomAppendixTypeBlock(btn) {
+                const block = btn.closest(".custom-appendix-type-block");
+                if (block) block.remove();
+            }
+
+            function nextCustomAppendixId() {
+                let maxId = 0;
+                document
+                    .querySelectorAll(
+                        "#customAppendixContainer .custom-appendix-id",
+                    )
+                    .forEach((input) => {
+                        const v = Number(input.value);
+                        if (isFinite(v) && v > maxId) maxId = v;
+                    });
+                return maxId + 1;
+            }
+
+            function addCustomAppendixBlock(folder, entry) {
+                const container = document.getElementById(
+                    "customAppendixContainer",
+                );
+                if (!container) return;
+                const block = document.createElement("div");
+                block.className = "custom-appendix-type-block";
+                block.style.border = "1px solid var(--border, #e2e8f0)";
+                block.style.borderRadius = "10px";
+                block.style.padding = "10px";
+                block.style.marginBottom = "10px";
+                const head = document.createElement("div");
+                head.className = "dynamic-item";
+                const idInput = document.createElement("input");
+                idInput.type = "number";
+                idInput.className = "custom-appendix-id";
+                idInput.min = "1";
+                idInput.style.width = "70px";
+                idInput.placeholder = t("config.custom_appendix_id_ph", "ID");
+                const entryId = Number(entry && entry.id);
+                idInput.value =
+                    isFinite(entryId) && entryId > 0
+                        ? String(entryId)
+                        : String(nextCustomAppendixId());
+                const folderInput = document.createElement("input");
+                folderInput.type = "text";
+                folderInput.className = "custom-appendix-folder";
+                folderInput.setAttribute(
+                    "data-i18n-placeholder",
+                    "config.custom_appendix_folder_ph",
+                );
+                folderInput.placeholder = t(
+                    "config.custom_appendix_folder_ph",
+                    "Đường dẫn folder",
+                );
+                folderInput.style.flex = "1";
+                folderInput.style.minWidth = "140px";
+                folderInput.value = folder || "";
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.className = "custom-appendix-name";
+                nameInput.placeholder = t("config.appendix_toc_ph", "Tên ToC");
+                nameInput.style.flex = "1";
+                nameInput.style.minWidth = "120px";
+                nameInput.value =
+                    entry && typeof entry.name === "string" ? entry.name : "";
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "btn-danger";
+                removeBtn.textContent = "✕";
+                removeBtn.addEventListener("click", () =>
+                    removeCustomAppendixTypeBlock(removeBtn),
+                );
+                head.appendChild(idInput);
+                head.appendChild(folderInput);
+                head.appendChild(nameInput);
+                head.appendChild(removeBtn);
+                block.appendChild(head);
+                const containLabel = document.createElement("label");
+                containLabel.className = "dynamic-item";
+                containLabel.style.fontSize = "0.85rem";
+                const containInput = document.createElement("input");
+                containInput.type = "checkbox";
+                containInput.className = "custom-appendix-contain";
+                containInput.checked = !(
+                    entry &&
+                    (entry.is_contain_appendix_chapter_in_folder === false ||
+                        String(
+                            entry.is_contain_appendix_chapter_in_folder,
+                        ).toLowerCase() === "false")
+                );
+                containInput.disabled = !customTocIsOn();
+                const containText = document.createElement("span");
+                containText.textContent = t(
+                    "config.custom_appendix_contain_label",
+                    "Folder chứa chương phụ lục",
+                );
+                containLabel.appendChild(containInput);
+                containLabel.appendChild(containText);
+                block.appendChild(containLabel);
+                const scanHint = document.createElement("div");
+                scanHint.className = "custom-appendix-scan-hint";
+                scanHint.style.fontSize = "0.8rem";
+                scanHint.style.color = "var(--text-muted, #4a5568)";
+                scanHint.style.margin = "4px 0";
+                scanHint.textContent = t(
+                    "config.custom_appendix_auto_scan",
+                    "Custom ToC đang tắt: toàn bộ file XHTML bên trong folder được dùng làm chương phụ lục.",
+                );
+                block.appendChild(scanHint);
+                const filesArea = document.createElement("div");
+                filesArea.className = "custom-appendix-files-area";
+                filesArea.style.marginTop = "6px";
+                const rows = document.createElement("div");
+                rows.className = "custom-appendix-files";
+                filesArea.appendChild(rows);
+                const actions = document.createElement("div");
+                actions.className = "dynamic-item";
+                const addFileBtn = document.createElement("button");
+                addFileBtn.type = "button";
+                addFileBtn.className = "btn-success";
+                addFileBtn.textContent = t("config.btn_add_appendix_file");
+                addFileBtn.addEventListener("click", () => {
+                    addCustomAppendixFileRow(block, "", "");
+                });
+                const selectAllBtn = document.createElement("button");
+                selectAllBtn.type = "button";
+                selectAllBtn.className = "btn-success";
+                selectAllBtn.textContent = t("config.btn_select_all_files");
+                selectAllBtn.addEventListener("click", () =>
+                    selectCustomAppendixFolderFiles(selectAllBtn),
+                );
+                actions.appendChild(addFileBtn);
+                actions.appendChild(selectAllBtn);
+                filesArea.appendChild(actions);
+                block.appendChild(filesArea);
+                if (
+                    entry &&
+                    entry.files_in_appendix &&
+                    typeof entry.files_in_appendix === "object" &&
+                    !Array.isArray(entry.files_in_appendix)
+                ) {
+                    const filesMap = entry.files_in_appendix;
+                    Object.keys(filesMap)
+                        .filter((p) => p && p !== "comment")
+                        .sort(
+                            (a, b) =>
+                                (Number(filesMap[a] && filesMap[a].id) ||
+                                    999999) -
+                                (Number(filesMap[b] && filesMap[b].id) ||
+                                    999999),
+                        )
+                        .forEach((p) => {
+                            const meta = filesMap[p];
+                            addCustomAppendixFileRow(
+                                block,
+                                p,
+                                meta && typeof meta === "object"
+                                    ? meta.name_in_toc || ""
+                                    : "",
+                            );
+                        });
+                }
+                container.appendChild(block);
+                updateCustomAppendixVisibility();
+            }
+
+            function collectCustomAppendixJson() {
+                const container = document.getElementById(
+                    "customAppendixContainer",
+                );
+                if (!container) return null;
+                const items = Array.from(
+                    container.querySelectorAll(".custom-appendix-type-block"),
+                )
+                    .map((block) => {
+                        const folderInput = block.querySelector(
+                            ".custom-appendix-folder",
+                        );
+                        const idInput = block.querySelector(
+                            ".custom-appendix-id",
+                        );
+                        const nameInput = block.querySelector(
+                            ".custom-appendix-name",
+                        );
+                        const containInput = block.querySelector(
+                            ".custom-appendix-contain",
+                        );
+                        const filesMap = {};
+                        let order = 0;
+                        block
+                            .querySelectorAll(".custom-appendix-file-row")
+                            .forEach((row) => {
+                                const fileInput = row.querySelector(
+                                    ".custom-appendix-file",
+                                );
+                                const path = fileInput
+                                    ? fileInput.value.trim()
+                                    : "";
+                                if (!path) return;
+                                order += 1;
+                                const rowName = row.querySelector(
+                                    ".custom-appendix-toc-name",
+                                );
+                                filesMap[path] = {
+                                    id: order,
+                                    name_in_toc: rowName
+                                        ? rowName.value.trim()
+                                        : "",
+                                };
+                            });
+                        const folder = normalizeCustomAppendixFolder(
+                            folderInput ? folderInput.value : "",
+                        );
+                        const idNum = idInput ? Number(idInput.value) : NaN;
+                        const hasId = isFinite(idNum) && idNum > 0;
+                        const entry = {
+                            name:
+                                nameInput && nameInput.value.trim()
+                                    ? nameInput.value.trim()
+                                    : "",
+                            is_contain_appendix_chapter_in_folder: containInput
+                                ? containInput.checked
+                                : true,
+                        };
+                        if (hasId) {
+                            entry.id = idNum;
+                        }
+                        if (Object.keys(filesMap).length > 0) {
+                            entry.files_in_appendix = filesMap;
+                        }
+                        return {
+                            folder: folder,
+                            entry: entry,
+                            order: hasId ? idNum : 0,
+                        };
+                    })
+                    .filter((item) => item.folder);
+                items.sort((a, b) => {
+                    const va = a.order || 1000000;
+                    const vb = b.order || 1000000;
+                    return va - vb;
+                });
+                const result = {};
+                items.forEach((item) => {
+                    result[item.folder] = item.entry;
+                });
+                return Object.keys(result).length > 0 ? result : null;
+            }
+
+            function loadCustomAppendixBlocks(raw) {
+                const container = document.getElementById(
+                    "customAppendixContainer",
+                );
+                if (container) container.innerHTML = "";
+                let source = raw;
+                if (
+                    source &&
+                    typeof source === "object" &&
+                    !Array.isArray(source) &&
+                    source.path &&
+                    typeof source.path === "object" &&
+                    !Array.isArray(source.path) &&
+                    Object.keys(source.path).some((key) => {
+                        if (
+                            key === "name" ||
+                            key === "is_contain_appendix_chapter_in_folder" ||
+                            key === "files_in_appendix"
+                        ) {
+                            return false;
+                        }
+                        const value = source.path[key];
+                        return value && typeof value === "object";
+                    })
+                ) {
+                    source = source.path;
+                }
+                if (
+                    source &&
+                    typeof source === "object" &&
+                    !Array.isArray(source)
+                ) {
+                    Object.keys(source).forEach((folder) => {
+                        if (folder === "comment" || folder === "path") return;
+                        const entry = source[folder];
+                        if (
+                            !entry ||
+                            typeof entry !== "object" ||
+                            Array.isArray(entry)
+                        ) {
+                            return;
+                        }
+                        addCustomAppendixBlock(
+                            normalizeCustomAppendixFolder(folder),
+                            entry,
+                        );
+                    });
+                }
+                updateAppendixModeVisibility();
+                updateCustomAppendixVisibility();
+                refreshCustomAppendixFileOptions();
+            }
+
             function loadDataToForm(data) {
                 document
                     .getElementById("configForm")
@@ -1086,6 +1601,7 @@
                     customTocLocked ? "none" : "";
                 buildAppendixTocBlock(data.custom_toc?.appendix || {});
                 updateAppendixTocVisibility();
+                loadCustomAppendixBlocks(data.appendix?.custom_appendix);
                 const customTocCont =
                     document.getElementById("customTocContainer");
                 customTocCont.innerHTML = "";
@@ -1300,6 +1816,10 @@
                         config.custom_toc.appendix[`${type}appendix`] = fileMap;
                     }
                 });
+                const customAppendixJson = collectCustomAppendixJson();
+                if (customAppendixJson) {
+                    config.appendix.custom_appendix = customAppendixJson;
+                }
 
                 Array.from(
                     document.getElementById("customTocContainer").children,
@@ -1353,6 +1873,8 @@
                 creatorLinked = true;
                 hasVerifiedFile = true;
                 loadDataToForm(event.data.config || defaultTemplate);
+                document.getElementById("appendixIsFromCreator").checked = true;
+                updateAppendixModeVisibility();
                 document
                     .getElementById("nextParserBtn")
                     .classList.remove("hidden");

@@ -702,6 +702,27 @@ function buildAppendixResourceIndex(cfg) {
             });
         }
     }
+    for (const { folder, entry } of collectCustomAppendixEntries(
+        cfg,
+        appendixCfg,
+    )) {
+        const normalized = String(folder)
+            .replace(/\\/g, "/")
+            .replace(/\/+$/, "")
+            .toLowerCase();
+        if (normalized) folders.add(normalized);
+        const filesMap =
+            entry && typeof entry.files_in_appendix === "object"
+                ? entry.files_in_appendix
+                : null;
+        if (filesMap && !Array.isArray(filesMap)) {
+            Object.keys(filesMap).forEach((p) => {
+                if (p && p !== "comment") {
+                    listed.add(String(p).replace(/\\/g, "/"));
+                }
+            });
+        }
+    }
     return { folders, listed };
 }
 
@@ -876,14 +897,68 @@ async function buildAppendixSectionFromStructure(sec, cfg, lang, parseConfig) {
     return section.children.length > 0 ? section : null;
 }
 
+function collectCustomAppendixEntries(cfg, appendixCfg) {
+    const raw = appendixCfg.custom_appendix || cfg.custom_appendix;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
+    let source = raw;
+    if (
+        raw.path &&
+        typeof raw.path === "object" &&
+        !Array.isArray(raw.path) &&
+        Object.keys(raw.path).some((key) => {
+            if (
+                key === "name" ||
+                key === "is_contain_appendix_chapter_in_folder" ||
+                key === "files_in_appendix"
+            ) {
+                return false;
+            }
+            const value = raw.path[key];
+            return value && typeof value === "object";
+        })
+    ) {
+        source = raw.path;
+    }
+    return Object.keys(source)
+        .filter(
+            (folder) =>
+                folder !== "comment" &&
+                folder !== "path" &&
+                source[folder] &&
+                typeof source[folder] === "object" &&
+                !Array.isArray(source[folder]),
+        )
+        .map((folder, index) => ({
+            folder: folder,
+            entry: source[folder],
+            index: index,
+        }))
+        .sort((a, b) => {
+            const na = Number(a.entry.id);
+            const nb = Number(b.entry.id);
+            const va = isFinite(na) && na > 0 ? na : 1000000 + a.index;
+            const vb = isFinite(nb) && nb > 0 ? nb : 1000000 + b.index;
+            return va - vb;
+        })
+        .map((item) => ({ folder: item.folder, entry: item.entry }));
+}
+
 async function buildAppendixTree(cfg, lang) {
     const appendixCfg = cfg.appendix || {};
     const customAppendix = (cfg.custom_toc && cfg.custom_toc.appendix) || {};
     const customTocOn = appendixFlag(cfg.custom_toc?.enabled);
     const isFromCreator = appendixFlag(appendixCfg.is_from_creator);
+    const customAppendixEntries = collectCustomAppendixEntries(
+        cfg,
+        appendixCfg,
+    );
+    const customAppendixCount = customAppendixEntries.length;
     const appendixOn =
         appendixFlag(cfg.render_appendix) ||
-        appendixFlag(cfg.custom_toc?.override_appendix);
+        (isFromCreator &&
+            customTocOn &&
+            appendixFlag(cfg.custom_toc?.override_appendix)) ||
+        customAppendixCount > 0;
     if (!appendixOn) return null;
 
     const parseConfig = cfg.expand_parsing && cfg.parse ? cfg.parse : null;
@@ -914,6 +989,19 @@ async function buildAppendixTree(cfg, lang) {
     }
 
     const takenPaths = new Set([APPENDIX_TOC_HREF, "toc.xhtml", "nav.xhtml"]);
+    customAppendixEntries.forEach(({ entry }) => {
+        const filesMap =
+            entry && typeof entry.files_in_appendix === "object"
+                ? entry.files_in_appendix
+                : null;
+        if (filesMap && !Array.isArray(filesMap)) {
+            Object.keys(filesMap).forEach((p) => {
+                if (p && p !== "comment") {
+                    takenPaths.add(String(p).replace(/\\/g, "/"));
+                }
+            });
+        }
+    });
     for (const type of appendixTypeKeys) {
         const reservedList = customAppendix[`${type}appendix`];
         if (reservedList && typeof reservedList === "object") {
@@ -926,6 +1014,7 @@ async function buildAppendixTree(cfg, lang) {
     }
 
     for (const type of appendixTypeKeys) {
+        if (customAppendixCount > 0 && !isFromCreator) break;
         if (appendixCfg.render?.[type] === false) continue;
         const folder = appendixCfg.path?.[type] || appendixDefaultPaths[type];
         const tocName =
@@ -996,6 +1085,125 @@ async function buildAppendixTree(cfg, lang) {
                 title: tocName,
                 href: assignAppendixSectionHref(folder, type, takenPaths),
                 folder: folder,
+                children: entries,
+            };
+            section.content = buildAppendixSectionTocXhtml(
+                section,
+                lang,
+                tree.title,
+            );
+            tree.children.push(section);
+        }
+    }
+
+    for (let cIdx = 0; cIdx < customAppendixEntries.length; cIdx++) {
+        const { folder, entry } = customAppendixEntries[cIdx];
+        const normalizedFolder = String(folder)
+            .replace(/\\/g, "/")
+            .replace(/\/+$/, "");
+        const folderBase = normalizedFolder.split("/").pop() || folder;
+        const sectionTitle =
+            typeof entry.name === "string" && entry.name.trim()
+                ? entry.name.trim()
+                : folderBase;
+        const isContain = !(
+            entry.is_contain_appendix_chapter_in_folder === false ||
+            String(
+                entry.is_contain_appendix_chapter_in_folder,
+            ).toLowerCase() === "false"
+        );
+        const filesMap =
+            entry.files_in_appendix &&
+            typeof entry.files_in_appendix === "object" &&
+            !Array.isArray(entry.files_in_appendix)
+                ? entry.files_in_appendix
+                : null;
+        const listedFiles =
+            filesMap && customTocOn
+                ? Object.keys(filesMap)
+                      .filter(
+                          (p) =>
+                              p &&
+                              p !== "comment" &&
+                              filesMap[p] &&
+                              typeof filesMap[p] === "object",
+                      )
+                      .sort(
+                          (a, b) =>
+                              (Number(filesMap[a].id) || 999999) -
+                              (Number(filesMap[b].id) || 999999),
+                      )
+                : [];
+        let locations = [];
+        if (listedFiles.length > 0) {
+            locations = listedFiles.map((p) => ({
+                path: p,
+                titleOverride:
+                    (filesMap[p].name_in_toc &&
+                        String(filesMap[p].name_in_toc).trim()) ||
+                    "",
+            }));
+        } else if (isContain) {
+            locations = Object.keys(zipData.files)
+                .filter(
+                    (f) =>
+                        f.startsWith(`${normalizedFolder}/`) &&
+                        /\.(?:xhtml|html)$/i.test(f) &&
+                        !zipData.files[f].dir,
+                )
+                .sort((a, b) => appendixFileOrder(a) - appendixFileOrder(b))
+                .map((p) => ({ path: p, titleOverride: "" }));
+        }
+
+        const entries = [];
+        let fileIndex = 0;
+        for (const location of locations) {
+            const source = zipData.file(location.path);
+            if (!source) continue;
+            let href = location.path;
+            let content = await source.async("string");
+            if (
+                href !== normalizedFolder &&
+                !href.startsWith(`${normalizedFolder}/`)
+            ) {
+                href = await relocateAppendixFile(
+                    zipData,
+                    location.path,
+                    normalizedFolder,
+                    content,
+                );
+                content = await zipData.file(href).async("string");
+            }
+            fileIndex += 1;
+            let title = location.titleOverride || getHtmlTitle(content, "");
+            if (!title) title = sectionTitle;
+            const optimizedContent = cleanAndOptimizeHtml(
+                content,
+                title,
+                lang,
+                parseConfig,
+            );
+            entries.push({
+                type: "appendix-entry",
+                id: `appendix_custom_${cIdx + 1}_${fileIndex}`,
+                title: title,
+                href: href,
+                content: optimizedContent,
+            });
+        }
+
+        if (entries.length > 0) {
+            const section = {
+                type: "appendix-section",
+                appendixType: normalizedFolder,
+                id: `appendix_custom_${cIdx + 1}_toc`,
+                title: sectionTitle,
+                href: assignAppendixSectionHref(
+                    normalizedFolder,
+                    `custom${cIdx + 1}`,
+                    takenPaths,
+                ),
+                folder: normalizedFolder,
                 children: entries,
             };
             section.content = buildAppendixSectionTocXhtml(

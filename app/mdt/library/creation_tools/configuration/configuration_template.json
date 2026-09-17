@@ -9,7 +9,7 @@
         "enabled": false,
         "comment": "when enabled=true, render chapters according to chapter_id order",
         "override_appendix": "true/false",
-        "comment_override_appendix": "when enabled=true, override the appendix render setting in the configuration.json",
+        "comment_override_appendix": "when enabled=true, override the appendix render setting in the configuration.json, override_appendix is available when is_from_creator is true and custom_toc is enabled",
         "1": {
             "id": "",
             "chapter_id": {
@@ -18,7 +18,7 @@
             }
         },
         "appendix": {
-            "comment": "always appears at the end of the table of contents, if location does not contain appendix path, move file to the appendix folder",
+            "comment": "always appears at the end of the table of contents, if location does not contain appendix path, move file to the appendix folder, if is_from_creator is true, this section is available, otherwise it is not available and use the config in the custom_appendix section",
             "item": "name in TOC",
             "itemappendix": {
                 "1": "ecxactly location of file,based on root"
@@ -110,6 +110,19 @@
             "relations": "appendix/relations",
             "timeline": "appendix/timeline",
             "comment": "All HTML/XHTML files will be placed in the corresponding directory."
+        },
+        "custom_appendix": {
+            "path": {
+                "name": "name of appendix folder",
+                "is_contain_appendix_chapter_in_folder": "true/false, if true, the folder contains appendix chapter, otherwise false, this section is require custom_toc is enabled to change value, default value is true(If the value of custom_toc is true, then the files_in_appendix entry will be active.)",
+                "files_in_appendix": {
+                    "path_of_file": {
+                        "id": "id of the files, this section is required, and it can change the order of the files in the appendix folder(and can change manually in the configuration)",
+                        "name_in_toc": "name of file in toc, if is_contain_appendix_chapter_in_folder is true, this section is required, otherwise optional"
+                    }
+                }
+            },
+            "comment": "custom appendix folder, all files in this folder will be placed in the corresponding directory, the path(key) is the path of the appendix folder, the value is the name of the appendix folder in the ToC, if you want to add a new appendix folder, just add a new key-value pair here, and create a new folder in the root directory with the same name as the key."
         }
     }
 }
