@@ -9,6 +9,7 @@
         <meta name="theme-color" content="#f5f7fa" />
         <title data-i18n="converter.title">Converter EPUB ➜ TXT</title>
         <link rel="stylesheet" href="../../libs/theme/theme.css" />
+        <link rel="stylesheet" href="../../libs/theme/ui-kit.css" />
         <script src="../../libs/theme/theme.js"></script>
         <script src="../../libs/capacitor/native-bridge.js"></script>
         <script defer src="../../libs/epub/jszip.min.js"></script>
@@ -52,7 +53,7 @@
                 box-sizing: border-box;
             }
 
-            body {
+            body.nt-ui {
                 margin: 0;
                 padding: clamp(16px, 4vw, 32px);
                 padding-top: max(clamp(16px, 4vw, 32px), var(--safe-top, 0px));
@@ -86,7 +87,7 @@
                 width: min(760px, 100%);
                 display: flex;
                 flex-direction: column;
-                gap: 14px;
+                gap: var(--nt-spacing-4);
             }
 
             .cv-head {
@@ -258,7 +259,7 @@
                 margin-top: 14px;
                 padding: 14px;
                 border: 1px solid var(--border);
-                border-radius: 14px;
+                border-radius: var(--nt-radius-lg);
                 background: var(--bg);
                 color: var(--text);
                 font-family:
@@ -340,7 +341,7 @@
         </style>
     </head>
 
-    <body>
+    <body class="nt-ui">
         <main class="cv-shell">
             <header class="cv-head">
                 <h2>EPUB ➜ TXT</h2>

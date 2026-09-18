@@ -803,11 +803,9 @@ body.theme-keep-bg {
     color: var(--text-color, var(--text)) !important;
 }
 
+/* Image level replaces the theme background instead of drawing an overlay. */
 body.theme-image {
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    background-attachment: fixed !important;
+    background: var(--theme-image-url) center center / cover no-repeat fixed !important;
 }
 
 html {

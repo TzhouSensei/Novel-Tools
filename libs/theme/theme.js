@@ -113,6 +113,8 @@
 
     var listeners = [];
 
+    var levelTransitionTimer = null;
+
     var broadcast = null;
     try {
         if (typeof BroadcastChannel !== "undefined") {
@@ -226,22 +228,71 @@
         }
     }
 
+    function prefersReducedMotion() {
+        return (
+            typeof window.matchMedia === "function" &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        );
+    }
+
+    function clearLevelTransition() {
+        if (levelTransitionTimer) {
+            clearTimeout(levelTransitionTimer);
+            levelTransitionTimer = null;
+        }
+    }
+
+    function fadeInThemeImage(body, path) {
+        body.style.setProperty("--theme-image-url", 'url("' + path + '")');
+        body.classList.add("theme-image");
+    }
+
+    function fadeOutThemeImage(body, done) {
+        body.classList.remove("theme-image");
+        body.classList.remove("theme-image-visible");
+        body.style.removeProperty("--theme-image-url");
+        body.style.removeProperty("background-image");
+        done();
+    }
+
+    function removeThemeImage(body) {
+        body.classList.remove("theme-image");
+        body.classList.remove("theme-image-visible");
+        body.style.removeProperty("--theme-image-url");
+        body.style.removeProperty("background-image");
+    }
+
     function applyThemeLevel(theme) {
         var body = document.body;
         if (!body) return;
-        body.classList.remove("theme-image");
-        body.style.removeProperty("background-image");
-        if (hasImage(theme) && getLevel() === "image") {
-            body.classList.add("theme-image");
-            var path = getImagePath(theme);
-            if (path) {
-                body.style.setProperty(
-                    "background-image",
-                    'url("' + path + '")',
-                    "important",
-                );
-            }
+        var showImage = hasImage(theme) && getLevel() === "image";
+        var path = showImage ? getImagePath(theme) : null;
+        clearLevelTransition();
+        if (showImage && path) {
+            var preload = new Image();
+            preload.onload = function () {
+                if (getImagePath(getTheme()) !== path) return;
+                if (!(hasImage(getTheme()) && getLevel() === "image")) return;
+                fadeInThemeImage(body, path);
+            };
+            preload.onerror = function () {
+                if (getImagePath(getTheme()) !== path) return;
+                if (!(hasImage(getTheme()) && getLevel() === "image")) return;
+                fadeInThemeImage(body, path);
+            };
+            preload.src = path;
+            return;
         }
+        if (body.classList.contains("theme-image")) {
+            fadeOutThemeImage(body, function () {
+                var current = document.body;
+                if (!current) return;
+                if (hasImage(getTheme()) && getLevel() === "image") return;
+                removeThemeImage(current);
+            });
+            return;
+        }
+        removeThemeImage(body);
     }
 
     function updateLevelSelects(theme) {

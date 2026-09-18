@@ -6,23 +6,18 @@
         <title data-i18n="mdt.library.title">MDT Library</title>
 
         <link href="../../../libs/theme/theme.css" rel="stylesheet" />
+        <link href="../../../libs/theme/ui-kit.css" rel="stylesheet" />
         <style>
             * {
                 box-sizing: border-box;
             }
 
-            body {
-                font-family:
-                    Inter,
-                    system-ui,
-                    -apple-system,
-                    sans-serif;
+            body.nt-ui {
                 margin: 0;
-                padding: 20px;
+                padding: var(--nt-spacing-5);
                 transition:
-                    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                    color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
+                    background var(--nt-transition-slow),
+                    color var(--nt-transition-slow);
                 min-height: 100vh;
                 background-attachment: fixed;
             }
@@ -30,62 +25,90 @@
             .container {
                 max-width: 1100px;
                 margin: 0 auto;
+                padding: 0 var(--nt-spacing-4);
             }
 
             header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 24px;
+                margin-bottom: var(--nt-spacing-6);
                 flex-wrap: wrap;
-                gap: 12px;
+                gap: var(--nt-spacing-3);
                 background: transparent;
             }
 
             h1 {
                 margin: 0;
-                font-size: 24px;
+                font-size: var(--nt-text-xl);
+                font-weight: 700;
+                color: var(--nt-text);
             }
 
             .header-actions {
                 display: flex;
-                gap: 10px;
+                gap: var(--nt-spacing-2);
                 align-items: center;
                 flex-wrap: wrap;
             }
 
             .btn {
-                padding: 8px 16px;
-                border: none;
-                border-radius: 8px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: var(--nt-btn-padding-y) var(--nt-btn-padding-x);
+                border-radius: var(--nt-radius-md);
+                border: 1px solid transparent;
                 cursor: pointer;
-                font-weight: bold;
-                font-size: 14px;
-                transition: 0.2s;
+                font-size: var(--nt-text-base);
+                font-weight: 550;
+                font-family: var(--nt-font-sans);
+                transition: background var(--nt-transition-fast),
+                    border-color var(--nt-transition-fast),
+                    color var(--nt-transition-fast),
+                    box-shadow var(--nt-transition-fast);
+                min-height: 36px;
+                line-height: 1.2;
+                white-space: nowrap;
             }
 
             .btn-primary {
-                background: var(--success);
-                color: var(--toast-color);
+                background: var(--nt-primary);
+                color: #fff;
+                border-color: var(--nt-primary);
             }
 
             .btn-primary:hover {
-                background: var(--success-hover);
+                background: var(--nt-primary-hover, var(--primary-hover, #1658c7));
+                border-color: var(--nt-primary-hover, var(--primary-hover, #1658c7));
             }
 
             .btn-danger {
-                background: var(--danger);
-                color: var(--toast-color);
+                background: var(--nt-danger);
+                color: #fff;
+                border-color: var(--nt-danger);
+            }
+
+            .btn-danger:hover {
+                background: var(--nt-danger-hover, #c53030);
+                border-color: var(--nt-danger-hover, #c53030);
             }
 
             .btn-ghost {
                 background: transparent;
-                border: 1px solid var(--border);
-                color: var(--text-muted);
+                color: var(--nt-text);
+                border-color: var(--nt-border-subtle);
             }
 
             .btn-ghost:hover {
-                background: var(--hover-bg);
+                background: var(--nt-hover-bg);
+                border-color: var(--nt-border-strong);
+            }
+
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                pointer-events: none;
             }
 
             .upload-btn-wrapper {
@@ -491,7 +514,7 @@
             }
         </style>
     </head>
-    <body>
+    <body class="nt-ui">
         <div class="container">
             <header>
                 <h1 data-i18n="mdt.library.title">📚 MDT Library</h1>
