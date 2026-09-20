@@ -67,8 +67,6 @@ function restoreState() {
         if (!raw) return false;
         const s = JSON.parse(raw);
 
-        // Story Studio should always open on the dashboard instead of reusing the
-        // last manage/create page from a prior session.
         const fallback = {
             view: "dashboard",
             bookId: null,
@@ -136,7 +134,7 @@ function tagComboHTML(id, tags, currentValue) {
                 `<div class="combo-option" data-value="${esc(t)}">${esc(t)}</div>`,
         )
         .join("");
-    return `<div class="combo-box" data-combobox="${id}"><input name="tags" value="${esc(currentValue)}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}" class="combo-input" autocomplete="off"><button type="button" class="combo-toggle" tabindex="−1">▼</button><div class="combo-dropdown" data-dropdown="${id}">${opts}</div></div>`;
+    return `<div class="combo-box" data-combobox="${id}"><input name="tags" value="${esc(currentValue)}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}" class="combo-input" autocomplete="off"><button type="button" class="combo-toggle" tabindex="-1">▼</button><div class="combo-dropdown" data-dropdown="${id}">${opts}</div></div>`;
 }
 const EFFECT_TYPE_OPTIONS = [
     "buff",
@@ -4875,8 +4873,7 @@ function openEntityModal(type, id = null, opts = null) {
                 else if (kind === "skillsets") rowHTML = skillsetPickRowHTML(b);
                 else if (kind === "charabilities")
                     rowHTML = abilityPickRowHTML(b);
-                else if (kind === "chargrudges")
-                    rowHTML = charGrudgeRowHTML(b);
+                else if (kind === "chargrudges") rowHTML = charGrudgeRowHTML(b);
                 else if (kind === "charoaths") rowHTML = charOathRowHTML(b);
                 else if (kind === "charsecrets") rowHTML = charSecretRowHTML();
                 else if (kind === "items") rowHTML = itemPickRowHTML(b);
@@ -5647,7 +5644,8 @@ function collectCharOaths(fd) {
         .map((description, i) => ({
             description: (description || "").trim(),
             characterId: (fd.getAll("charOathCharId")[i] || "").trim(),
-            status: (fd.getAll("charOathStatus")[i] || "active").trim() || "active",
+            status:
+                (fd.getAll("charOathStatus")[i] || "active").trim() || "active",
         }))
         .filter((o) => o.description || o.characterId);
 }
@@ -5843,7 +5841,124 @@ function locationFormHTML(x, b) {
                   "",
               )}<button type="button" class="btn small secondary" data-dynadd="loctimeline">${tFn("creator.f.add_loc_timeline", "＋ Thêm mốc timeline")}</button></div>`
         : `<div class="muted" style="font-size:12px">${tFn("creator.f.loc_no_timeline", "Chưa có timeline nào — thêm ở tab Chương → Timeline.")}</div>`;
-    return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label><input name="aliases" value="${esc((x.aliases || []).join(", "))}" placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"></div><div class="form-row"><div class="field"><label>${tFn("creator.f.loc_code", "Code / Mã")}</label><input name="code" value="${esc(x.code || "")}" placeholder="${tFn("creator.f.loc_code_ph", "VD: Bắc Sarayı, Hạ Đông...")}"></div><div class="field"><label>${tFn("creator.f.loc_type", "Loại")}</label><input name="type" value="${esc(x.type || "")}" placeholder="${tFn("creator.f.loc_type_ph", "VD: Thành, Ẩn sơn, Tàpınak, Orman...")}"></div></div><div class="field"><label>${tFn("creator.f.loc_parent", "Vị diện cha / Location cha")}</label><select name="parentLocationId"><option value="">${tFn("creator.f.loc_parent_none", "— Chưa có —")}</option>${locOpts}</select>${(b.locations || []).length ? "" : `<div class="muted" style="font-size:12px">${tFn("creator.f.loc_none_hint", "Chưa có vị diện nào — hãy thêm ở tab Vị diện.")}</div>`}</div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.loc_rules", "Luật lệ / Quy tắc")}</label><textarea name="rules" placeholder="${tFn("creator.f.loc_rules_ph", "VD: Quy tắc đặc biệt của vùng này...")}">${esc(x.rules || "")}</textarea></div><h3 style="margin:16px 0 8px">${tFn("creator.f.loc_relations", "Mối quan hệ")}</h3><div class="field"><label>${tFn("creator.f.loc_connected", "Vị diện liên kết")}</label>${connected}</div><div class="field" ${hideChars ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_characters", "Nhân vật")}</label>${characters}</div><div class="field" ${hideFactions ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_factions", "Thế lực")}</label>${factions}</div><div class="field" ${hideItems ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_items", "Vật phẩm")}</label>${items}</div><div class="field" ${hideQuests ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_quests", "Quests / Nhiệm vụ")}</label>${quests}</div><div class="field" ${hideTimeline ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_events", "Sự kiện (Events)")}</label>${events}</div><div class="field" ${hideTimeline ? 'style="display:none"' : ""}><label>${tFn("creator.f.loc_timeline", "Timeline")}</label>${timelineEvents}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
+    return `
+        <form id="entityForm" class="form">
+            <div class="field">
+                <label>${tFn("creator.f.name", "Tên *")}</label>
+                <input
+                    name="name"
+                    value="${esc(x.name || "")}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label>
+                <input
+                    name="aliases"
+                    value="${esc((x.aliases || []).join(", "))}"
+                    placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label>${tFn("creator.f.loc_code", "Code / Mã")}</label>
+                    <input
+                        name="code"
+                        value="${esc(x.code || "")}"
+                        placeholder="${tFn("creator.f.loc_code_ph", "VD: Bắc Sarayı, Hạ Đông...")}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>${tFn("creator.f.loc_type", "Loại")}</label>
+                    <input
+                        name="type"
+                        value="${esc(x.type || "")}"
+                        placeholder="${tFn("creator.f.loc_type_ph", "VD: Thành, Ẩn sơn, Tàpınak, Orman...")}"
+                    >
+                </div>
+            </div>
+
+            <div class="field">
+                <label>${tFn("creator.f.loc_parent", "Vị diện cha / Location cha")}</label>
+
+                <select name="parentLocationId">
+                    <option value="">
+                        ${tFn("creator.f.loc_parent_none", "— Chưa có —")}
+                    </option>
+                    ${locOpts}
+                </select>
+
+                ${
+                    (b.locations || []).length
+                        ? ""
+                        : `<div class="muted" style="font-size:12px">
+                        ${tFn("creator.f.loc_none_hint", "Chưa có vị diện nào — hãy thêm ở tab Vị diện.")}
+                    </div>`
+                }
+            </div>
+
+            <div class="field">
+                <label>${tFn("creator.form.desc", "Mô tả")}</label>
+                <textarea name="description">${esc(x.description || "")}</textarea>
+            </div>
+
+            <div class="field">
+                <label>${tFn("creator.f.loc_rules", "Luật lệ / Quy tắc")}</label>
+                <textarea
+                    name="rules"
+                    placeholder="${tFn("creator.f.loc_rules_ph", "VD: Quy tắc đặc biệt của vùng này...")}"
+                >${esc(x.rules || "")}</textarea>
+            </div>
+
+            <h3 style="margin:16px 0 8px">
+                ${tFn("creator.f.loc_relations", "Mối quan hệ")}
+            </h3>
+
+            <div class="field">
+                <label>${tFn("creator.f.loc_connected", "Vị diện liên kết")}</label>
+                ${connected}
+            </div>
+
+            <div class="field" ${hideChars ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_characters", "Nhân vật")}</label>
+                ${characters}
+            </div>
+
+            <div class="field" ${hideFactions ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_factions", "Thế lực")}</label>
+                ${factions}
+            </div>
+
+            <div class="field" ${hideItems ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_items", "Vật phẩm")}</label>
+                ${items}
+            </div>
+
+            <div class="field" ${hideQuests ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_quests", "Quests / Nhiệm vụ")}</label>
+                ${quests}
+            </div>
+
+            <div class="field" ${hideTimeline ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_events", "Sự kiện (Events)")}</label>
+                ${events}
+            </div>
+
+            <div class="field" ${hideTimeline ? 'style="display:none"' : ""}>
+                <label>${tFn("creator.f.loc_timeline", "Timeline")}</label>
+                ${timelineEvents}
+            </div>
+
+            <div class="modal-foot">
+                <button class="btn primary">
+                    ${tFn("creator.f.save", "Lưu")}
+                </button>
+            </div>
+        </form>
+    `;
 }
 function entityForm(type, x, b) {
     x = x || {};
@@ -5876,9 +5991,273 @@ function entityForm(type, x, b) {
                     `<option value="${r.id}" ${x.homeRealmId === r.id ? "selected" : ""}>${esc(r.name || tFn("creator.noname", "Không tên"))}</option>`,
             )
             .join("");
-        return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label><input name="aliases" value="${esc((x.aliases || []).join(", "))}" placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><h3 style="margin:16px 0 8px">${tFn("creator.f.char_setup", "Thiết lập nhân vật")}</h3><div class="form-row"><div class="field"><label>${tFn("creator.f.age", "Tuổi")}</label><input name="age" value="${esc(x.age || "")}" placeholder="${tFn("creator.f.age_ph", "VD: 18, 3000 ...")}"></div><div class="field"><label>${tFn("creator.f.first_chapter", "Xuất hiện lần đầu ở chương")}</label><select name="firstChapterId"><option value="">${tFn("creator.f.first_chapter_none", "— Chưa rõ —")}</option>${chapterOpts}</select></div></div><div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.home_realm", "Thuộc giới vực (quê quán)")}</label><select name="homeRealmId"><option value="">${tFn("creator.f.home_realm_none", "— Chưa rõ —")}</option>${realmOpts}</select>${(b.realms || []).length ? "" : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div><div class="field"><label>${tFn("creator.f.hobbies", "Sở thích (cách nhau bởi dấu phẩy)")}</label><input name="hobbies" value="${esc((x.hobbies || []).join(", "))}" placeholder="${tFn("creator.f.hobbies_ph", "Luyện đan, Trọng kiếm, Đọc sách ...")}"></div><div class="field"><label>${tFn("creator.f.personality", "Tính cách")}</label><textarea name="personality">${esc(x.personality || "")}</textarea></div><div class="field"><label>${tFn("creator.f.inner_conflict", "Xung đột nội tâm")}</label><textarea name="innerConflict">${esc(x.innerConflict || "")}</textarea></div><div class="field"><label>${tFn("creator.f.motivation", "Động lực")}</label><textarea name="motivation">${esc(x.motivation || "")}</textarea></div><div class="field"><label>${tFn("creator.f.obsession", "Sự ám ảnh / Nỗi đau")}</label><textarea name="obsession">${esc(x.obsession || "")}</textarea></div><div class="field"><label>${tFn("creator.f.past", "Quá khứ")}</label><textarea name="past">${esc(x.past || "")}</textarea></div><div class="field"><label>${tFn("creator.f.principles", "Nguyên tắc")}</label><textarea name="principles">${esc(x.principles || "")}</textarea></div><div class="field" ${hideFactions ? 'style="display:none"' : ""}><label>${tFn("creator.f.char_factions", "Thuộc thế lực & chức vụ trong thế lực")}</label>${(b.factions || []).length ? `<div class="dyn-list" data-dynlist="charfactions">${(x.factions || []).map((m) => charFactionRowHTML(b, m)).join("")}<button type="button" class="btn small secondary" data-dynadd="charfactions">${tFn("creator.f.add_char_faction", "＋ Thêm thế lực")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.faction_none_hint", "Chưa có thế lực nào — hãy thêm ở tab Thế lực.")}</div>`}</div><div class="field" ${hideAbilities ? 'style="display:none"' : ""}><label>${tFn("creator.f.char_abilities", "Sở hữu khả năng / kỹ năng")}</label>${(b.abilities || []).length ? `<div class="dyn-list" data-dynlist="charabilities">${(x.abilityIds || []).map((aid) => abilityPickRowHTML(b, typeof aid === "string" ? { abilityId: aid, chapterStatuses: {} } : aid)).join("")}<button type="button" class="btn small secondary" data-dynadd="charabilities">${tFn("creator.f.add_char_ability", "＋ Thêm khả năng / kỹ năng")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.ability_none_for_char", "Chưa có khả năng / kỹ năng nào — hãy thêm ở tab Năng lực / Kỹ năng.")}</div>`}</div>
-<div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.visited_realms", "Đã từng đi qua giới vực")}</label>${(b.realms || []).length ? `<div class="dyn-list" data-dynlist="visitedrealms">${(x.visitedRealmIds || []).map((rid) => realmPickRowHTML(b, rid, "charVisitedRealmIds")).join("")}<button type="button" class="btn small secondary" data-dynadd="visitedrealms">${tFn("creator.f.add_visited_realm", "＋ Thêm giới vực đã đi qua")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div>
-<div class="field"><label>${tFn("creator.f.char_grudge", "Ân oán / Nợ ân thù")}</label><div class="dyn-list" data-dynlist="chargrudges">${(x.grudges || []).map((g) => charGrudgeRowHTML(b, g)).join("")}<button type="button" class="btn small secondary" data-dynadd="chargrudges">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_grudge_none", "— Chưa có ân oán / nợ ân thù —")}</div></div><div class="field"><label>${tFn("creator.f.char_oath", "Lời thề / Khế ước")}</label><div class="dyn-list" data-dynlist="charoaths">${(x.oaths || []).map((o) => charOathRowHTML(b, o)).join("")}<button type="button" class="btn small secondary" data-dynadd="charoaths">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_oath_none", "— Chưa có lời thề / khế ước —")}</div></div><div class="field"><label>${tFn("creator.f.char_secret", "Bí mật")}</label><div class="dyn-list" data-dynlist="charsecrets">${(x.secrets || []).map((sv) => charSecretRowHTML(sv)).join("")}<button type="button" class="btn small secondary" data-dynadd="charsecrets">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_secret_none", "— Chưa có bí mật —")}</div></div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
+        return `
+    <form id="entityForm" class="form">
+        <div class="field">
+            <label>${tFn("creator.f.name", "Tên *")}</label>
+            <input
+                name="name"
+                value="${esc(x.name || "")}"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label>
+            <input
+                name="aliases"
+                value="${esc((x.aliases || []).join(", "))}"
+                placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"
+            >
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.form.desc", "Mô tả")}</label>
+            <textarea name="description">${esc(x.description || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.tags", "Tags")}</label>
+            <input
+                name="tags"
+                value="${esc((x.tags || []).join(", "))}"
+                placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"
+            >
+        </div>
+
+        <h3 style="margin:16px 0 8px">
+            ${tFn("creator.f.char_setup", "Thiết lập nhân vật")}
+        </h3>
+
+        <div class="form-row">
+            <div class="field">
+                <label>${tFn("creator.f.age", "Tuổi")}</label>
+                <input
+                    name="age"
+                    value="${esc(x.age || "")}"
+                    placeholder="${tFn("creator.f.age_ph", "VD: 18, 3000 ...")}"
+                >
+            </div>
+
+            <div class="field">
+                <label>${tFn("creator.f.first_chapter", "Xuất hiện lần đầu ở chương")}</label>
+                <select name="firstChapterId">
+                    <option value="">
+                        ${tFn("creator.f.first_chapter_none", "— Chưa rõ —")}
+                    </option>
+                    ${chapterOpts}
+                </select>
+            </div>
+        </div>
+
+        <div class="field" ${hideRealms ? 'style="display:none"' : ""}>
+            <label>${tFn("creator.f.home_realm", "Thuộc giới vực (quê quán)")}</label>
+
+            <select name="homeRealmId">
+                <option value="">
+                    ${tFn("creator.f.home_realm_none", "— Chưa rõ —")}
+                </option>
+                ${realmOpts}
+            </select>
+
+            ${
+                (b.realms || []).length
+                    ? ""
+                    : `<div class="muted" style="font-size:12px">
+                    ${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}
+                </div>`
+            }
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.hobbies", "Sở thích (cách nhau bởi dấu phẩy)")}</label>
+            <input
+                name="hobbies"
+                value="${esc((x.hobbies || []).join(", "))}"
+                placeholder="${tFn("creator.f.hobbies_ph", "Luyện đan, Trọng kiếm, Đọc sách ...")}"
+            >
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.personality", "Tính cách")}</label>
+            <textarea name="personality">${esc(x.personality || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.inner_conflict", "Xung đột nội tâm")}</label>
+            <textarea name="innerConflict">${esc(x.innerConflict || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.motivation", "Động lực")}</label>
+            <textarea name="motivation">${esc(x.motivation || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.obsession", "Sự ám ảnh / Nỗi đau")}</label>
+            <textarea name="obsession">${esc(x.obsession || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.past", "Quá khứ")}</label>
+            <textarea name="past">${esc(x.past || "")}</textarea>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.principles", "Nguyên tắc")}</label>
+            <textarea name="principles">${esc(x.principles || "")}</textarea>
+        </div>
+
+        <div class="field" ${hideFactions ? 'style="display:none"' : ""}>
+            <label>${tFn("creator.f.char_factions", "Thuộc thế lực & chức vụ trong thế lực")}</label>
+
+            ${
+                (b.factions || []).length
+                    ? `<div class="dyn-list" data-dynlist="charfactions">
+                    ${(x.factions || [])
+                        .map((m) => charFactionRowHTML(b, m))
+                        .join("")}
+
+                    <button
+                        type="button"
+                        class="btn small secondary"
+                        data-dynadd="charfactions"
+                    >
+                        ${tFn("creator.f.add_char_faction", "＋ Thêm thế lực")}
+                    </button>
+                </div>`
+                    : `<div class="muted" style="font-size:12px">
+                    ${tFn("creator.f.faction_none_hint", "Chưa có thế lực nào — hãy thêm ở tab Thế lực.")}
+                </div>`
+            }
+        </div>
+
+        <div class="field" ${hideAbilities ? 'style="display:none"' : ""}>
+            <label>${tFn("creator.f.char_abilities", "Sở hữu khả năng / kỹ năng")}</label>
+
+            ${
+                (b.abilities || []).length
+                    ? `<div class="dyn-list" data-dynlist="charabilities">
+                    ${(x.abilityIds || [])
+                        .map((aid) =>
+                            abilityPickRowHTML(
+                                b,
+                                typeof aid === "string"
+                                    ? { abilityId: aid, chapterStatuses: {} }
+                                    : aid,
+                            ),
+                        )
+                        .join("")}
+
+                    <button
+                        type="button"
+                        class="btn small secondary"
+                        data-dynadd="charabilities"
+                    >
+                        ${tFn("creator.f.add_char_ability", "＋ Thêm khả năng / kỹ năng")}
+                    </button>
+                </div>`
+                    : `<div class="muted" style="font-size:12px">
+                    ${tFn("creator.f.ability_none_for_char", "Chưa có khả năng / kỹ năng nào — hãy thêm ở tab Năng lực / Kỹ năng.")}
+                </div>`
+            }
+        </div>
+
+        <div class="field" ${hideRealms ? 'style="display:none"' : ""}>
+            <label>${tFn("creator.f.visited_realms", "Đã từng đi qua giới vực")}</label>
+
+            ${
+                (b.realms || []).length
+                    ? `<div class="dyn-list" data-dynlist="visitedrealms">
+                    ${(x.visitedRealmIds || [])
+                        .map((rid) =>
+                            realmPickRowHTML(b, rid, "charVisitedRealmIds"),
+                        )
+                        .join("")}
+
+                    <button
+                        type="button"
+                        class="btn small secondary"
+                        data-dynadd="visitedrealms"
+                    >
+                        ${tFn("creator.f.add_visited_realm", "＋ Thêm giới vực đã đi qua")}
+                    </button>
+                </div>`
+                    : `<div class="muted" style="font-size:12px">
+                    ${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}
+                </div>`
+            }
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.char_grudge", "Ân oán / Nợ ân thù")}</label>
+
+            <div class="dyn-list" data-dynlist="chargrudges">
+                ${(x.grudges || [])
+                    .map((g) => charGrudgeRowHTML(b, g))
+                    .join("")}
+
+                <button
+                    type="button"
+                    class="btn small secondary"
+                    data-dynadd="chargrudges"
+                >
+                    +
+                </button>
+            </div>
+
+            <div class="muted" style="font-size:12px">
+                ${tFn("creator.f.char_grudge_none", "— Chưa có ân oán / nợ ân thù —")}
+            </div>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.char_oath", "Lời thề / Khế ước")}</label>
+
+            <div class="dyn-list" data-dynlist="charoaths">
+                ${(x.oaths || []).map((o) => charOathRowHTML(b, o)).join("")}
+
+                <button
+                    type="button"
+                    class="btn small secondary"
+                    data-dynadd="charoaths"
+                >
+                    +
+                </button>
+            </div>
+
+            <div class="muted" style="font-size:12px">
+                ${tFn("creator.f.char_oath_none", "— Chưa có lời thề / khế ước —")}
+            </div>
+        </div>
+
+        <div class="field">
+            <label>${tFn("creator.f.char_secret", "Bí mật")}</label>
+
+            <div class="dyn-list" data-dynlist="charsecrets">
+                ${(x.secrets || []).map((sv) => charSecretRowHTML(sv)).join("")}
+
+                <button
+                    type="button"
+                    class="btn small secondary"
+                    data-dynadd="charsecrets"
+                >
+                    +
+                </button>
+            </div>
+
+            <div class="muted" style="font-size:12px">
+                ${tFn("creator.f.char_secret_none", "— Chưa có bí mật —")}
+            </div>
+        </div>
+
+        <div class="modal-foot">
+            <button class="btn primary">
+                ${tFn("creator.f.save", "Lưu")}
+            </button>
+        </div>
+    </form>
+`;
     }
     if (type === "faction") {
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label><input name="aliases" value="${esc((x.aliases || []).join(", "))}" placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><div class="field"><label>${tFn("creator.f.ranks", "Chức vụ / Cấp bậc trong thế lực")}</label><div class="dyn-list" data-dynlist="ranks">${(x.ranks || []).map((r) => rankRowHTML(r)).join("")}<button type="button" class="btn small secondary" data-dynadd="ranks">${tFn("creator.f.add_rank", "＋ Thêm chức vụ / cấp bậc")}</button></div></div><div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.realms", "Tồn tại ở giới vực")}</label>${(b.realms || []).length ? `<div class="dyn-list" data-dynlist="realmpicks">${(x.realmIds || []).map((rid) => realmPickRowHTML(b, rid)).join("")}<button type="button" class="btn small secondary" data-dynadd="realmpicks">${tFn("creator.f.add_realm", "＋ Thêm giới vực")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
