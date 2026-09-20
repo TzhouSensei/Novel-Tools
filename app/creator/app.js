@@ -845,13 +845,14 @@ function timelineHTML(b) {
     const entries = b.timeline || [];
     const rows =
         entries
-            .map(
-                (t) =>
-                    `<div class="card tl-row" data-dragrow="${t.id}"><span class="drag-handle" data-draghandle title="${tFn("creator.drag.hint", "Kéo để di chuyển thứ tự")}">⁝⁝</span><span class="badge tl-time">${esc(t.time || "—")}</span><div class="tl-body"><div>${esc(t.text || "")}</div><div class="muted">${esc(timelineTargetLabel(b, t))}</div></div><div class="actions"><button type="button" class="btn small secondary" data-edittimeline="${t.id}">${tFn("creator.ch.edit", "Sửa")}</button><button type="button" class="btn small danger" data-deltimeline="${t.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></div>`,
-            )
+            .map((t) => dragRowHTML(timelineCard(b, t), t.id))
             .join("") ||
         `<div class="card empty" style="grid-column:1/-1"><strong>${tFn("creator.tl.empty", "Chưa có timeline nào.")}</strong>${tFn("creator.tl.empty_hint", "Thêm mốc thời gian cho chương hoặc arc.")}</div>`;
     return `<div class="toolbar"><div class="muted">${entries.length} ${tFn("creator.tl.count", "mốc thời gian")}</div><button class="btn primary" id="addTimeline">${tFn("creator.tl.add", "＋ Thêm timeline")}</button></div><div class="grid cards" data-draglist="timeline">${rows}</div>`;
+}
+function timelineCard(b, t) {
+    const targetLabel = esc(timelineTargetLabel(b, t));
+    return `<div class="card entity-card collapsible"><div class="entity-head"><h3>${esc(t.time || "—")}</h3><div class="meta"><span class="badge">${targetLabel}</span></div></div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="tl-hover"><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.time", "Thời gian / Cột mốc")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.time || "—")}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.target", "Áp dụng cho")}</span><div class="tl-hover-value">${targetLabel}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.text", "Nội dung")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.text || "—")}</div></div></div><div class="actions"><button type="button" class="btn small secondary" data-edittimeline="${t.id}">${tFn("creator.ch.edit", "Sửa")}</button><button type="button" class="btn small danger" data-deltimeline="${t.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></div></div></div>`;
 }
 function timelineTargetLabel(b, t) {
     if (t.kind === "chapter") {
