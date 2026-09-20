@@ -288,6 +288,16 @@ const ILLU_TYPES = [
     "itemset",
     "faction",
     "realm",
+    "location",
+    "ability",
+    "skillset",
+];
+const ILLU_LANDSCAPE_TYPES = [
+    "item",
+    "itemset",
+    "faction",
+    "realm",
+    "location",
     "ability",
     "skillset",
 ];
@@ -4272,9 +4282,10 @@ function bindComboboxes(root) {
         });
     });
 }
-async function openSysModal(kind, id = null) {
+async function openSysModal(kind, id = null, opts = null) {
     const b = await getBook(state.bookId);
     if (!b) return;
+    creatorModalState = { kind: "sys", type: kind, id };
     b.systems = b.systems || {};
     if (!Array.isArray(b.systems[kind])) b.systems[kind] = [];
     const x = id
@@ -4294,7 +4305,8 @@ async function openSysModal(kind, id = null) {
     bindComboboxes(m);
     if (kind === "quests") bindQuestDynRows(m);
     if (kind === "combat") bindCombatFormRows(m, b);
-    m.showModal();
+    if (!m.open) m.showModal();
+    if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
     $("#sysForm").onsubmit = async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
@@ -4470,28 +4482,377 @@ async function removeSystemItem(kind, id) {
     toast(tFn("creator.toast.deleted", "Đã xóa"));
     render();
 }
-function openEntityModal(type, id = null) {
+let creatorModalState = null;
+let creatorTransientDialogs = [];
+function creatorRegisterTransientDialog(dialog, kind, read) {
+    const entry = { dialog, kind, read };
+    creatorTransientDialogs.push(entry);
+    dialog.addEventListener("close", () => {
+        creatorTransientDialogs = creatorTransientDialogs.filter(
+            (x) => x !== entry,
+        );
+    });
+    return entry;
+}
+function creatorTakeTransientDialogs() {
+    const open = creatorTransientDialogs.filter((x) => x.dialog.open);
+    const out = open.map((x) => ({ kind: x.kind, values: x.read() }));
+    creatorTransientDialogs = [];
+    open.forEach((x) => {
+        try {
+            x.dialog.close();
+        } catch (e) {}
+        x.dialog.remove();
+    });
+    return out;
+}
+function creatorCollectNamed(scope) {
+    const names = {};
+    scope
+        .querySelectorAll(
+            "#entityForm [name], #sysForm [name], #bookForm [name], #arcForm [name], #timelineForm [name], #arcChildForm [name]",
+        )
+        .forEach((el) => {
+            if (!el.name) return;
+            (names[el.name] = names[el.name] || []).push(el);
+        });
+    return names;
+}
+function creatorSetInputValue(el, v) {
+    if (el.tagName === "SELECT") {
+        if ([...el.options].some((o) => o.value === v)) el.value = v;
+        else if (v) {
+            const o = document.createElement("option");
+            o.value = v;
+            o.textContent = v;
+            el.appendChild(o);
+            el.value = v;
+        }
+        return;
+    }
+    el.value = v;
+}
+function creatorCaptureModalInputs(root) {
+    const out = {
+        fields: {},
+        checks: [],
+        dyn: {},
+        relAdvOpen: false,
+        combatRows: null,
+        questRows: null,
+        abilityRows: null,
+        scroll: 0,
+    };
+    const scope = root || document;
+    const names = creatorCollectNamed(scope);
+    Object.keys(names).forEach((name) => {
+        const els = names[name].filter(
+            (el) => !el.disabled && el.type !== "file",
+        );
+        if (!els.length) return;
+        const first = els[0];
+        if (
+            first.type === "checkbox" &&
+            els.length === 1 &&
+            (first.value === "on" || !first.value)
+        ) {
+            out.checks.push({
+                name,
+                value: first.value || "on",
+                checked: first.checked,
+            });
+            return;
+        }
+        if (first.type === "checkbox" || first.type === "radio") {
+            out.fields[name] = els
+                .filter((el) => el.checked)
+                .map((el) => el.value);
+            return;
+        }
+        out.fields[name] = els.map((el) => el.value);
+    });
+    scope.querySelectorAll("[data-dynlist]").forEach((list) => {
+        const rows = [];
+        list.querySelectorAll(".dyn-row").forEach((row) => {
+            const one = {};
+            row.querySelectorAll("input, select, textarea").forEach((el) => {
+                if (!el.name || el.disabled) return;
+                if (el.type === "checkbox")
+                    one[el.name] = el.checked
+                        ? el.value && el.value !== "on"
+                            ? el.value
+                            : true
+                        : false;
+                else if (el.type === "radio") {
+                    if (el.checked) one[el.name] = el.value;
+                } else one[el.name] = el.value;
+            });
+            rows.push(one);
+        });
+        out.dyn[list.dataset.dynlist] = rows;
+    });
+    const cbList = scope.querySelector("#cbStatList");
+    if (cbList)
+        out.combatRows = [...cbList.querySelectorAll("[data-cbrow]")].map(
+            (row) => ({
+                statId: (row.querySelector("[data-cbstat]") || {}).value || "",
+                note: (row.querySelector("[data-cbnote]") || {}).value || "",
+            }),
+        );
+    const qDyn = scope.querySelector("#sysForm [data-qdyn]");
+    if (qDyn) {
+        out.questRows = [
+            ...qDyn.querySelectorAll(".dyn-row, .sys-dyn-row"),
+        ].map((row) => {
+            const one = {};
+            row.querySelectorAll("input, select, textarea").forEach((el) => {
+                if (el.name)
+                    one[el.name] =
+                        el.type === "checkbox" ? el.checked : el.value;
+            });
+            return one;
+        });
+    }
+    const abRows = scope.querySelectorAll("#entityForm .ability-row");
+    if (abRows.length) {
+        out.abilityRows = [...abRows].map((row) => {
+            const aid =
+                (row.querySelector(".ability-select") || {}).value || "";
+            const chapters = [
+                ...row.querySelectorAll(
+                    `input[name="abilityStatus_${aid}_chapter"]`,
+                ),
+            ].map((el) => el.value);
+            const statuses = [
+                ...row.querySelectorAll(
+                    `input[name="abilityStatus_${aid}_status"]`,
+                ),
+            ].map((el) => el.value);
+            return { aid, chapters, statuses };
+        });
+    }
+    const adv = scope.querySelector("#relAdvBody");
+    if (adv) out.relAdvOpen = adv.classList.contains("open");
+    const modal = $("#modal");
+    if (modal) out.scroll = modal.scrollTop || 0;
+    return out;
+}
+function creatorRestoreModalInputs(root, snap) {
+    if (!snap) return;
+    const scope = root || document;
+    const fields = snap.fields || {};
+    const names = creatorCollectNamed(scope);
+    Object.keys(names).forEach((name) => {
+        if (!(name in fields)) return;
+        const els = names[name].filter(
+            (el) => !el.disabled && el.type !== "file",
+        );
+        if (!els.length) return;
+        const first = els[0];
+        const saved = fields[name];
+        if (
+            first.type === "checkbox" &&
+            els.length === 1 &&
+            (first.value === "on" || !first.value) &&
+            !Array.isArray(saved)
+        )
+            return;
+        if (
+            (first.type === "checkbox" || first.type === "radio") &&
+            Array.isArray(saved)
+        ) {
+            els.forEach((el) => {
+                el.checked = saved.includes(el.value);
+            });
+            return;
+        }
+        const arr = Array.isArray(saved) ? saved : [saved];
+        els.forEach((el, i) => {
+            const v = i < arr.length ? arr[i] : arr[arr.length - 1];
+            if (typeof v === "string") creatorSetInputValue(el, v);
+        });
+    });
+    (snap.checks || []).forEach((c) => {
+        const el = scope.querySelector(
+            `#entityForm [name="${c.name}"], #sysForm [name="${c.name}"], #bookForm [name="${c.name}"], #arcForm [name="${c.name}"], #timelineForm [name="${c.name}"], #arcChildForm [name="${c.name}"]`,
+        );
+        if (el && el.type === "checkbox") el.checked = !!c.checked;
+    });
+    Object.keys(snap.dyn || {}).forEach((key) => {
+        const list = scope.querySelector(`[data-dynlist="${key}"]`);
+        if (!list) return;
+        const rows = snap.dyn[key] || [];
+        const addBtn = list.querySelector(
+            "[data-dynadd], [data-dynadd-single]",
+        );
+        let idx = 0;
+        while (
+            list.querySelectorAll(".dyn-row").length < rows.length &&
+            addBtn &&
+            idx < 500
+        ) {
+            addBtn.click();
+            idx++;
+        }
+        list.querySelectorAll(".dyn-row").forEach((row, i) => {
+            const data = rows[i] || {};
+            row.querySelectorAll("input, select, textarea").forEach((el) => {
+                if (!(el.name in data)) return;
+                if (el.type === "checkbox") {
+                    if (data[el.name] === true) el.checked = true;
+                    else if (data[el.name] === false) el.checked = false;
+                    else el.checked = data[el.name] === el.value;
+                } else if (el.type === "radio")
+                    el.checked = data[el.name] === el.value;
+                else if (typeof data[el.name] === "string")
+                    creatorSetInputValue(el, data[el.name]);
+            });
+        });
+    });
+    if (Array.isArray(snap.combatRows)) {
+        const list = scope.querySelector("#cbStatList");
+        const addBtn = scope.querySelector("#cbAddRow");
+        if (list) {
+            let idx = 0;
+            while (
+                list.querySelectorAll("[data-cbrow]").length <
+                    snap.combatRows.length &&
+                idx < 500
+            ) {
+                if (addBtn) addBtn.click();
+                else break;
+                idx++;
+            }
+            list.querySelectorAll("[data-cbrow]").forEach((row, i) => {
+                const data = snap.combatRows[i] || {};
+                const sel = row.querySelector("[data-cbstat]");
+                const note = row.querySelector("[data-cbnote]");
+                if (sel && typeof data.statId === "string" && data.statId) {
+                    if ([...sel.options].some((o) => o.value === data.statId))
+                        sel.value = data.statId;
+                }
+                if (note && typeof data.note === "string")
+                    note.value = data.note;
+            });
+        }
+    }
+    if (Array.isArray(snap.abilityRows)) {
+        const rows = scope.querySelectorAll("#entityForm .ability-row");
+        rows.forEach((row, i) => {
+            const data = snap.abilityRows[i];
+            if (!data) return;
+            const sel = row.querySelector(".ability-select");
+            if (
+                sel &&
+                data.aid &&
+                [...sel.options].some((o) => o.value === data.aid)
+            )
+                sel.value = data.aid;
+            (data.chapters || []).forEach((cid, k) => {
+                const st = (data.statuses || [])[k] || "";
+                const cap = row.querySelector(
+                    `input[name="abilityStatus_${data.aid}_chapter"][value="${cid}"]`,
+                );
+                if (!cap) {
+                    const hiddenC = document.createElement("input");
+                    hiddenC.type = "hidden";
+                    hiddenC.name = `abilityStatus_${data.aid}_chapter`;
+                    hiddenC.value = cid;
+                    row.appendChild(hiddenC);
+                    const hiddenS = document.createElement("input");
+                    hiddenS.type = "hidden";
+                    hiddenS.name = `abilityStatus_${data.aid}_status`;
+                    hiddenS.value = st;
+                    row.appendChild(hiddenS);
+                } else {
+                    const list = [
+                        ...row.querySelectorAll(
+                            `input[name="abilityStatus_${data.aid}_chapter"]`,
+                        ),
+                    ];
+                    const at = list.indexOf(cap);
+                    const sList = [
+                        ...row.querySelectorAll(
+                            `input[name="abilityStatus_${data.aid}_status"]`,
+                        ),
+                    ];
+                    if (sList[at]) sList[at].value = st;
+                }
+            });
+        });
+    }
+    const adv = scope.querySelector("#relAdvBody");
+    if (adv) {
+        adv.classList.toggle("open", !!snap.relAdvOpen);
+        scope
+            .querySelector("#relAdvToggle")
+            ?.setAttribute("aria-expanded", snap.relAdvOpen ? "true" : "false");
+    }
+    const modal = $("#modal");
+    if (modal && snap.scroll) modal.scrollTop = snap.scroll;
+}
+function creatorRefreshOpenModal() {
+    const m = $("#modal");
+    if (!m || !m.open || !creatorModalState) return;
+    if (
+        m.querySelector("#cbSelectConfirm") ||
+        m.querySelector("#cbFormSelectConfirm")
+    )
+        return;
+    const snap = creatorCaptureModalInputs(m);
+    const st = creatorModalState;
+    if (st.kind === "entity")
+        openEntityModal(st.type, st.id, { preserve: snap });
+    else if (st.kind === "sys")
+        openSysModal(st.type, st.id, { preserve: snap });
+    else if (st.kind === "relation")
+        openRelationDialog(
+            st.id,
+            st.presetFrom,
+            st.presetTo,
+            st.presetScope,
+            st.draft,
+            { preserve: snap },
+        );
+    else if (st.kind === "chapterView")
+        openChapterView(st.id, { preserve: snap });
+    else if (st.kind === "arc") {
+        const arcState =
+            typeof st.arcState === "function" ? st.arcState() : null;
+        openArcModal(st.id, {
+            preserve: snap,
+            arcState,
+            transient: creatorTakeTransientDialogs(),
+        });
+    } else if (st.kind === "arcChild")
+        openArcChildPicker(st.arcId, st.childKind, { preserve: snap });
+    else if (st.kind === "timeline")
+        openTimelineModal(st.id, st.presetTarget, { preserve: snap });
+}
+function openEntityModal(type, id = null, opts = null) {
     if (String(type || "").startsWith("sys:")) {
-        openSysModal(type.slice(4), id);
+        openSysModal(type.slice(4), id, opts);
         return;
     }
     if (type === "relation") {
-        openRelationDialog(id);
+        openRelationDialog(id, null, null, null, null, opts);
         return;
     }
+    creatorModalState = { kind: "entity", type, id };
     getBook(state.bookId).then((b) => {
         const key = entityKey(type);
         b[key] = b[key] || [];
         let item = id ? b[key].find((x) => x.id === id) : null;
         let html = entityForm(type, item, b);
         if (ILLU_TYPES.includes(type)) {
-            const sec = illuSectionHTML(item);
+            const sec = illuSectionHTML(item, type);
             const fi = html.indexOf('<div class="modal-foot">');
             if (fi >= 0) html = html.slice(0, fi) + sec + html.slice(fi);
         }
         const m = $("#modal");
         m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${item ? tFn("creator.modal.edit", "Chỉnh sửa") : tFn("creator.modal.add", "Thêm")} ${typeLabel(type)}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body">${html}</div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
+        if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
 
         const relCloseBtn = m.querySelector(".modal-head .icon-btn");
         if (relCloseBtn)
@@ -4514,6 +4875,10 @@ function openEntityModal(type, id = null) {
                 else if (kind === "skillsets") rowHTML = skillsetPickRowHTML(b);
                 else if (kind === "charabilities")
                     rowHTML = abilityPickRowHTML(b);
+                else if (kind === "chargrudges")
+                    rowHTML = charGrudgeRowHTML(b);
+                else if (kind === "charoaths") rowHTML = charOathRowHTML(b);
+                else if (kind === "charsecrets") rowHTML = charSecretRowHTML();
                 else if (kind === "items") rowHTML = itemPickRowHTML(b);
                 else if (kind === "owners") rowHTML = ownerPickRowHTML(b);
                 else if (kind === "itemsetpicks")
@@ -4787,6 +5152,9 @@ function openEntityModal(type, id = null) {
                 x.visitedRealmIds = fd
                     .getAll("charVisitedRealmIds")
                     .filter(Boolean);
+                x.grudges = collectCharGrudges(fd);
+                x.oaths = collectCharOaths(fd);
+                x.secrets = collectCharSecrets(fd);
             } else if (type === "faction") {
                 x.name = fd.get("name").trim();
                 x.description = fd.get("description").trim();
@@ -4999,6 +5367,7 @@ function openEntityModal(type, id = null) {
                 x.illustration = {
                     icon: (fd.get("illu_icon") || "").trim(),
                     portrait: (fd.get("illu_portrait") || "").trim(),
+                    landscape: (fd.get("illu_landscape") || "").trim(),
                 };
             x.updatedAt = now();
             if (!item) b[key].push(x);
@@ -5098,6 +5467,55 @@ function characterPickRowHTML(b, cid = "", name = "realmCharacterIds") {
         )
         .join("");
     return `<div class="dyn-row dyn-row-single"><select name="${esc(name)}"><option value="">${tFn("creator.f.pick_none", "— Chọn —")}</option>${opts}</select>${dynRemoveBtn()}</div>`;
+}
+function charLinkOpts(b, sel = "") {
+    return (b.characters || [])
+        .map(
+            (c) =>
+                `<option value="${c.id}" ${sel === c.id ? "selected" : ""}>${esc(c.name || tFn("creator.noname", "Không tên"))}</option>`,
+        )
+        .join("");
+}
+function charOathStatusOpts(sel = "active") {
+    const opts = [
+        ["active", "Đang có/Hiệu lực"],
+        ["damaged", "Hư hỏng"],
+        ["lost", "Đã mất"],
+        ["destroyed", "Bị phá hủy"],
+        ["sealed", "Bị phong ấn"],
+        ["transferred", "Đã chuyển"],
+        ["resolved", "Đã giải quyết"],
+        ["revealed", "Đã lộ"],
+    ];
+    return opts
+        .map(
+            ([v, label]) =>
+                `<option value="${v}" ${sel === v ? "selected" : ""}>${label}</option>`,
+        )
+        .join("");
+}
+function charOathStatusLabel(st = "") {
+    return (
+        {
+            active: "Đang có/Hiệu lực",
+            damaged: "Hư hỏng",
+            lost: "Đã mất",
+            destroyed: "Bị phá hủy",
+            sealed: "Bị phong ấn",
+            transferred: "Đã chuyển",
+            resolved: "Đã giải quyết",
+            revealed: "Đã lộ",
+        }[st] || st
+    );
+}
+function charGrudgeRowHTML(b, g = {}) {
+    return `<div class="dyn-row"><input name="charGrudgeDesc" value="${esc(g.description || "")}" placeholder="${tFn("creator.card.grudge_desc", "Mô tả ân oán / nợ ân thù")}"><select name="charGrudgeCharId" data-f="character"><option value="">${tFn("creator.f.pick_none", "— Chọn —")}</option>${charLinkOpts(b, g.characterId || "")}</select><input name="charGrudgeType" value="${esc(g.type || "")}" placeholder="${tFn("creator.f.char_grudge_ph", "VD: Ghét phải mất, mượn không trả...")}">${dynRemoveBtn()}</div>`;
+}
+function charOathRowHTML(b, o = {}) {
+    return `<div class="dyn-row"><input name="charOathDesc" value="${esc(o.description || "")}" placeholder="${tFn("creator.f.char_oath_ph", "VD: Thề không báo thức, khế ước bảo vệ...")}"><select name="charOathCharId" data-f="character"><option value="">${tFn("creator.f.pick_none", "— Chọn —")}</option>${charLinkOpts(b, o.characterId || "")}</select><select name="charOathStatus" data-f="status">${charOathStatusOpts(o.status || "active")}</select>${dynRemoveBtn()}</div>`;
+}
+function charSecretRowHTML(s = {}) {
+    return `<div class="dyn-row"><input name="charSecretDesc" value="${esc(s.description || "")}" placeholder="${tFn("creator.f.char_secret_ph", "VD: Chưa lộ, đã lộ, công khai...")}"><input name="charSecretKnownBy" value="${esc(s.knownBy || "")}" placeholder="${tFn("creator.f.char_secret_known_by_ph", "VD: A biết, B không biết, chỉ mình ta...")}"><input name="charSecretStatus" value="${esc(s.status || "")}" placeholder="${tFn("creator.f.char_secret_status_ph", "VD: Chưa lộ, đã lộ, công khai, mốc chương...")}">${dynRemoveBtn()}</div>`;
 }
 function locationPickRowHTML(
     b,
@@ -5213,6 +5631,36 @@ function itemsetPickRowHTML(b, sid = "") {
         .join("");
     return `<div class="dyn-row dyn-row-single"><select name="itemItemsetIds"><option value="">${tFn("creator.f.pick_none", "— Chọn —")}</option>${opts}</select>${dynRemoveBtn()}</div>`;
 }
+function collectCharGrudges(fd) {
+    return fd
+        .getAll("charGrudgeDesc")
+        .map((description, i) => ({
+            description: (description || "").trim(),
+            characterId: (fd.getAll("charGrudgeCharId")[i] || "").trim(),
+            type: (fd.getAll("charGrudgeType")[i] || "").trim(),
+        }))
+        .filter((g) => g.description || g.characterId || g.type);
+}
+function collectCharOaths(fd) {
+    return fd
+        .getAll("charOathDesc")
+        .map((description, i) => ({
+            description: (description || "").trim(),
+            characterId: (fd.getAll("charOathCharId")[i] || "").trim(),
+            status: (fd.getAll("charOathStatus")[i] || "active").trim() || "active",
+        }))
+        .filter((o) => o.description || o.characterId);
+}
+function collectCharSecrets(fd) {
+    return fd
+        .getAll("charSecretDesc")
+        .map((description, i) => ({
+            description: (description || "").trim(),
+            knownBy: (fd.getAll("charSecretKnownBy")[i] || "").trim(),
+            status: (fd.getAll("charSecretStatus")[i] || "").trim(),
+        }))
+        .filter((s) => s.description || s.knownBy || s.status);
+}
 function skillsOfForm(fd, b) {
     b.abilities = b.abilities || [];
     const picked = fd.getAll("skillIds").filter(Boolean);
@@ -5259,15 +5707,30 @@ function illuOf(x) {
     return {
         icon: ill && typeof ill.icon === "string" ? ill.icon : "",
         portrait: ill && typeof ill.portrait === "string" ? ill.portrait : "",
+        landscape:
+            ill && typeof ill.landscape === "string" ? ill.landscape : "",
     };
 }
 function illuFieldHTML(v, kind, label) {
-    const cls = kind === "portrait" ? " illu-portrait" : "";
+    const cls =
+        kind === "portrait"
+            ? " illu-portrait"
+            : kind === "landscape"
+              ? " illu-landscape"
+              : "";
     return `<div class="illu-box"><label>${esc(label)}</label><img class="illu-img${cls}" src="${esc(v || "")}" alt="" ${v ? "" : 'style="display:none"'}><div class="illu-img illu-empty${cls}" ${v ? 'style="display:none"' : ""}>${tFn("creator.f.illu_none", "Chưa có ảnh")}</div><input type="hidden" name="illu_${kind}" value="${esc(v || "")}"><input type="file" accept="image/*" data-illu="${kind}" hidden><div class="actions"><button type="button" class="btn small secondary" data-illupick="${kind}">${tFn("creator.f.illu_pick", "Chọn ảnh...")}</button><button type="button" class="btn small ghost" data-illuremove="${kind}">${tFn("creator.f.illu_remove", "Bỏ ảnh")}</button></div></div>`;
 }
-function illuSectionHTML(x) {
+function illuSectionHTML(x, type) {
     const ill = illuOf(x);
-    return `<div class="field"><label>${tFn("creator.f.illu", "Ảnh minh hoạ")}</label><div class="illu-row">${illuFieldHTML(ill.icon, "icon", tFn("creator.f.illu_icon", "Icon (ảnh vuông)"))}${illuFieldHTML(ill.portrait, "portrait", tFn("creator.f.illu_portrait", "Ảnh dọc (tỉ lệ 9:16)"))}</div><div class="muted" style="font-size:12px">${tFn("creator.f.illu_hint", "Icon dùng ảnh vuông; ảnh minh hoạ nên theo tỉ lệ dọc 9:16. Ảnh được lưu trực tiếp trong dữ liệu truyện.")}</div></div>`;
+    const showLandscape = ILLU_LANDSCAPE_TYPES.includes(type);
+    const fields = `${illuFieldHTML(ill.icon, "icon", tFn("creator.f.illu_icon", "Icon (ảnh vuông)"))}${illuFieldHTML(ill.portrait, "portrait", tFn("creator.f.illu_portrait", "Ảnh dọc (tỉ lệ 9:16)"))}${showLandscape ? illuFieldHTML(ill.landscape, "landscape", tFn("creator.f.illu_landscape", "Ảnh ngang (tỉ lệ 16:9)")) : ""}`;
+    const hintKey = showLandscape
+        ? "creator.f.illu_hint_landscape"
+        : "creator.f.illu_hint";
+    const hintFallback = showLandscape
+        ? "Icon dùng ảnh vuông; ảnh dọc theo tỉ lệ 9:16; ảnh ngang theo tỉ lệ 16:9. Ảnh được lưu trực tiếp trong dữ liệu truyện."
+        : "Icon dùng ảnh vuông; ảnh minh hoạ nên theo tỉ lệ dọc 9:16. Ảnh được lưu trực tiếp trong dữ liệu truyện.";
+    return `<div class="field"><label>${tFn("creator.f.illu", "Ảnh minh hoạ")}</label><div class="illu-row">${fields}</div><div class="muted" style="font-size:12px">${tFn(hintKey, hintFallback)}</div></div>`;
 }
 function illuBodyHTML(x) {
     const ill = illuOf(x);
@@ -5277,11 +5740,16 @@ function illuBodyHTML(x) {
     const port = ill.portrait
         ? `<img class="illu-thumb-portrait" src="${esc(ill.portrait)}" alt="">`
         : "";
-    return icon || port ? `<div class="illu-cards">${icon}${port}</div>` : "";
+    const land = ill.landscape
+        ? `<img class="illu-thumb-landscape" src="${esc(ill.landscape)}" alt="">`
+        : "";
+    return icon || port || land
+        ? `<div class="illu-cards">${icon}${port}${land}</div>`
+        : "";
 }
 function entRowShell(x, name, tagList, type, id) {
     const ill = illuOf(x);
-    const src = ill.icon || ill.portrait;
+    const src = ill.icon || ill.landscape || ill.portrait;
     const initial =
         esc(
             String(name || "")
@@ -5410,7 +5878,7 @@ function entityForm(type, x, b) {
             .join("");
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label><input name="aliases" value="${esc((x.aliases || []).join(", "))}" placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><h3 style="margin:16px 0 8px">${tFn("creator.f.char_setup", "Thiết lập nhân vật")}</h3><div class="form-row"><div class="field"><label>${tFn("creator.f.age", "Tuổi")}</label><input name="age" value="${esc(x.age || "")}" placeholder="${tFn("creator.f.age_ph", "VD: 18, 3000 ...")}"></div><div class="field"><label>${tFn("creator.f.first_chapter", "Xuất hiện lần đầu ở chương")}</label><select name="firstChapterId"><option value="">${tFn("creator.f.first_chapter_none", "— Chưa rõ —")}</option>${chapterOpts}</select></div></div><div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.home_realm", "Thuộc giới vực (quê quán)")}</label><select name="homeRealmId"><option value="">${tFn("creator.f.home_realm_none", "— Chưa rõ —")}</option>${realmOpts}</select>${(b.realms || []).length ? "" : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div><div class="field"><label>${tFn("creator.f.hobbies", "Sở thích (cách nhau bởi dấu phẩy)")}</label><input name="hobbies" value="${esc((x.hobbies || []).join(", "))}" placeholder="${tFn("creator.f.hobbies_ph", "Luyện đan, Trọng kiếm, Đọc sách ...")}"></div><div class="field"><label>${tFn("creator.f.personality", "Tính cách")}</label><textarea name="personality">${esc(x.personality || "")}</textarea></div><div class="field"><label>${tFn("creator.f.inner_conflict", "Xung đột nội tâm")}</label><textarea name="innerConflict">${esc(x.innerConflict || "")}</textarea></div><div class="field"><label>${tFn("creator.f.motivation", "Động lực")}</label><textarea name="motivation">${esc(x.motivation || "")}</textarea></div><div class="field"><label>${tFn("creator.f.obsession", "Sự ám ảnh / Nỗi đau")}</label><textarea name="obsession">${esc(x.obsession || "")}</textarea></div><div class="field"><label>${tFn("creator.f.past", "Quá khứ")}</label><textarea name="past">${esc(x.past || "")}</textarea></div><div class="field"><label>${tFn("creator.f.principles", "Nguyên tắc")}</label><textarea name="principles">${esc(x.principles || "")}</textarea></div><div class="field" ${hideFactions ? 'style="display:none"' : ""}><label>${tFn("creator.f.char_factions", "Thuộc thế lực & chức vụ trong thế lực")}</label>${(b.factions || []).length ? `<div class="dyn-list" data-dynlist="charfactions">${(x.factions || []).map((m) => charFactionRowHTML(b, m)).join("")}<button type="button" class="btn small secondary" data-dynadd="charfactions">${tFn("creator.f.add_char_faction", "＋ Thêm thế lực")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.faction_none_hint", "Chưa có thế lực nào — hãy thêm ở tab Thế lực.")}</div>`}</div><div class="field" ${hideAbilities ? 'style="display:none"' : ""}><label>${tFn("creator.f.char_abilities", "Sở hữu khả năng / kỹ năng")}</label>${(b.abilities || []).length ? `<div class="dyn-list" data-dynlist="charabilities">${(x.abilityIds || []).map((aid) => abilityPickRowHTML(b, typeof aid === "string" ? { abilityId: aid, chapterStatuses: {} } : aid)).join("")}<button type="button" class="btn small secondary" data-dynadd="charabilities">${tFn("creator.f.add_char_ability", "＋ Thêm khả năng / kỹ năng")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.ability_none_for_char", "Chưa có khả năng / kỹ năng nào — hãy thêm ở tab Năng lực / Kỹ năng.")}</div>`}</div>
 <div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.visited_realms", "Đã từng đi qua giới vực")}</label>${(b.realms || []).length ? `<div class="dyn-list" data-dynlist="visitedrealms">${(x.visitedRealmIds || []).map((rid) => realmPickRowHTML(b, rid, "charVisitedRealmIds")).join("")}<button type="button" class="btn small secondary" data-dynadd="visitedrealms">${tFn("creator.f.add_visited_realm", "＋ Thêm giới vực đã đi qua")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div>
-<div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
+<div class="field"><label>${tFn("creator.f.char_grudge", "Ân oán / Nợ ân thù")}</label><div class="dyn-list" data-dynlist="chargrudges">${(x.grudges || []).map((g) => charGrudgeRowHTML(b, g)).join("")}<button type="button" class="btn small secondary" data-dynadd="chargrudges">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_grudge_none", "— Chưa có ân oán / nợ ân thù —")}</div></div><div class="field"><label>${tFn("creator.f.char_oath", "Lời thề / Khế ước")}</label><div class="dyn-list" data-dynlist="charoaths">${(x.oaths || []).map((o) => charOathRowHTML(b, o)).join("")}<button type="button" class="btn small secondary" data-dynadd="charoaths">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_oath_none", "— Chưa có lời thề / khế ước —")}</div></div><div class="field"><label>${tFn("creator.f.char_secret", "Bí mật")}</label><div class="dyn-list" data-dynlist="charsecrets">${(x.secrets || []).map((sv) => charSecretRowHTML(sv)).join("")}<button type="button" class="btn small secondary" data-dynadd="charsecrets">+</button></div><div class="muted" style="font-size:12px">${tFn("creator.f.char_secret_none", "— Chưa có bí mật —")}</div></div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     }
     if (type === "faction") {
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.f.aliases", "Tên gọi khác / Biệt danh")}</label><input name="aliases" value="${esc((x.aliases || []).join(", "))}" placeholder="${tFn("creator.f.aliases_ph", "Hiệu, danh xưng, biệt danh ... (cách nhau bởi dấu phẩy)")}"></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><div class="field"><label>${tFn("creator.f.ranks", "Chức vụ / Cấp bậc trong thế lực")}</label><div class="dyn-list" data-dynlist="ranks">${(x.ranks || []).map((r) => rankRowHTML(r)).join("")}<button type="button" class="btn small secondary" data-dynadd="ranks">${tFn("creator.f.add_rank", "＋ Thêm chức vụ / cấp bậc")}</button></div></div><div class="field" ${hideRealms ? 'style="display:none"' : ""}><label>${tFn("creator.f.realms", "Tồn tại ở giới vực")}</label>${(b.realms || []).length ? `<div class="dyn-list" data-dynlist="realmpicks">${(x.realmIds || []).map((rid) => realmPickRowHTML(b, rid)).join("")}<button type="button" class="btn small secondary" data-dynadd="realmpicks">${tFn("creator.f.add_realm", "＋ Thêm giới vực")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.realm_none_hint", "Chưa có giới vực nào — hãy thêm ở tab Giới vực.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
@@ -5564,14 +6032,15 @@ async function deleteSelectedChapters() {
     );
     render();
 }
-function openChapterView(id) {
+function openChapterView(id, opts = null) {
+    creatorModalState = { kind: "chapterView", id };
     getBook(state.bookId).then((b) => {
         if (!b) return;
         const c = b.chapters.find((x) => x.id === id);
         if (!c) return;
         const m = $("#modal");
         m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${tFn("creator.unit.chapter_prefix", "Chương")} ${c.number}: ${esc(c.title || tFn("creator.ch.untitled", "Không tiêu đề"))}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body"><div class="muted" style="font-size:13px">${wordCount(c.content).toLocaleString(localeTag())} ${tFn("creator.unit.word", "từ")} · ${(c.content || "").length.toLocaleString(localeTag())} ${tFn("creator.unit.chars", "ký tự")} · ${tFn("creator.unit.updated", "cập nhật")} ${new Date(c.updatedAt).toLocaleString(localeTag())}</div><div class="chapter-view">${esc(c.content || "") || tFn("creator.ch.view_empty", "Chương đang trống.")}</div></div><div class="modal-foot"><button class="btn secondary" id="chapterViewEdit">${tFn("creator.ch.edit_ch", "Sửa chương")}</button><button class="btn ghost" onclick="modal.close()">${tFn("creator.modal.close", "Đóng")}</button></div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
         $("#chapterViewEdit").onclick = () => {
             m.close();
             openEntityModal("chapter", id);
@@ -5681,17 +6150,22 @@ function arcTimelineOrderedTargets(b, arcId, extraChildren) {
     walk(extraChildren || []);
     return out;
 }
-function openArcModal(id = null) {
+function openArcModal(id = null, opts = null) {
+    const kept = (opts && opts.arcState) || null;
+    const transient = (opts && opts.transient) || null;
+    creatorModalState = { kind: "arc", id };
     getBook(state.bookId).then((b) => {
         b.arcs = b.arcs || [];
         b.chapters = b.chapters || [];
         b.timeline = b.timeline || [];
         const arc = id ? b.arcs.find((x) => x.id === id) : null;
         if (arc) arc.children = arc.children || [];
-        const pendingKids = [];
-        const removedChildren = new Set();
-        const removedTl = [];
-        let keySeq = 0;
+        const pendingKids = kept
+            ? kept.pendingKids.map((p) => Object.assign({}, p))
+            : [];
+        const removedChildren = new Set(kept ? kept.removedChildren : []);
+        const removedTl = kept ? kept.removedTl.slice() : [];
+        let keySeq = kept ? Number(kept.keySeq || 0) : 0;
         const newKey = () => "k" + ++keySeq;
         const arcId = arc ? arc.id : "new";
         const orderedTargets = () => {
@@ -5726,8 +6200,21 @@ function openArcModal(id = null) {
             }
             return rows.sort((a, z) => a._o - z._o);
         };
-        let tlExisting = rebuildExistingTl();
-        const tlNew = [];
+        let tlExisting = kept
+            ? kept.tlExisting.map((r) => Object.assign({}, r))
+            : rebuildExistingTl();
+        let tlNew = kept ? kept.tlNew.map((r) => Object.assign({}, r)) : [];
+        creatorModalState.arcState = () => {
+            syncTlValues();
+            return {
+                pendingKids: pendingKids.map((p) => Object.assign({}, p)),
+                removedChildren: [...removedChildren],
+                removedTl: removedTl.slice(),
+                keySeq,
+                tlExisting: tlExisting.map((r) => Object.assign({}, r)),
+                tlNew: tlNew.map((r) => Object.assign({}, r)),
+            };
+        };
         const syncTlValues = () => {
             const form = $("#arcForm");
             for (const r of [...tlExisting, ...tlNew]) {
@@ -5837,7 +6324,18 @@ function openArcModal(id = null) {
             renderChildren();
             applyTlOrder();
         };
-        const openFormPickDialog = (kind) => {
+        const openFormPickDialog = (kind, keepRef) => {
+            const dialog = document.createElement("dialog");
+            dialog.className = "modal";
+            document.body.appendChild(dialog);
+            dialog.showModal();
+            renderFormPickDialog(kind, dialog, keepRef || "");
+            creatorRegisterTransientDialog(dialog, "pick:" + kind, () => {
+                const sel = dialog.querySelector("#arcFormPick [name=ref]");
+                return { ref: sel ? sel.value : "" };
+            });
+        };
+        const renderFormPickDialog = (kind, dialog, keepRef) => {
             const used = new Set();
             for (const c of (arc && arc.children) || [])
                 if (!removedChildren.has(c.id)) used.add(c.ref);
@@ -5865,21 +6363,23 @@ function openArcModal(id = null) {
                               "Không còn arc hợp lệ để lồng vào (tránh vòng lặp)",
                           ),
                 );
-                return;
+                dialog.close();
+                dialog.remove();
+                return false;
             }
-            const dialog = document.createElement("dialog");
-            dialog.className = "modal";
+            const keep =
+                keepRef && candidates.some((c) => c.id === keepRef)
+                    ? keepRef
+                    : "";
             dialog.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${kind === "chapter" ? tFn("creator.arc.pick_ch", "Thêm chương vào") : tFn("creator.arc.pick_arc", "Lồng arc vào")} ${esc(arc ? arc.title || tFn("creator.noname", "Không tên") : tFn("creator.arc.this_arc", "Arc này"))}</strong><button type="button" class="icon-btn" data-close>×</button></div><div class="modal-body"><form id="arcFormPick" class="form"><div class="field"><label>${kind === "chapter" ? tFn("creator.ch.sel_one", "Chọn chương") : tFn("creator.arc.pick_label", "Chọn arc")}</label><select name="ref" required>${candidates
                 .map((c) =>
                     kind === "chapter"
-                        ? `<option value="${c.id}">${tFn("creator.unit.chapter_prefix", "Chương")} ${c.number}: ${esc(c.title || tFn("creator.ch.untitled", "Không tiêu đề"))}</option>`
-                        : `<option value="${c.id}">${esc(c.title || tFn("creator.noname", "Không tên"))}</option>`,
+                        ? `<option value="${c.id}" ${keep === c.id ? "selected" : ""}>${tFn("creator.unit.chapter_prefix", "Chương")} ${c.number}: ${esc(c.title || tFn("creator.ch.untitled", "Không tiêu đề"))}</option>`
+                        : `<option value="${c.id}" ${keep === c.id ? "selected" : ""}>${esc(c.title || tFn("creator.noname", "Không tên"))}</option>`,
                 )
                 .join(
                     "",
                 )}</select></div><div class="modal-foot"><button class="btn primary">${tFn("creator.arc.pick_save", "Thêm vào arc")}</button></div></form></div></div>`;
-            document.body.appendChild(dialog);
-            dialog.showModal();
             dialog.querySelector("[data-close]").onclick = () => {
                 dialog.close();
                 dialog.remove();
@@ -5911,8 +6411,30 @@ function openArcModal(id = null) {
                 dialog.close();
                 dialog.remove();
             };
+            return true;
         };
-        const openFormTimelineDialog = () => {
+        const openFormTimelineDialog = (keepValues) => {
+            const dialog = document.createElement("dialog");
+            dialog.className = "modal";
+            document.body.appendChild(dialog);
+            dialog.showModal();
+            renderFormTimelineDialog(dialog, keepValues || null);
+            creatorRegisterTransientDialog(dialog, "tl", () => ({
+                target:
+                    (
+                        dialog.querySelector(
+                            "#arcTimelineForm [name=target]",
+                        ) || {}
+                    ).value || "",
+                time:
+                    (dialog.querySelector("#arcTimelineForm [name=time]") || {})
+                        .value || "",
+                text:
+                    (dialog.querySelector("#arcTimelineForm [name=text]") || {})
+                        .value || "",
+            }));
+        };
+        const renderFormTimelineDialog = (dialog, keep) => {
             const targets = orderedTargets().map((t) => ({
                 v: t.kind + ":" + t.ref,
                 label:
@@ -5920,15 +6442,18 @@ function openArcModal(id = null) {
                         ? tFn("creator.arc.this_arc", "Arc này")
                         : arcTargetLabel(b, t.kind + ":" + t.ref),
             }));
-            const dialog = document.createElement("dialog");
-            dialog.className = "modal";
+            const keepTarget =
+                keep && targets.some((o) => o.v === keep.target)
+                    ? keep.target
+                    : "";
             dialog.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${tFn("creator.tl.modal_add", "Thêm timeline")}</strong><button type="button" class="icon-btn" data-close>×</button></div><div class="modal-body"><form id="arcTimelineForm" class="form"><div class="field"><label>${tFn("creator.tl.target", "Áp dụng cho")}</label><select name="target" required>${targets
-                .map((o) => `<option value="${o.v}">${esc(o.label)}</option>`)
+                .map(
+                    (o) =>
+                        `<option value="${o.v}" ${keepTarget === o.v ? "selected" : ""}>${esc(o.label)}</option>`,
+                )
                 .join(
                     "",
-                )}</select></div><div class="field"><label>${tFn("creator.tl.time", "Thời gian / Mốc")}</label><input name="time" placeholder="${tFn("creator.tl.time_ph", "VD: Năm 1, Sau trận chiến...")}"></div><div class="field"><label>${tFn("creator.tl.text", "Nội dung")}</label><textarea name="text"></textarea></div><div class="modal-foot"><button class="btn primary">${tFn("creator.tl.save", "Lưu timeline")}</button></div></form></div></div>`;
-            document.body.appendChild(dialog);
-            dialog.showModal();
+                )}</select></div><div class="field"><label>${tFn("creator.tl.time", "Thời gian / Mốc")}</label><input name="time" value="${esc((keep && keep.time) || "")}" placeholder="${tFn("creator.tl.time_ph", "VD: Năm 1, Sau trận chiến...")}"></div><div class="field"><label>${tFn("creator.tl.text", "Nội dung")}</label><textarea name="text">${esc((keep && keep.text) || "")}</textarea></div><div class="modal-foot"><button class="btn primary">${tFn("creator.tl.save", "Lưu timeline")}</button></div></form></div></div>`;
             dialog.querySelector("[data-close]").onclick = () => {
                 dialog.close();
                 dialog.remove();
@@ -5947,6 +6472,7 @@ function openArcModal(id = null) {
                 dialog.close();
                 dialog.remove();
             };
+            return true;
         };
         const m = $("#modal");
         const ds = b.displaySettings || {};
@@ -5956,12 +6482,22 @@ function openArcModal(id = null) {
             ? `<div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div>`
             : `<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:8px"><h4 style="margin:0 0 8px">${tFn("creator.sub.timeline", "Dòng thời gian")} <span id="arcTlCount" class="muted"></span></h4><div id="arcTlList"></div><div class="actions" style="margin-bottom:4px"><button type="button" class="btn small secondary" id="arcAddTl">${tFn("creator.arc.add_tl_row", "＋ Thêm dòng thời gian")}</button></div></div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div>`;
         m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${arc ? tFn("creator.arc.modal_edit", "Sửa Arc/Phần/Tập") : tFn("creator.arc.modal_add", "Thêm Arc/Phần/Tập")}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body"><form id="arcForm" class="form">${formTop}${formBottom}</form></div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
+        if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
         renderChildren();
         if (!tlHidden) renderTl();
         $("#arcAddChildChapter").onclick = () => openFormPickDialog("chapter");
         $("#arcAddChildArc").onclick = () => openFormPickDialog("arc");
         if (!tlHidden) $("#arcAddTl").onclick = () => openFormTimelineDialog();
+        if (transient && transient.length) {
+            transient.forEach((tr) => {
+                if (tr.kind === "pick:chapter")
+                    openFormPickDialog("chapter", (tr.values || {}).ref || "");
+                else if (tr.kind === "pick:arc")
+                    openFormPickDialog("arc", (tr.values || {}).ref || "");
+                else if (tr.kind === "tl") openFormTimelineDialog(tr.values);
+            });
+        }
         $("#arcForm").addEventListener("click", (e) => {
             const rc = e.target.closest("[data-removechild]");
             if (rc) {
@@ -6084,7 +6620,8 @@ function openArcModal(id = null) {
         };
     });
 }
-function openArcChildPicker(arcId, kind) {
+function openArcChildPicker(arcId, kind, opts = null) {
+    creatorModalState = { kind: "arcChild", arcId, childKind: kind };
     getBook(state.bookId).then((b) => {
         b.arcs = b.arcs || [];
         const arc = b.arcs.find((x) => x.id === arcId);
@@ -6132,7 +6669,8 @@ function openArcChildPicker(arcId, kind) {
             .join("");
         const m = $("#modal");
         m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${kind === "chapter" ? tFn("creator.arc.pick_ch", "Thêm chương vào") : tFn("creator.arc.pick_arc", "Lồng arc vào")} "${esc(arc.title || tFn("creator.noname", "Không tên"))}"</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body"><form id="arcChildForm" class="form"><div class="field"><label>${kind === "chapter" ? tFn("creator.ch.sel_one", "Chọn chương") : tFn("creator.arc.pick_label", "Chọn arc")}</label><select name="ref" required>${options}</select></div><div class="modal-foot"><button class="btn primary">${tFn("creator.arc.pick_save", "Thêm vào arc")}</button></div></form></div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
+        if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
         $("#arcChildForm").onsubmit = async (e) => {
             e.preventDefault();
             const ref = new FormData(e.target).get("ref");
@@ -6321,7 +6859,8 @@ function bindDragReorder() {
         });
     }
 }
-function openTimelineModal(id = null, presetTarget = null) {
+function openTimelineModal(id = null, presetTarget = null, opts = null) {
+    creatorModalState = { kind: "timeline", id, presetTarget };
     getBook(state.bookId).then((b) => {
         b.arcs = b.arcs || [];
         b.timeline = b.timeline || [];
@@ -6362,7 +6901,8 @@ function openTimelineModal(id = null, presetTarget = null) {
             .join("");
         const m = $("#modal");
         m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${entry ? tFn("creator.tl.modal_edit", "Sửa timeline") : tFn("creator.tl.modal_add", "Thêm timeline")}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body"><form id="timelineForm" class="form"><div class="field"><label>${tFn("creator.tl.target", "Áp dụng cho")}</label><select name="target" required>${options}</select></div><div class="field"><label>${tFn("creator.tl.time", "Thời gian / Mốc")}</label><input name="time" value="${esc(entry ? entry.time || "" : "")}" placeholder="${tFn("creator.tl.time_ph", "VD: Năm 1, Sau trận chiến...")}"></div><div class="field"><label>${tFn("creator.tl.text", "Nội dung")}</label><textarea name="text">${esc(entry ? entry.text || "" : "")}</textarea></div><div class="modal-foot"><button class="btn primary">${tFn("creator.tl.save", "Lưu timeline")}</button></div></form></div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
+        if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
         $("#timelineForm").onsubmit = async (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
@@ -6876,6 +7416,8 @@ function bindRelationDiagram() {
         fromNode: null,
         fromKey: null,
         fromP: null,
+        fromPort: null,
+        fromAnchor: null,
         hoverNode: null,
         line: null,
         panX: 0,
@@ -6986,6 +7528,8 @@ function relBindPointers(c, scene, drag, view, nodePos) {
         drag.line = null;
         drag.fromNode = null;
         drag.fromP = null;
+        drag.fromPort = null;
+        drag.fromAnchor = null;
         relDragBusy = false;
 
         if (relRenderQueued) {
@@ -7015,19 +7559,16 @@ function relBindPointers(c, scene, drag, view, nodePos) {
                 drag.fromNode = node;
                 drag.fromKey = node.dataset.key;
                 drag.moved = false;
+                const portEl = e.target.closest(".rel-port");
+                drag.fromPort = (portEl && portEl.dataset.port) || "right";
                 const p = nodePos()[node.dataset.key] || [x, y];
                 drag.fromP = [p[0], p[1]];
+                const sz = relNodeSize(drag.fromKey);
+                drag.fromAnchor = relPortAnchor(drag.fromP, sz, drag.fromPort);
                 const svg = scene.querySelector("svg");
                 if (svg) {
-                    const dx = x - p[0],
-                        dy = y - p[1];
-                    const len = Math.hypot(dx, dy) || 1;
-                    const sz = relNodeSize(drag.fromKey);
-                    const o1 = sz
-                        ? relBoundaryInset(sz[0], sz[1], dx / len, dy / len, 6)
-                        : 24;
-                    const sx = p[0] + (dx / len) * Math.min(o1, len),
-                        sy = p[1] + (dy / len) * Math.min(o1, len);
+                    const sx = drag.fromAnchor[0],
+                        sy = drag.fromAnchor[1];
                     const ln = document.createElementNS(
                         "http://www.w3.org/2000/svg",
                         "path",
@@ -7277,8 +7818,24 @@ function scheduleUpdateLines(onlyKey) {
     });
 }
 
+function relPortAnchor(p, size, side) {
+    const w = size ? size[0] : 150,
+        h = size ? size[1] : 50;
+    if (side === "top") return [p[0], p[1] - h / 2];
+    if (side === "bottom") return [p[0], p[1] + h / 2];
+    if (side === "left") return [p[0] - w / 2, p[1]];
+    return [p[0] + w / 2, p[1]];
+}
+
 function relUpdateConnectLine(drag, x, y) {
     if (!drag.line || !drag.fromP) return;
+    if (drag.fromAnchor) {
+        drag.line.setAttribute(
+            "d",
+            relBezier(drag.fromAnchor[0], drag.fromAnchor[1], x, y).d,
+        );
+        return;
+    }
     const dx = x - drag.fromP[0],
         dy = y - drag.fromP[1];
     const len = Math.hypot(dx, dy) || 1;
@@ -7348,7 +7905,7 @@ function renderRelationDiagram(b) {
         const subs = nodeFactions(b, n, data.shown)
             .map((x) => `<span class="rel-faction-chip">${esc(x)}</span>`)
             .join("");
-        nodesHtml += `<div class="rel-node ${n.kind}${key === focusKey ? " rel-selected" : ""}" data-key="${key}" style="left:${p[0] - 75}px;top:${p[1] - 25}px" title="${esc(n.name)}"><span class="rel-port" title="${tFn("creator.rel.port", "Kéo để tạo quan hệ")}"></span><span class="rel-name">${esc(n.name)}</span>${subs ? `<span class="rel-sub">${subs}</span>` : ""}<span class="rel-kind">${n.kind === "faction" ? tFn("creator.rel.faction", "thế lực") : n.kind === "character" ? tFn("creator.rel.character", "nhân vật") : tFn("creator.rel.stub", "tạm")}</span></div>`;
+        nodesHtml += `<div class="rel-node ${n.kind}${key === focusKey ? " rel-selected" : ""}" data-key="${key}" style="left:${p[0] - 75}px;top:${p[1] - 25}px" title="${esc(n.name)}"><span class="rel-port" data-port="top" title="${tFn("creator.rel.port", "Kéo để tạo quan hệ")}"></span><span class="rel-port" data-port="right" title="${tFn("creator.rel.port", "Kéo để tạo quan hệ")}"></span><span class="rel-port" data-port="bottom" title="${tFn("creator.rel.port", "Kéo để tạo quan hệ")}"></span><span class="rel-port" data-port="left" title="${tFn("creator.rel.port", "Kéo để tạo quan hệ")}"></span><span class="rel-name">${esc(n.name)}</span>${subs ? `<span class="rel-sub">${subs}</span>` : ""}<span class="rel-kind">${n.kind === "faction" ? tFn("creator.rel.faction", "thế lực") : n.kind === "character" ? tFn("creator.rel.character", "nhân vật") : tFn("creator.rel.stub", "tạm")}</span></div>`;
     }
     scene.style.width = W + "px";
     scene.style.height = H + "px";
@@ -7420,7 +7977,16 @@ function openRelationDialog(
     presetTo = null,
     presetScope = null,
     draft = null,
+    opts = null,
 ) {
+    creatorModalState = {
+        kind: "relation",
+        id,
+        presetFrom,
+        presetTo,
+        presetScope,
+        draft,
+    };
     getBook(state.bookId).then((b) => {
         b.relations = b.relations || [];
         const rel = id ? b.relations.find((r) => r.id === id) : null;
@@ -7483,7 +8049,8 @@ function openRelationDialog(
                 scope,
             },
         )}</div></div>`;
-        m.showModal();
+        if (!m.open) m.showModal();
+        if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
         $("#relClose").onclick = () => {
             relDraft = null;
             m.close();
@@ -9480,10 +10047,45 @@ function creatorInitSidebar() {
         }
     });
 }
+function creatorRefreshOpenModal() {
+    const state = creatorModalState;
+    if (!state) return;
+    const m = $("#modal");
+    if (!m || !m.open) return;
+    const currentSnapshot = creatorCaptureModalInputs(m);
+    if (state.kind === "entity") {
+        const etype = state.type || state.entityType || "";
+        openEntityModal(etype, state.id || null, {
+            preserve: currentSnapshot,
+            lang: true,
+        });
+        return;
+    }
+    if (state.kind === "relation") {
+        openRelationDialog(null, null, null, null, null, {
+            preserve: currentSnapshot,
+            lang: true,
+        });
+        return;
+    }
+}
 creatorInitSidebar();
+if (!$("#modal").dataset.creatorCloseBound) {
+    $("#modal").dataset.creatorCloseBound = "1";
+    $("#modal").addEventListener("close", () => {
+        if (
+            !$("#modal").querySelector("#cbSelectConfirm") &&
+            !$("#modal").querySelector("#cbFormSelectConfirm")
+        )
+            creatorModalState = null;
+    });
+}
 
 if (typeof onI18nChange === "function") {
-    onI18nChange(() => render());
+    onI18nChange(() => {
+        render();
+        creatorRefreshOpenModal();
+    });
 }
 try {
     if (window.parent && window.parent !== window) {

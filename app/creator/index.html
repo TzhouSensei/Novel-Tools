@@ -1000,6 +1000,10 @@
                 width: 117px;
                 height: 208px;
             }
+            .illu-img.illu-landscape {
+                width: 208px;
+                height: 117px;
+            }
             .illu-empty {
                 display: grid;
                 place-items: center;
@@ -1023,6 +1027,14 @@
             .illu-thumb-portrait {
                 width: 99px;
                 height: 176px;
+                border-radius: 10px;
+                object-fit: cover;
+                border: 1px solid var(--border);
+                flex: none;
+            }
+            .illu-thumb-landscape {
+                width: 176px;
+                height: 99px;
                 border-radius: 10px;
                 object-fit: cover;
                 border: 1px solid var(--border);
@@ -2274,9 +2286,6 @@
             }
             .rel-port {
                 position: absolute;
-                right: -8px;
-                top: 50%;
-                transform: translateY(-50%);
                 width: 15px;
                 height: 15px;
                 border-radius: 50%;
@@ -2284,8 +2293,36 @@
                 border: 2px solid var(--card-bg);
                 cursor: crosshair;
                 z-index: 3;
+                touch-action: none;
             }
-            .rel-port:hover {
+            .rel-port[data-port="top"] {
+                left: 50%;
+                top: -8px;
+                transform: translateX(-50%);
+            }
+            .rel-port[data-port="bottom"] {
+                left: 50%;
+                bottom: -8px;
+                transform: translateX(-50%);
+            }
+            .rel-port[data-port="left"] {
+                left: -8px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .rel-port[data-port="right"] {
+                right: -8px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .rel-port[data-port="top"]:hover {
+                transform: translateX(-50%) scale(1.2);
+            }
+            .rel-port[data-port="bottom"]:hover {
+                transform: translateX(-50%) scale(1.2);
+            }
+            .rel-port[data-port="left"]:hover,
+            .rel-port[data-port="right"]:hover {
                 transform: translateY(-50%) scale(1.2);
             }
             .rel-detail {
