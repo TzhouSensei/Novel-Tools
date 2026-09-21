@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "派閥",
     "creator.card.section_abilities": "能力 / スキル",
     "creator.card.empty_none": "なし",
-    "creator.card.empty_unknown": "不明"
+    "creator.card.empty_unknown": "不明",
+    "creator.itemcat.general": "一般",
+    "creator.itemcat.weapon": "武器・道具",
+    "creator.itemcat.armor": "防具",
+    "creator.itemcat.food": "食べ物・飲み物",
+    "creator.itemcat.costume": "衣装・装飾",
+    "creator.itemcat.consumable": "消耗品",
+    "creator.itemcat.blueprint": "設計図",
+    "creator.itemcat.others": "その他"
 }

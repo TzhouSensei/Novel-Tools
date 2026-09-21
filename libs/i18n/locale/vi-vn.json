@@ -1235,5 +1235,13 @@
     "creator.exp.epub_title": "EPUB",
     "creator.exp.txt_title": "TXT",
     "creator.exp.kindle_title": "Kindle",
-    "creator.ch.chapter_num": "Chương"
+    "creator.ch.chapter_num": "Chương",
+    "creator.itemcat.general": "Tổng quan",
+    "creator.itemcat.weapon": "Vũ khí & Công cụ",
+    "creator.itemcat.armor": "Giáp",
+    "creator.itemcat.food": "Thức ăn & Đồ uống",
+    "creator.itemcat.costume": "Trang phục & Trang trí",
+    "creator.itemcat.consumable": "Vật phẩm tiêu hao",
+    "creator.itemcat.blueprint": "Bản vẽ",
+    "creator.itemcat.others": "Khác"
 }

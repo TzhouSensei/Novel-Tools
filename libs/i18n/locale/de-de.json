@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Fraktionen",
     "creator.card.section_abilities": "Fähigkeiten / Fertigkeiten",
     "creator.card.empty_none": "Keine",
-    "creator.card.empty_unknown": "Unbekannt"
+    "creator.card.empty_unknown": "Unbekannt",
+    "creator.itemcat.general": "Allgemein",
+    "creator.itemcat.weapon": "Waffen & Werkzeuge",
+    "creator.itemcat.armor": "Rüstung",
+    "creator.itemcat.food": "Speisen & Getränke",
+    "creator.itemcat.costume": "Kostüme & Dekoration",
+    "creator.itemcat.consumable": "Verbrauchsgüter",
+    "creator.itemcat.blueprint": "Bauplan",
+    "creator.itemcat.others": "Sonstiges"
 }

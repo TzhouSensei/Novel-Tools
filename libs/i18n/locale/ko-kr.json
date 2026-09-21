@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "파벌",
     "creator.card.section_abilities": "능력 / 기술",
     "creator.card.empty_none": "없음",
-    "creator.card.empty_unknown": "알 수 없음"
+    "creator.card.empty_unknown": "알 수 없음",
+    "creator.itemcat.general": "일반",
+    "creator.itemcat.weapon": "무기 및 도구",
+    "creator.itemcat.armor": "방어구",
+    "creator.itemcat.food": "음식 및 음료",
+    "creator.itemcat.costume": "의상 및 장식",
+    "creator.itemcat.consumable": "소모품",
+    "creator.itemcat.blueprint": "설계도",
+    "creator.itemcat.others": "기타"
 }

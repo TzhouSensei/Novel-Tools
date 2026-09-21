@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Factiōnēs",
     "creator.card.section_abilities": "Facultates / Artes",
     "creator.card.empty_none": "Nullus",
-    "creator.card.empty_unknown": "Ignotum"
+    "creator.card.empty_unknown": "Ignotum",
+    "creator.itemcat.general": "Generalis",
+    "creator.itemcat.weapon": "Arma et Instrumenta",
+    "creator.itemcat.armor": "Armatura",
+    "creator.itemcat.food": "Cibi et Potiones",
+    "creator.itemcat.costume": "Vestes et Ornamenta",
+    "creator.itemcat.consumable": "Consumptibilia",
+    "creator.itemcat.blueprint": "Forma",
+    "creator.itemcat.others": "Alia"
 }

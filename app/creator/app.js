@@ -37,6 +37,7 @@ let db,
         relTab: "list",
         abilityTab: "list",
         realmTab: "list",
+        itemTab: "general",
         systemsTab: "overview",
         systemDslId: null,
         editing: null,
@@ -55,6 +56,7 @@ function saveState() {
                 relTab: state.relTab,
                 abilityTab: state.abilityTab,
                 realmTab: state.realmTab,
+                itemTab: state.itemTab,
                 systemsTab: state.systemsTab,
                 returnTo: state.returnTo,
             }),
@@ -75,6 +77,7 @@ function restoreState() {
             relTab: "list",
             abilityTab: "list",
             realmTab: "list",
+            itemTab: "general",
             systemsTab: "overview",
             systemDslId: null,
             returnTo: "dashboard",
@@ -320,6 +323,93 @@ const POPULAR_GENRES = [
     },
 ];
 
+const ITEM_TAB_DEFS = [
+    { v: "general", k: "creator.itemcat.general", f: "General" },
+    {
+        v: "weapon",
+        k: "creator.itemcat.weapon",
+        f: "Weapon & Tools",
+        tag: "Weapon & Tools",
+    },
+    { v: "armor", k: "creator.itemcat.armor", f: "Armor", tag: "Armor" },
+    {
+        v: "food",
+        k: "creator.itemcat.food",
+        f: "Foods & Drinks",
+        tag: "Foods & Drinks",
+    },
+    {
+        v: "costume",
+        k: "creator.itemcat.costume",
+        f: "Costume & Decoration",
+        tag: "Costume & Decoration",
+    },
+    {
+        v: "consumable",
+        k: "creator.itemcat.consumable",
+        f: "Consumable",
+        tag: "Consumable",
+    },
+    {
+        v: "blueprint",
+        k: "creator.itemcat.blueprint",
+        f: "Blueprint",
+        tag: "Blueprint",
+    },
+    { v: "others", k: "creator.itemcat.others", f: "Others", others: true },
+];
+const ITEM_CATEGORY_TABS = ITEM_TAB_DEFS.filter((d) => !!d.tag);
+const normTagKey = (t) => String(t ?? "").trim().toLowerCase();
+function csvValues(value) {
+    return String(value ?? "")
+        .split(/[,;]/)
+        .map((v) => v.trim())
+        .filter(Boolean);
+}
+function toggleCsvValue(input, value) {
+    const vals = csvValues(input.value);
+    const idx = vals.findIndex((v) => normTagKey(v) === normTagKey(value));
+    if (idx >= 0) vals.splice(idx, 1);
+    else vals.push(value);
+    input.value = vals.join(", ");
+    return vals;
+}
+function syncCsvToggles(root, value, selector, dataKey) {
+    const keys = csvValues(value).map(normTagKey);
+    (root || document)
+        .querySelectorAll(selector)
+        .forEach((btn) =>
+            btn.classList.toggle(
+                "active",
+                keys.includes(normTagKey(btn.dataset[dataKey])),
+            ),
+        );
+}
+function itemTagKeys(x) {
+    const raw = x && Array.isArray(x.tags) ? x.tags : [];
+    return raw.map(normTagKey).filter(Boolean);
+}
+function itemHasTag(x, tag) {
+    return itemTagKeys(x).includes(normTagKey(tag));
+}
+function itemHasCategoryTag(x) {
+    const keys = itemTagKeys(x);
+    return ITEM_CATEGORY_TABS.some((d) => keys.includes(normTagKey(d.tag)));
+}
+function itemsForItemTab(allItems, tabValue) {
+    const def = ITEM_TAB_DEFS.find((d) => d.v === tabValue) || ITEM_TAB_DEFS[0];
+    const list = Array.isArray(allItems) ? allItems : [];
+    if (def.tag) return list.filter((x) => itemHasTag(x, def.tag));
+    if (def.others) return list.filter((x) => !itemHasCategoryTag(x));
+    return list;
+}
+function itemCatTogglesHTML(x) {
+    return ITEM_CATEGORY_TABS.map(
+        (d) =>
+            `<button type="button" class="genre-toggle btn small ${itemHasTag(x, d.tag) ? "active" : ""}" data-itemcat="${esc(d.tag)}">${esc(tFn(d.k, d.f))}</button>`,
+    ).join("");
+}
+
 function normalizeBook(b) {
     if (!b || typeof b !== "object") return b;
     for (const k of BOOK_ARRAYS) if (!Array.isArray(b[k])) b[k] = [];
@@ -539,10 +629,10 @@ async function renderSidebar() {
             .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
             .map(
                 (b) =>
-                    `<button class="book-link ${state.bookId === b.id ? "active" : ""}" data-book="${b.id}">${b.cover ? `<img class="book-cover-mini" src="${b.cover}">` : `<div class="book-cover-mini"></div>`}<span class="book-title">${esc(b.title || tFn("creator.untitled", "Chưa đặt tên"))}</span></button>`,
+                    `<button class="book-link ${state.bookId === b.id ? "active" : ""}" data-book="${b.id}">${b.cover ? `<img class="book-cover-mini" src="${b.cover}">` : `<div class="book-cover-mini"></div>`}<span class="book-title"${b.title ? "" : ' data-i18n="creator.untitled"'}>${esc(b.title || tFn("creator.untitled", "Chưa đặt tên"))}</span></button>`,
             )
             .join("") ||
-        `<div class="muted" style="padding:10px">${tFn("creator.library.empty", "Chưa có truyện.")}</div>`;
+        `<div class="muted" style="padding:10px" data-i18n="creator.library.empty">${tFn("creator.library.empty", "Chưa có truyện.")}</div>`;
     $$("[data-book]").forEach(
         (x) =>
             (x.onclick = () => {
@@ -571,9 +661,9 @@ function bookFormHTML(book = null) {
     const b = book || defaultBook();
     const genreBtns = POPULAR_GENRES.map(
         (g) =>
-            `<button type="button" class="genre-toggle btn small" data-genre="${esc(g.v)}">${esc(tFn(g.k, g.f))}</button>`,
+            `<button type="button" class="genre-toggle btn small" data-genre="${esc(g.v)}" data-i18n="${esc(g.k)}">${esc(tFn(g.k, g.f))}</button>`,
     ).join("");
-    return `<div class="page-head"><div class="head-left"><button type="button" class="btn small ghost back-btn" id="backBtn">←</button><div><h1>${book ? tFn("creator.form.edit_title", "Chỉnh sửa thông tin") : tFn("creator.form.create_title", "Tạo truyện")}</h1><div class="muted">${book ? tFn("creator.form.edit_sub", "Cập nhật metadata của truyện.") : tFn("creator.form.create_sub", "Tạo một workspace truyện mới.")}</div></div></div></div><form id="bookForm" class="card form"><input type="hidden" name="id" value="${b.id}"><div class="form-row"><div class="field"><label>${tFn("creator.form.title", "Tiêu đề *")}</label><input name="title" required value="${esc(b.title)}" placeholder="${tFn("creator.form.title_ph", "Ví dụ: Đao Kiếm Thần Vực")}"></div><div class="field"><label>${tFn("creator.form.genres", "Thể loại")}</label><input name="genres" value="${esc((b.genres || []).join(", "))}" placeholder="${tFn("creator.form.genres_ph", "Fantasy, Apocalypse, Action; Sci-Fi")}"><div class="genre-popular">${genreBtns}</div></div></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description" placeholder="${tFn("creator.form.desc_ph", "Tóm tắt truyện...")}">${esc(b.description)}</textarea></div><div class="field"><label>${tFn("creator.form.cover", "Ảnh bìa")}</label><div class="cover-wrap"><div><img id="coverPreview" class="cover-preview" src="${b.cover || ""}" ${b.cover ? "" : 'style="display:none"'}><div id="coverEmpty" class="cover-preview cover-placeholder" ${b.cover ? 'style="display:none"' : ""}>${tFn("creator.cover.none", "NO COVER")}</div></div><div><input id="coverInput" type="file" accept="image/*"><button type="button" id="removeCover" class="btn small ghost">${tFn("creator.form.remove_cover", "Bỏ ảnh")}</button></div></div></div><div class="actions"><button class="btn primary">${tFn("creator.form.save", "Lưu truyện")}</button><button type="button" id="cancelForm" class="btn ghost">${tFn("creator.form.cancel", "Hủy")}</button></div></form>`;
+    return `<div class="page-head"><div class="head-left"><button type="button" class="btn small ghost back-btn" id="backBtn">←</button><div><h1 data-i18n="${book ? "creator.form.edit_title" : "creator.form.create_title"}">${book ? tFn("creator.form.edit_title", "Chỉnh sửa thông tin") : tFn("creator.form.create_title", "Tạo truyện")}</h1><div class="muted" data-i18n="${book ? "creator.form.edit_sub" : "creator.form.create_sub"}">${book ? tFn("creator.form.edit_sub", "Cập nhật metadata của truyện.") : tFn("creator.form.create_sub", "Tạo một workspace truyện mới.")}</div></div></div></div><form id="bookForm" class="card form"><input type="hidden" name="id" value="${b.id}"><div class="form-row"><div class="field"><label data-i18n="creator.form.title">${tFn("creator.form.title", "Tiêu đề *")}</label><input name="title" required value="${esc(b.title)}" placeholder="${tFn("creator.form.title_ph", "Ví dụ: Đao Kiếm Thần Vực")}" data-i18n-placeholder="creator.form.title_ph"></div><div class="field"><label data-i18n="creator.form.genres">${tFn("creator.form.genres", "Thể loại")}</label><input name="genres" value="${esc((b.genres || []).join(", "))}" placeholder="${tFn("creator.form.genres_ph", "Fantasy, Apocalypse, Action; Sci-Fi")}" data-i18n-placeholder="creator.form.genres_ph"><div class="genre-popular">${genreBtns}</div></div></div><div class="field"><label data-i18n="creator.form.desc">${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description" placeholder="${tFn("creator.form.desc_ph", "Tóm tắt truyện...")}" data-i18n-placeholder="creator.form.desc_ph">${esc(b.description)}</textarea></div><div class="field"><label data-i18n="creator.form.cover">${tFn("creator.form.cover", "Ảnh bìa")}</label><div class="cover-wrap"><div><img id="coverPreview" class="cover-preview" src="${b.cover || ""}" ${b.cover ? "" : 'style="display:none"'}><div id="coverEmpty" class="cover-preview cover-placeholder" data-i18n="creator.cover.none" ${b.cover ? 'style="display:none"' : ""}>${tFn("creator.cover.none", "NO COVER")}</div></div><div><input id="coverInput" type="file" accept="image/*"><button type="button" id="removeCover" class="btn small ghost" data-i18n="creator.form.remove_cover">${tFn("creator.form.remove_cover", "Bỏ ảnh")}</button></div></div></div><div class="actions"><button class="btn primary" data-i18n="creator.form.save">${tFn("creator.form.save", "Lưu truyện")}</button><button type="button" id="cancelForm" class="btn ghost" data-i18n="creator.form.cancel">${tFn("creator.form.cancel", "Hủy")}</button></div></form>`;
 }
 async function manageHTML() {
     const b = await getBook(state.bookId);
@@ -622,6 +712,7 @@ function manageBody(b) {
     if (state.tab === "locations") return locationsSectionHTML(b);
     if (state.tab === "definitions") return definitionsSectionHTML(b);
     if (state.tab === "systems") return systemsSectionHTML(b);
+    if (state.tab === "items") return itemsSectionHTML(b);
     const map = {
         items: [tFn("creator.tab.items", "Vật phẩm"), "item", "name", ""],
         itemsets: [
@@ -878,6 +969,22 @@ function chaptersHTML(b) {
             .join("") ||
         `<tr><td colspan="7"><div class="empty">${tFn("creator.ch.empty", "Chưa có chương nào.")}</div></td></tr>`
     }</tbody></table></div>`;
+}
+function itemsSectionHTML(b) {
+    const cur = ITEM_TAB_DEFS.some((d) => d.v === state.itemTab)
+        ? state.itemTab
+        : ITEM_TAB_DEFS[0].v;
+    const body = entityHTML(
+        Object.assign({}, b, { items: itemsForItemTab(b.items, cur) }),
+        tFn("creator.tab.items", "Vật phẩm"),
+        "item",
+        "name",
+        "",
+    );
+    return `<div class="tabs subtabs">${ITEM_TAB_DEFS.map(
+        (d) =>
+            `<button class="tab ${cur === d.v ? "active" : ""}" data-itemtab="${d.v}">${esc(tFn(d.k, d.f))}</button>`,
+    ).join("")}</div>${body}`;
 }
 function entityHTML(b, title, type, nameField, descLabel) {
     const arr = b[entityKey(type)] || [];
@@ -3700,13 +3807,7 @@ function gotoBack() {
 function updateGenreButtons() {
     const input = $('#bookForm input[name="genres"]');
     if (!input) return;
-    const vals = input.value
-        .split(/[,;]/)
-        .map((x) => x.trim())
-        .filter(Boolean);
-    $$(".genre-toggle").forEach((btn) => {
-        btn.classList.toggle("active", vals.includes(btn.dataset.genre));
-    });
+    syncCsvToggles($("#bookForm"), input.value, ".genre-toggle", "genre");
 }
 
 function bindPage() {
@@ -3864,6 +3965,15 @@ function bindPage() {
             (x.onclick = () => {
                 if (state.realmTab === x.dataset.realmtab) return;
                 state.realmTab = x.dataset.realmtab;
+                saveState();
+                renderWithTransition("#manageBody");
+            }),
+    );
+    $$("[data-itemtab]").forEach(
+        (x) =>
+            (x.onclick = () => {
+                if (state.itemTab === x.dataset.itemtab) return;
+                state.itemTab = x.dataset.itemtab;
                 saveState();
                 renderWithTransition("#manageBody");
             }),
@@ -4070,20 +4180,17 @@ function bindPage() {
     );
     $("#bookForm")?.addEventListener("submit", saveBookForm);
     $("#cancelForm")?.addEventListener("click", () => gotoBack());
-    $$(".genre-toggle").forEach((btn) => {
+    $$("#bookForm .genre-toggle").forEach((btn) => {
         btn.addEventListener("click", () => {
             const input = $('#bookForm input[name="genres"]');
             if (!input) return;
-            const vals = input.value
-                .split(/[,;]/)
-                .map((x) => x.trim())
-                .filter(Boolean);
-            const g = btn.dataset.genre;
-            const idx = vals.indexOf(g);
-            if (idx >= 0) vals.splice(idx, 1);
-            else vals.push(g);
-            input.value = vals.join(", ");
-            btn.classList.toggle("active", vals.includes(g));
+            toggleCsvValue(input, btn.dataset.genre);
+            syncCsvToggles(
+                btn.closest("#bookForm"),
+                input.value,
+                ".genre-toggle",
+                "genre",
+            );
         });
     });
     $("#backBtn")?.addEventListener("click", gotoBack);
@@ -4828,6 +4935,15 @@ function creatorRefreshOpenModal() {
     else if (st.kind === "timeline")
         openTimelineModal(st.id, st.presetTarget, { preserve: snap });
 }
+function creatorEntityModalCardHTML(type, item, b) {
+    let html = entityForm(type, item, b);
+    if (ILLU_TYPES.includes(type)) {
+        const sec = illuSectionHTML(item, type);
+        const fi = html.indexOf('<div class="modal-foot">');
+        if (fi >= 0) html = html.slice(0, fi) + sec + html.slice(fi);
+    }
+    return `<div class="modal-card"><div class="modal-head"><strong>${item ? tFn("creator.modal.edit", "Chỉnh sửa") : tFn("creator.modal.add", "Thêm")} ${typeLabel(type)}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body">${html}</div></div>`;
+}
 function openEntityModal(type, id = null, opts = null) {
     if (String(type || "").startsWith("sys:")) {
         openSysModal(type.slice(4), id, opts);
@@ -4841,15 +4957,9 @@ function openEntityModal(type, id = null, opts = null) {
     getBook(state.bookId).then((b) => {
         const key = entityKey(type);
         b[key] = b[key] || [];
-        let item = id ? b[key].find((x) => x.id === id) : null;
-        let html = entityForm(type, item, b);
-        if (ILLU_TYPES.includes(type)) {
-            const sec = illuSectionHTML(item, type);
-            const fi = html.indexOf('<div class="modal-foot">');
-            if (fi >= 0) html = html.slice(0, fi) + sec + html.slice(fi);
-        }
+        const item = id ? b[key].find((x) => x.id === id) : null;
         const m = $("#modal");
-        m.innerHTML = `<div class="modal-card"><div class="modal-head"><strong>${item ? tFn("creator.modal.edit", "Chỉnh sửa") : tFn("creator.modal.add", "Thêm")} ${typeLabel(type)}</strong><button class="icon-btn" onclick="modal.close()">×</button></div><div class="modal-body">${html}</div></div>`;
+        m.innerHTML = creatorEntityModalCardHTML(type, item, b);
         if (!m.open) m.showModal();
         if (opts && opts.preserve) creatorRestoreModalInputs(m, opts.preserve);
 
@@ -4926,6 +5036,26 @@ function openEntityModal(type, id = null, opts = null) {
                 if (h) h.value = "";
             }
         });
+        if (m.querySelector("[data-itemcat]")) {
+            const tagsInput = () =>
+                m.querySelector('#entityForm input[name="tags"]');
+            const syncItemCat = () =>
+                syncCsvToggles(
+                    m,
+                    (tagsInput() || {}).value || "",
+                    "[data-itemcat]",
+                    "itemcat",
+                );
+            syncItemCat();
+            m.querySelectorAll("[data-itemcat]").forEach((btn) => {
+                btn.onclick = () => {
+                    const inp = tagsInput();
+                    if (!inp) return;
+                    toggleCsvValue(inp, btn.dataset.itemcat);
+                    syncItemCat();
+                };
+            });
+        }
         bindComboboxes(m);
         m.querySelectorAll(".ability-row").forEach((row) => {
             const abilitySelect = row.querySelector(".ability-select");
@@ -6281,7 +6411,7 @@ function entityForm(type, x, b) {
     if (type === "ability")
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label>${tagComboHTML("abilityTags", ABILITY_TAG_OPTIONS, (x.tags || []).join(", "))}</div><div class="field" ${hideSkillsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.ability_skillsets", "Đến từ bộ kỹ năng")}</label>${(b.skillsets || []).length ? `<div class="dyn-list" data-dynlist="skillsets">${(x.skillsetIds || []).map((sid) => skillsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="skillsets">${tFn("creator.f.add_skillset", "＋ Thêm bộ kỹ năng")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.skillset_none_hint", "Chưa có bộ kỹ năng nào — hãy thêm ở tab Bộ kỹ năng.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "item")
-        return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><div class="field" ${hideChars ? 'style="display:none"' : ""}><label>${tFn("creator.f.owners", "Người sở hữu")}</label>${(b.characters || []).length ? `<div class="dyn-list" data-dynlist="owners">${(x.ownerIds || []).map((cid) => ownerPickRowHTML(b, cid)).join("")}<button type="button" class="btn small secondary" data-dynadd="owners">${tFn("creator.f.add_owner", "＋ Thêm người sở hữu")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.owner_none_hint", "Chưa có nhân vật nào — hãy tạo nhân vật trước.")}</div>`}</div><div class="field" ${hideItemsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.item_sets", "Thuộc bộ vật phẩm")}</label>${(b.itemsets || []).length ? `<div class="dyn-list" data-dynlist="itemsetpicks">${(x.itemsetIds || []).map((sid) => itemsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="itemsetpicks">${tFn("creator.f.add_item_set", "＋ Thêm bộ vật phẩm")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.itemset_none_hint", "Chưa có bộ vật phẩm nào — hãy thêm ở tab Bộ vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
+        return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"><div class="genre-popular">${itemCatTogglesHTML(x)}</div></div><div class="field" ${hideChars ? 'style="display:none"' : ""}><label>${tFn("creator.f.owners", "Người sở hữu")}</label>${(b.characters || []).length ? `<div class="dyn-list" data-dynlist="owners">${(x.ownerIds || []).map((cid) => ownerPickRowHTML(b, cid)).join("")}<button type="button" class="btn small secondary" data-dynadd="owners">${tFn("creator.f.add_owner", "＋ Thêm người sở hữu")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.owner_none_hint", "Chưa có nhân vật nào — hãy tạo nhân vật trước.")}</div>`}</div><div class="field" ${hideItemsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.item_sets", "Thuộc bộ vật phẩm")}</label>${(b.itemsets || []).length ? `<div class="dyn-list" data-dynlist="itemsetpicks">${(x.itemsetIds || []).map((sid) => itemsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="itemsetpicks">${tFn("creator.f.add_item_set", "＋ Thêm bộ vật phẩm")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.itemset_none_hint", "Chưa có bộ vật phẩm nào — hãy thêm ở tab Bộ vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "itemset")
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><div class="field" ${hideItems ? 'style="display:none"' : ""}><label>${tFn("creator.f.items", "Danh sách vật phẩm của bộ")}</label><div class="dyn-list" data-dynlist="items">${(x.items || []).map((s) => itemPickRowHTML(b, s)).join("")}<button type="button" class="btn small secondary" data-dynadd="items">${tFn("creator.f.add_item", "＋ Thêm vật phẩm")}</button></div>${(b.items || []).length ? `<div class="muted" style="font-size:12px">${tFn("creator.f.item_pick_hint", "Chọn từ danh sách Vật phẩm đã tạo.")}</div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.item_none_hint", "Chưa có vật phẩm nào — hãy thêm ở tab Vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "rule") {
@@ -10427,27 +10557,159 @@ function creatorInitSidebar() {
         }
     });
 }
-function creatorRefreshOpenModal() {
-    const state = creatorModalState;
-    if (!state) return;
+const I18N_PATCH_ATTRS = ["placeholder", "title", "aria-label", "alt"];
+const I18N_PATCH_SKIP_VALUE_TAGS = { INPUT: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1, BUTTON: 1 };
+const I18N_PATCH_TEXT_KEEP = { TEXTAREA: 1, SCRIPT: 1, STYLE: 1 };
+function creatorI18nPatchAttrs(live, next) {
+    for (const name of I18N_PATCH_ATTRS) {
+        const want = next.getAttribute(name);
+        if (want === live.getAttribute(name)) continue;
+        if (want === null) live.removeAttribute(name);
+        else live.setAttribute(name, want);
+    }
+    const tag = String(live.tagName || "");
+    if (!I18N_PATCH_SKIP_VALUE_TAGS[tag] && next.tagName === live.tagName) {
+        const want = next.getAttribute("value");
+        if (want !== live.getAttribute("value")) {
+            if (want === null) live.removeAttribute("value");
+            else live.setAttribute("value", want);
+        }
+    }
+}
+function creatorI18nPatchNodes(live, next) {
+    const liveNodes = live.childNodes;
+    const nextNodes = next.childNodes;
+    if (liveNodes.length !== nextNodes.length) return false;
+    const keepText = !!I18N_PATCH_TEXT_KEEP[String(live.tagName || "")];
+    for (let i = 0; i < nextNodes.length; i++) {
+        const cur = liveNodes[i];
+        const nxt = nextNodes[i];
+        if (keepText && nxt.nodeType === 3) continue;
+        if (nxt.nodeType === 3) {
+            if (cur.nodeType !== 3) return false;
+            if (cur.nodeValue !== nxt.nodeValue) cur.nodeValue = nxt.nodeValue;
+            continue;
+        }
+        if (nxt.nodeType !== 1) continue;
+        if (cur.nodeType !== 1 || cur.tagName !== nxt.tagName) return false;
+        creatorI18nPatchAttrs(cur, nxt);
+        if (!creatorI18nPatchNodes(cur, nxt)) return false;
+    }
+    return true;
+}
+function creatorI18nPatchHTML(live, html) {
+    const tpl = document.createElement("template");
+    tpl.innerHTML = html;
+    return creatorI18nPatchNodes(live, tpl.content);
+}
+async function creatorPatchOpenModalI18n() {
     const m = $("#modal");
-    if (!m || !m.open) return;
-    const currentSnapshot = creatorCaptureModalInputs(m);
-    if (state.kind === "entity") {
-        const etype = state.type || state.entityType || "";
-        openEntityModal(etype, state.id || null, {
-            preserve: currentSnapshot,
-            lang: true,
-        });
+    const st = creatorModalState;
+    if (!st || !m || !m.open) return false;
+    if (
+        m.querySelector("#cbSelectConfirm") ||
+        m.querySelector("#cbFormSelectConfirm")
+    )
+        return false;
+    if (st.kind !== "entity") return false;
+    const type = st.type || st.entityType || "";
+    const live = m.querySelector(".modal-card");
+    if (!type || type === "relation" || !live) return false;
+    const b = await getBook(state.bookId);
+    if (!b) return false;
+    const key = entityKey(type);
+    b[key] = b[key] || [];
+    const item = st.id ? b[key].find((x) => x.id === st.id) : null;
+    return creatorI18nPatchHTML(
+        live,
+        creatorEntityModalCardHTML(type, item, b),
+    );
+}
+function creatorI18nFocusSnapshot(root) {
+    const active = document.activeElement;
+    if (!active || !root.contains(active)) return null;
+    const all = [...root.querySelectorAll("input, textarea, select, button, [tabindex]")];
+    const index = all.indexOf(active);
+    if (index < 0) return null;
+    let anchor = active;
+    while (anchor && anchor.parentElement && anchor.parentElement !== root) anchor = anchor.parentElement;
+    return {
+        index,
+        start: typeof active.selectionStart === "number" ? active.selectionStart : null,
+        end: typeof active.selectionEnd === "number" ? active.selectionEnd : null,
+        top: anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect().top : null,
+    };
+}
+function creatorI18nRestoreFocus(root, snap) {
+    if (!snap) return;
+    const all = [...root.querySelectorAll("input, textarea, select, button, [tabindex]")];
+    const el = all[snap.index];
+    if (!el || typeof el.focus !== "function") return;
+    try {
+        el.focus({ preventScroll: true });
+    } catch (e) {
+        try {
+            el.focus();
+        } catch (_e2) {}
+    }
+    try {
+        if (snap.start !== null && typeof el.setSelectionRange === "function" && typeof snap.start === "number" && typeof snap.end === "number") el.setSelectionRange(snap.start, snap.end);
+    } catch (e) {}
+}
+function creatorI18nCaptureSearchValues(root) {
+    const out = {};
+    (root || document).querySelectorAll("[data-entsearch]").forEach((el, i) => {
+        if (el.value) out[`entsearch:${i}`] = el.value;
+    });
+    return out;
+}
+function creatorI18nRestoreSearchValues(root, saved) {
+    if (!saved) return;
+    (root || document).querySelectorAll("[data-entsearch]").forEach((el, i) => {
+        const v = saved[`entsearch:${i}`];
+        if (typeof v === "string" && v) {
+            el.value = v;
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+    });
+}
+async function creatorRefreshI18n() {
+    if (typeof applyI18n === "function") {
+        try {
+            applyI18n();
+        } catch (e) {}
+    }
+    const sidebar = $("#bookList");
+    if (sidebar) {
+        try {
+            await renderSidebar();
+        } catch (e) {}
+    }
+    const content = $("#content");
+    if (!content) {
+        creatorRefreshOpenModal();
         return;
     }
-    if (state.kind === "relation") {
-        openRelationDialog(null, null, null, null, null, {
-            preserve: currentSnapshot,
-            lang: true,
-        });
+    const focusSnap = creatorI18nFocusSnapshot(content);
+    const y = window.scrollY;
+    const html = await pageHTML();
+    if (creatorI18nPatchHTML(content, html)) {
+        creatorI18nRestoreFocus(content, focusSnap);
+        if (!(await creatorPatchOpenModalI18n())) creatorRefreshOpenModal();
         return;
     }
+    const liveValues = creatorCaptureModalInputs(content);
+    const searchValues = creatorI18nCaptureSearchValues(content);
+    content.innerHTML = html;
+    creatorRestoreModalInputs(content, liveValues);
+    bindPage();
+    bindRelationDiagram();
+    creatorI18nRestoreSearchValues(content, searchValues);
+    creatorI18nRestoreFocus(content, focusSnap);
+    try {
+        window.scrollTo(0, y);
+    } catch (e) {}
+    creatorRefreshOpenModal();
 }
 creatorInitSidebar();
 if (!$("#modal").dataset.creatorCloseBound) {
@@ -10463,8 +10725,7 @@ if (!$("#modal").dataset.creatorCloseBound) {
 
 if (typeof onI18nChange === "function") {
     onI18nChange(() => {
-        render();
-        creatorRefreshOpenModal();
+        creatorRefreshI18n();
     });
 }
 try {

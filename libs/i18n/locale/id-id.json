@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Faksi",
     "creator.card.section_abilities": "Kemampuan / Keterampilan",
     "creator.card.empty_none": "Tidak ada",
-    "creator.card.empty_unknown": "Tidak diketahui"
+    "creator.card.empty_unknown": "Tidak diketahui",
+    "creator.itemcat.general": "Umum",
+    "creator.itemcat.weapon": "Senjata & Alat",
+    "creator.itemcat.armor": "Armor",
+    "creator.itemcat.food": "Makanan & Minuman",
+    "creator.itemcat.costume": "Kostum & Dekorasi",
+    "creator.itemcat.consumable": "Konsumsi",
+    "creator.itemcat.blueprint": "Cetak Biru",
+    "creator.itemcat.others": "Lainnya"
 }

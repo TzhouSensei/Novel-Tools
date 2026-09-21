@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "กลุ่ม",
     "creator.card.section_abilities": "ความสามารถ / ทักษะ",
     "creator.card.empty_none": "ไม่มี",
-    "creator.card.empty_unknown": "ไม่ทราบ"
+    "creator.card.empty_unknown": "ไม่ทราบ",
+    "creator.itemcat.general": "ทั่วไป",
+    "creator.itemcat.weapon": "อาวุธและเครื่องมือ",
+    "creator.itemcat.armor": "เกราะ",
+    "creator.itemcat.food": "อาหารและเครื่องดื่ม",
+    "creator.itemcat.costume": "เครื่องแต่งกายและของประดับ",
+    "creator.itemcat.consumable": "ไอเทมใช้แล้วหมด",
+    "creator.itemcat.blueprint": "พิมพ์เขียว",
+    "creator.itemcat.others": "อื่น ๆ"
 }

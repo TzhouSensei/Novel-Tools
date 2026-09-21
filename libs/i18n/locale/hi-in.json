@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "गुट",
     "creator.card.section_abilities": "क्षमताएं / कौशल",
     "creator.card.empty_none": "कोई नहीं",
-    "creator.card.empty_unknown": "अज्ञात"
+    "creator.card.empty_unknown": "अज्ञात",
+    "creator.itemcat.general": "सामान्य",
+    "creator.itemcat.weapon": "हथियार और औज़ार",
+    "creator.itemcat.armor": "कवच",
+    "creator.itemcat.food": "खाना और पेय",
+    "creator.itemcat.costume": "पोशाक और सजावट",
+    "creator.itemcat.consumable": "उपभोग्य",
+    "creator.itemcat.blueprint": "ब्लूप्रिंट",
+    "creator.itemcat.others": "अन्य"
 }

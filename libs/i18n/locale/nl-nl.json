@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Facties",
     "creator.card.section_abilities": "Vaardigheden / Capaciteiten",
     "creator.card.empty_none": "Geen",
-    "creator.card.empty_unknown": "Onbekend"
+    "creator.card.empty_unknown": "Onbekend",
+    "creator.itemcat.general": "Algemeen",
+    "creator.itemcat.weapon": "Wapens & gereedschap",
+    "creator.itemcat.armor": "Harnas",
+    "creator.itemcat.food": "Eten & drinken",
+    "creator.itemcat.costume": "Kostuums & decoratie",
+    "creator.itemcat.consumable": "Verbruiksartikelen",
+    "creator.itemcat.blueprint": "Blauwdruk",
+    "creator.itemcat.others": "Overig"
 }

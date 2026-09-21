@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "派系",
     "creator.card.section_abilities": "能力 / 技能",
     "creator.card.empty_none": "無",
-    "creator.card.empty_unknown": "未知"
+    "creator.card.empty_unknown": "未知",
+    "creator.itemcat.general": "一般",
+    "creator.itemcat.weapon": "武器與工具",
+    "creator.itemcat.armor": "護甲",
+    "creator.itemcat.food": "食物與飲料",
+    "creator.itemcat.costume": "服裝與裝飾",
+    "creator.itemcat.consumable": "消耗品",
+    "creator.itemcat.blueprint": "藍圖",
+    "creator.itemcat.others": "其他"
 }

@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "派系",
     "creator.card.section_abilities": "能力 / 技能",
     "creator.card.empty_none": "无",
-    "creator.card.empty_unknown": "未知"
+    "creator.card.empty_unknown": "未知",
+    "creator.itemcat.general": "常规",
+    "creator.itemcat.weapon": "武器与工具",
+    "creator.itemcat.armor": "护甲",
+    "creator.itemcat.food": "食物与饮料",
+    "creator.itemcat.costume": "服装与装饰",
+    "creator.itemcat.consumable": "消耗品",
+    "creator.itemcat.blueprint": "蓝图",
+    "creator.itemcat.others": "其他"
 }

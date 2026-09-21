@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Фракции",
     "creator.card.section_abilities": "Способности / Навыки",
     "creator.card.empty_none": "Нет",
-    "creator.card.empty_unknown": "Неизвестно"
+    "creator.card.empty_unknown": "Неизвестно",
+    "creator.itemcat.general": "Общее",
+    "creator.itemcat.weapon": "Оружие и инструменты",
+    "creator.itemcat.armor": "Броня",
+    "creator.itemcat.food": "Еда и напитки",
+    "creator.itemcat.costume": "Костюмы и украшения",
+    "creator.itemcat.consumable": "Расходуемые предметы",
+    "creator.itemcat.blueprint": "Чертёж",
+    "creator.itemcat.others": "Прочее"
 }

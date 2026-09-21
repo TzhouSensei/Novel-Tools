@@ -1230,5 +1230,13 @@
     "creator.exp.kindle_title": "Kindle",
     "creator.ch.chapter_num": "Chapter",
     "creator.card.empty_none": "None",
-    "creator.card.empty_unknown": "Unknown"
+    "creator.card.empty_unknown": "Unknown",
+    "creator.itemcat.general": "General",
+    "creator.itemcat.weapon": "Weapon & Tools",
+    "creator.itemcat.armor": "Armor",
+    "creator.itemcat.food": "Foods & Drinks",
+    "creator.itemcat.costume": "Costume & Decoration",
+    "creator.itemcat.consumable": "Consumable",
+    "creator.itemcat.blueprint": "Blueprint",
+    "creator.itemcat.others": "Others"
 }

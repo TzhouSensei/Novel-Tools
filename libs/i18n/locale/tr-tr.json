@@ -1201,5 +1201,13 @@
     "creator.card.section_factions": "Kabileler",
     "creator.card.section_abilities": "Yetenekler / Beceriler",
     "creator.card.empty_none": "Yok",
-    "creator.card.empty_unknown": "Bilinmiyor"
+    "creator.card.empty_unknown": "Bilinmiyor",
+    "creator.itemcat.general": "Genel",
+    "creator.itemcat.weapon": "Silah ve Araçlar",
+    "creator.itemcat.armor": "Zırh",
+    "creator.itemcat.food": "Yiyecek ve İçecekler",
+    "creator.itemcat.costume": "Kostüm ve Dekorasyon",
+    "creator.itemcat.consumable": "Tüketilebilir",
+    "creator.itemcat.blueprint": "Plan",
+    "creator.itemcat.others": "Diğer"
 }
