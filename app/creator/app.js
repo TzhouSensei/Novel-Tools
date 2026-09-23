@@ -42,6 +42,7 @@ let db,
         systemDslId: null,
         editing: null,
         returnTo: "dashboard",
+        entSort: {},
     };
 let dbReady;
 function saveState() {
@@ -59,6 +60,7 @@ function saveState() {
                 itemTab: state.itemTab,
                 systemsTab: state.systemsTab,
                 returnTo: state.returnTo,
+                entSort: state.entSort,
             }),
         );
     } catch (e) {}
@@ -81,6 +83,7 @@ function restoreState() {
             systemsTab: "overview",
             systemDslId: null,
             returnTo: "dashboard",
+            entSort: {},
         };
 
         Object.assign(state, fallback, s);
@@ -579,12 +582,40 @@ function setView(view, bookId = null) {
     saveState();
     renderWithTransition("#content");
 }
+function creatorTabsScrollSignature(bar) {
+    const parts = [];
+    bar.querySelectorAll("button").forEach((b) =>
+        parts.push(
+            Object.keys(b.dataset)
+                .map((k) => k + "=" + b.dataset[k])
+                .join("&"),
+        ),
+    );
+    return parts.join("|");
+}
+function creatorCaptureTabsScroll(root) {
+    const map = {};
+    (root || document).querySelectorAll(".tabs").forEach((bar) => {
+        if (!bar.scrollLeft) return;
+        map[creatorTabsScrollSignature(bar)] = bar.scrollLeft;
+    });
+    return map;
+}
+function creatorRestoreTabsScroll(root, saved) {
+    if (!saved) return;
+    (root || document).querySelectorAll(".tabs").forEach((bar) => {
+        const v = saved[creatorTabsScrollSignature(bar)];
+        if (v) bar.scrollLeft = v;
+    });
+}
 async function render() {
     await renderSidebar();
 
     $("#quickExport").hidden = !state.bookId;
 
+    const tabsScroll = creatorCaptureTabsScroll(document);
     $("#content").innerHTML = await pageHTML();
+    creatorRestoreTabsScroll(document, tabsScroll);
 
     bindPage();
     bindRelationDiagram();
@@ -843,11 +874,18 @@ function chapterStatsHTML(b) {
 }
 
 function arcsHTML(b) {
-    const arcs = b.arcs || [];
-    return `<div class="toolbar"><div class="muted">${arcs.length} ${tFn("creator.arc.unit", "arc / phần / tập")}</div><button class="btn primary" id="addArc">${tFn("creator.arc.add", "＋ Thêm Arc/Phần/Tập")}</button></div><div class="grid cards">${
+    const arcSort = entSortMode("arcs");
+    const arcs = creatorSortList(
+        b.arcs || [],
+        arcSort,
+        "title",
+        entSortDesc("arcs"),
+    );
+    const searchPh = tFn("creator.arc.search_ph", "Tìm theo tiêu đề...");
+    return `<div class="toolbar"><div class="muted">${arcs.length} ${tFn("creator.arc.unit", "arc / phần / tập")}</div><input class="ent-search" type="search" data-entsearch placeholder="${esc(searchPh)}" aria-label="${esc(searchPh)}">${entSortControlHTML("arcs")}<button class="btn primary" id="addArc">${tFn("creator.arc.add", "＋ Thêm Arc/Phần/Tập")}</button></div><div class="grid cards${arcSort !== "default" ? " drag-lock" : ""}">${
         arcs.map((a) => arcCard(b, a)).join("") ||
         `<div class="card empty" style="grid-column:1/-1"><strong>${tFn("creator.arc.empty", "Chưa có arc nào.")}</strong>${tFn("creator.arc.empty_hint", "Tạo arc để nhóm các chương theo phần/tập của truyện.")}</div>`
-    }</div>`;
+    }${arcs.length ? `<div class="ent-nomatch" hidden>${tFn("creator.ent.no_result", "Không tìm thấy kết quả nào.")}</div>` : ""}</div>`;
 }
 
 function arcCard(b, a) {
@@ -891,7 +929,7 @@ function arcCard(b, a) {
     const tlSection = tlHidden
         ? ""
         : `<div><h4>${tFn("creator.sub.timeline", "Timeline")} (${tl.length})</h4><div class="arc-children" data-draglist="timeline">${tlRows}</div><div class="actions"><button type="button" class="btn small secondary" data-addtimeline="${a.id}">${tFn("creator.arc.add_tl", "＋ Thêm timeline cho arc này")}</button></div></div>`;
-    return `<div class="card entity-card collapsible arc-card"><div class="entity-head"><h3>${esc(a.title || tFn("creator.noname", "Không tên"))}</h3><div class="meta">${badges}</div></div><div class="entity-collapse"><div class="entity-collapse-inner"><div><h4>${tFn("creator.form.desc", "Mô tả")}</h4><div class="muted">${esc(a.description || "") || tFn("creator.nodesc", "Chưa có mô tả.")}</div></div><div><h4>${tFn("creator.arc.children", "Chương / Arc con")} (${children.length})</h4><div class="arc-children">${childRows}</div><div class="actions"><button type="button" class="btn small secondary" data-addchild="chapter" data-id="${a.id}">${tFn("creator.ch.add", "＋ Thêm chương")}</button><button type="button" class="btn small secondary" data-addchild="arc" data-id="${a.id}">${tFn("creator.arc.add_subarc", "＋ Thêm arc con")}</button></div></div>${tlSection}<div class="actions"><button type="button" class="btn small secondary" data-editarc="${a.id}">${tFn("creator.arc.edit", "Sửa arc")}</button><button type="button" class="btn small danger" data-delarc="${a.id}">${tFn("creator.arc.delete", "Xóa arc")}</button></div></div></div></div>`;
+    return `<div class="card entity-card collapsible arc-card ent-row" data-entrow data-search="${esc(String(a.title || "").toLowerCase())}"><div class="entity-head"><h3>${esc(a.title || tFn("creator.noname", "Không tên"))}</h3><div class="meta">${badges}</div></div><div class="entity-collapse"><div class="entity-collapse-inner"><div><h4>${tFn("creator.form.desc", "Mô tả")}</h4><div class="muted">${esc(a.description || "") || tFn("creator.nodesc", "Chưa có mô tả.")}</div></div><div><h4>${tFn("creator.arc.children", "Chương / Arc con")} (${children.length})</h4><div class="arc-children">${childRows}</div><div class="actions"><button type="button" class="btn small secondary" data-addchild="chapter" data-id="${a.id}">${tFn("creator.ch.add", "＋ Thêm chương")}</button><button type="button" class="btn small secondary" data-addchild="arc" data-id="${a.id}">${tFn("creator.arc.add_subarc", "＋ Thêm arc con")}</button></div></div>${tlSection}<div class="actions"><button type="button" class="btn small secondary" data-editarc="${a.id}">${tFn("creator.arc.edit", "Sửa arc")}</button><button type="button" class="btn small danger" data-delarc="${a.id}">${tFn("creator.arc.delete", "Xóa arc")}</button></div></div></div></div>`;
 }
 function descendantArcIds(b, arcId) {
     const out = new Set([arcId]);
@@ -934,16 +972,25 @@ function arcCycleSafeIds(b, arcId) {
 
 function timelineHTML(b) {
     const entries = b.timeline || [];
+    const searchPh = tFn(
+        "creator.tl.search_ph",
+        "Tìm theo nội dung / cột mốc / áp dụng cho...",
+    );
     const rows =
         entries
             .map((t) => dragRowHTML(timelineCard(b, t), t.id))
             .join("") ||
         `<div class="card empty" style="grid-column:1/-1"><strong>${tFn("creator.tl.empty", "Chưa có timeline nào.")}</strong>${tFn("creator.tl.empty_hint", "Thêm mốc thời gian cho chương hoặc arc.")}</div>`;
-    return `<div class="toolbar"><div class="muted">${entries.length} ${tFn("creator.tl.count", "mốc thời gian")}</div><button class="btn primary" id="addTimeline">${tFn("creator.tl.add", "＋ Thêm timeline")}</button></div><div class="grid cards" data-draglist="timeline">${rows}</div>`;
+    return `<div class="toolbar"><div class="muted">${entries.length} ${tFn("creator.tl.count", "mốc thời gian")}</div><input class="ent-search" type="search" data-entsearch placeholder="${esc(searchPh)}" aria-label="${esc(searchPh)}"><button class="btn primary" id="addTimeline">${tFn("creator.tl.add", "＋ Thêm timeline")}</button></div><div class="grid cards" data-draglist="timeline">${rows}${entries.length ? `<div class="ent-nomatch" hidden>${tFn("creator.ent.no_result", "Không tìm thấy kết quả nào.")}</div>` : ""}</div>`;
 }
 function timelineCard(b, t) {
     const targetLabel = esc(timelineTargetLabel(b, t));
-    return `<div class="card entity-card collapsible"><div class="entity-head"><h3>${esc(t.time || "—")}</h3><div class="meta"><span class="badge">${targetLabel}</span></div></div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="tl-hover"><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.time", "Thời gian / Cột mốc")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.time || "—")}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.target", "Áp dụng cho")}</span><div class="tl-hover-value">${targetLabel}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.text", "Nội dung")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.text || "—")}</div></div></div><div class="actions"><button type="button" class="btn small secondary" data-edittimeline="${t.id}">${tFn("creator.ch.edit", "Sửa")}</button><button type="button" class="btn small danger" data-deltimeline="${t.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></div></div></div>`;
+    const search = esc(
+        String(
+            (t.text || "") + " " + (t.time || "") + " " + timelineTargetLabel(b, t),
+        ).toLowerCase(),
+    );
+    return `<div class="card entity-card collapsible ent-row" data-entrow data-search="${search}"><div class="entity-head"><h3>${esc(t.time || "—")}</h3><div class="meta"><span class="badge">${targetLabel}</span></div></div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="tl-hover"><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.time", "Thời gian / Cột mốc")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.time || "—")}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.target", "Áp dụng cho")}</span><div class="tl-hover-value">${targetLabel}</div></div><div class="tl-hover-row"><span class="tl-hover-label">${tFn("creator.tl.text", "Nội dung")}</span><div class="tl-hover-value tl-hover-pre">${esc(t.text || "—")}</div></div></div><div class="actions"><button type="button" class="btn small secondary" data-edittimeline="${t.id}">${tFn("creator.ch.edit", "Sửa")}</button><button type="button" class="btn small danger" data-deltimeline="${t.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></div></div></div>`;
 }
 function timelineTargetLabel(b, t) {
     if (t.kind === "chapter") {
@@ -958,17 +1005,24 @@ function timelineTargetLabel(b, t) {
         : tFn("creator.arc.miss_arc", "(arc không tồn tại)");
 }
 function chaptersHTML(b) {
-    const chapters = [...b.chapters].sort((a, c) => a.number - c.number);
+    const chapters = creatorSortList(
+        [...b.chapters].sort((a, c) => a.number - c.number),
+        entSortMode("chapters"),
+        "title",
+        entSortDesc("chapters"),
+    );
+    const chapterSort = entSortMode("chapters");
     const totalWords = chapters.reduce((n, c) => n + wordCount(c.content), 0);
-    return `<div class="toolbar"><div class="muted">${chapters.length} ${tFn("creator.unit.chapter", "chương")} · ${totalWords.toLocaleString(localeTag())} ${tFn("creator.unit.word", "từ")}</div><div class="actions"><button class="btn small danger" id="deleteSelectedChapters" disabled>${tFn("creator.ch.del_sel", "Xóa đã chọn")}</button><button class="btn primary" data-add="chapter">${tFn("creator.ch.add", "＋ Thêm chương")}</button></div></div><div class="card" style="padding:5px"><table class="table"><thead><tr><th class="col-drag"></th><th class="col-chk"><input type="checkbox" id="chkAll" aria-label="${tFn("creator.ch.sel_all", "Chọn tất cả chương")}"></th><th>#</th><th>${tFn("creator.ch.col_title", "Tiêu đề")}</th><th>${tFn("creator.ch.col_words", "Số từ")}</th><th>${tFn("creator.ch.col_updated", "Cập nhật")}</th><th></th></tr></thead><tbody data-draglist="chapters">${
+    const searchPh = tFn("creator.ch.search_ph", "Tìm theo tên / nội dung / ghi chú...");
+    return `<div class="toolbar"><div class="muted">${chapters.length} ${tFn("creator.unit.chapter", "chương")} · ${totalWords.toLocaleString(localeTag())} ${tFn("creator.unit.word", "từ")}</div><input class="ent-search" type="search" data-entsearch placeholder="${esc(searchPh)}" aria-label="${esc(searchPh)}">${entSortControlHTML("chapters")}<div class="actions"><button class="btn small danger" id="deleteSelectedChapters" disabled>${tFn("creator.ch.del_sel", "Xóa đã chọn")}</button><button class="btn primary" data-add="chapter">${tFn("creator.ch.add", "＋ Thêm chương")}</button></div></div><div class="card" style="padding:5px"><table class="table"><thead><tr><th class="col-drag"></th><th class="col-chk"><input type="checkbox" id="chkAll" aria-label="${tFn("creator.ch.sel_all", "Chọn tất cả chương")}"></th><th>#</th><th>${tFn("creator.ch.col_title", "Tiêu đề")}</th><th>${tFn("creator.ch.col_words", "Số từ")}</th><th>${tFn("creator.ch.col_updated", "Cập nhật")}</th><th></th></tr></thead><tbody class="${chapterSort !== "default" ? "drag-lock" : ""}" data-draglist="chapters">${
         chapters
             .map(
                 (c) =>
-                    `<tr data-dragrow="${c.id}"><td class="col-drag"><span class="drag-handle" data-draghandle title="${tFn("creator.drag.hint", "Kéo để di chuyển thứ tự")}">⁝⁝</span></td><td class="col-chk"><input type="checkbox" data-chk="${c.id}" aria-label="${tFn("creator.ch.sel_one", "Chọn chương")} ${c.number}"></td><td>${c.number}</td><td><div class="chapter-row-title">${esc(c.title || tFn("creator.ch.untitled", "Không tiêu đề"))}</div></td><td class="num">${wordCount(c.content).toLocaleString(localeTag())}</td><td>${new Date(c.updatedAt).toLocaleString(localeTag())}</td><td><div class="actions"><button class="btn small secondary" data-viewchapter="${c.id}">${tFn("creator.ch.view", "Xem")}</button><button class="btn small secondary" data-editentity="chapter" data-id="${c.id}">${tFn("creator.ch.edit", "Sửa")}</button><button class="btn small danger" data-delentity="chapter" data-id="${c.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></td></tr>`,
+                    `<tr class="ent-row" data-entrow data-search="${esc(String((c.title || "") + " " + (c.content || "") + " " + (c.notes || "")).toLowerCase())}" data-dragrow="${c.id}"><td class="col-drag"><span class="drag-handle" data-draghandle title="${tFn("creator.drag.hint", "Kéo để di chuyển thứ tự")}">⁝⁝</span></td><td class="col-chk"><input type="checkbox" data-chk="${c.id}" aria-label="${tFn("creator.ch.sel_one", "Chọn chương")} ${c.number}"></td><td>${c.number}</td><td><div class="chapter-row-title">${esc(c.title || tFn("creator.ch.untitled", "Không tiêu đề"))}</div></td><td class="num">${wordCount(c.content).toLocaleString(localeTag())}</td><td>${new Date(c.updatedAt).toLocaleString(localeTag())}</td><td><div class="actions"><button class="btn small secondary" data-viewchapter="${c.id}">${tFn("creator.ch.view", "Xem")}</button><button class="btn small secondary" data-editentity="chapter" data-id="${c.id}">${tFn("creator.ch.edit", "Sửa")}</button><button class="btn small danger" data-delentity="chapter" data-id="${c.id}">${tFn("creator.ch.delete", "Xóa")}</button></div></td></tr>`,
             )
             .join("") ||
         `<tr><td colspan="7"><div class="empty">${tFn("creator.ch.empty", "Chưa có chương nào.")}</div></td></tr>`
-    }</tbody></table></div>`;
+    }</tbody></table></div>${chapters.length ? `<div class="ent-nomatch" hidden>${tFn("creator.ent.no_result", "Không tìm thấy kết quả nào.")}</div>` : ""}`;
 }
 function itemsSectionHTML(b) {
     const cur = ITEM_TAB_DEFS.some((d) => d.v === state.itemTab)
@@ -986,8 +1040,74 @@ function itemsSectionHTML(b) {
             `<button class="tab ${cur === d.v ? "active" : ""}" data-itemtab="${d.v}">${esc(tFn(d.k, d.f))}</button>`,
     ).join("")}</div>${body}`;
 }
+const ENT_SORT_MODES = ["default", "name", "created", "updated"];
+function entSortMode(listKey) {
+    const saved = state.entSort || {};
+    const v = saved[listKey];
+    if (typeof v !== "string") return "default";
+    const mode = v.endsWith("-desc")
+        ? v.slice(0, -5)
+        : v.endsWith("-asc")
+          ? v.slice(0, -4)
+          : v;
+    return ENT_SORT_MODES.includes(mode) ? mode : "default";
+}
+function entSortDesc(listKey) {
+    const saved = state.entSort || {};
+    const v = saved[listKey];
+    if (typeof v !== "string") return false;
+    if (v.endsWith("-desc")) return true;
+    if (v.endsWith("-asc")) return false;
+    return v === "created" || v === "updated";
+}
+function entSortControlHTML(listKey) {
+    const cur = entSortMode(listKey);
+    const desc = entSortDesc(listKey);
+    const label = tFn("creator.sort.label", "Sắp xếp");
+    const opts = [
+        ["default", "creator.sort.default", "Mặc định"],
+        ["name", "creator.sort.name", "Tên"],
+        ["created", "creator.sort.created", "Thời gian tạo"],
+        ["updated", "creator.sort.updated", "Thời gian chỉnh sửa"],
+    ];
+    return `<div class="ent-sort" data-entsort data-sortkey="${esc(listKey)}" role="group" aria-label="${esc(label)}">${opts
+        .map(([v, k, f]) => {
+            const active = cur === v;
+            const arrow =
+                active && v !== "default" ? (desc ? " ↓" : " ↑") : "";
+            return `<button type="button" class="ent-sort-btn${active ? " active" : ""}" data-sortmode="${v}">${esc(tFn(k, f))}${arrow}</button>`;
+        })
+        .join("")}</div>`;
+}
+function creatorSortList(list, mode, nameField, desc) {
+    const arr = Array.isArray(list) ? [...list] : [];
+    if (!mode || mode === "default") return arr;
+    const nameOf =
+        typeof nameField === "function" ? nameField : (x) => x[nameField];
+    const key = (x) =>
+        mode === "name"
+            ? String(nameOf(x) || "").toLowerCase()
+            : mode === "created"
+              ? String(x.createdAt || "")
+              : String(x.updatedAt || x.createdAt || "");
+    const descending = desc === undefined ? mode !== "name" : !!desc;
+    return arr.sort((a, z) => {
+        const cmp =
+            mode === "name"
+                ? key(a).localeCompare(key(z), undefined, { numeric: true })
+                : key(a).localeCompare(key(z));
+        return descending ? -cmp : cmp;
+    });
+}
 function entityHTML(b, title, type, nameField, descLabel) {
-    const arr = b[entityKey(type)] || [];
+    const listKey = entityKey(type);
+    const sortMode = entSortMode(listKey);
+    const arr = creatorSortList(
+        b[listKey] || [],
+        sortMode,
+        nameField,
+        entSortDesc(listKey),
+    );
     const card =
         type === "relation"
             ? (x2) => relationCard(b, x2)
@@ -1008,7 +1128,7 @@ function entityHTML(b, title, type, nameField, descLabel) {
                           : type === "itemset"
                             ? (x2) => itemsetCard(b, x2)
                             : entityCard;
-    return `<div class="toolbar"><div><h2 style="margin:0">${title}</h2><div class="muted">${arr.length} ${tFn("creator.ent.count", "mục")}</div></div><input class="ent-search" type="search" data-entsearch placeholder="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}" aria-label="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}"><button class="btn primary" data-add="${type}">${tFn("creator.ent.add", "＋ Thêm")}</button></div><div class="entity-rows" data-draglist="${entityKey(type)}">${
+    return `<div class="toolbar"><div><h2 style="margin:0">${title}</h2><div class="muted">${arr.length} ${tFn("creator.ent.count", "mục")}</div></div><input class="ent-search" type="search" data-entsearch placeholder="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}" aria-label="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}">${entSortControlHTML(listKey)}<button class="btn primary" data-add="${type}">${tFn("creator.ent.add", "＋ Thêm")}</button></div><div class="entity-rows${sortMode !== "default" ? " drag-lock" : ""}" data-draglist="${listKey}">${
         arr
             .map((x) => {
                 const html = dragRowHTML(card(x, type, nameField), x.id);
@@ -1439,7 +1559,18 @@ function itemCard(b, it) {
         .join("");
     const meta = tags + ownerBadges + setBadges;
     const sh = entRowShell(it, it.name, it.tags || [], "item", it.id);
-    return `${sh.open}${tags ? `<div class="meta ent-tags">${tags}</div>` : ""}</div>${sh.actions}</div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="muted">${esc(it.description || "") || tFn("creator.nodesc", "Chưa có mô tả.")}</div>${ownerBadges || setBadges ? `<div class="meta">${ownerBadges}${setBadges}</div>` : ""}<div><h4>${tFn("creator.card.owners", "Người sở hữu")}</h4><div class="sub-list">${ownerRows || `<div class="muted">${tFn("creator.card.no_owners", "Chưa ai sở hữu.")}</div>`}</div></div><div><h4>${tFn("creator.card.in_sets", "Thuộc bộ vật phẩm")}</h4><div class="sub-list">${setRows || `<div class="muted">${tFn("creator.card.no_item_sets", "Không thuộc bộ vật phẩm nào.")}</div>`}</div></div></div></div></div>`;
+    const extraInfoSections = [
+        ["acquisition", "creator.card.item_acquisition", "Phương pháp có thể nhận"],
+        ["recipe", "creator.card.item_recipe", "Công thức (nếu có)"],
+        ["requirements", "creator.card.item_requirements", "Yêu cầu"],
+    ]
+        .map(([k, i18n, fallback]) => {
+            const v = String(it[k] || "").trim();
+            if (!v) return "";
+            return `<div><h4>${tFn(i18n, fallback)}</h4><div class="muted" style="white-space:pre-wrap">${esc(v)}</div></div>`;
+        })
+        .join("");
+    return `${sh.open}${tags ? `<div class="meta ent-tags">${tags}</div>` : ""}</div>${sh.actions}</div><div class="entity-collapse"><div class="entity-collapse-inner"><div class="muted">${esc(it.description || "") || tFn("creator.nodesc", "Chưa có mô tả.")}</div>${ownerBadges || setBadges ? `<div class="meta">${ownerBadges}${setBadges}</div>` : ""}${extraInfoSections}<div><h4>${tFn("creator.card.owners", "Người sở hữu")}</h4><div class="sub-list">${ownerRows || `<div class="muted">${tFn("creator.card.no_owners", "Chưa ai sở hữu.")}</div>`}</div></div><div><h4>${tFn("creator.card.in_sets", "Thuộc bộ vật phẩm")}</h4><div class="sub-list">${setRows || `<div class="muted">${tFn("creator.card.no_item_sets", "Không thuộc bộ vật phẩm nào.")}</div>`}</div></div></div></div></div>`;
 }
 function itemsetCard(b, s) {
     const tags = (s.tags || [])
@@ -4103,6 +4234,23 @@ function bindPage() {
             if (nm) nm.hidden = visible > 0;
         });
     });
+    $$("[data-entsort]").forEach((group) => {
+        group.onclick = (e) => {
+            const btn = e.target.closest("[data-sortmode]");
+            if (!btn || !group.contains(btn)) return;
+            const key = group.dataset.sortkey;
+            const mode = btn.dataset.sortmode;
+            if (!ENT_SORT_MODES.includes(mode)) return;
+            if (!state.entSort || typeof state.entSort !== "object")
+                state.entSort = {};
+            if (mode === "default") state.entSort[key] = "default";
+            else if (entSortMode(key) === mode)
+                state.entSort[key] = mode + (entSortDesc(key) ? "-asc" : "-desc");
+            else state.entSort[key] = mode;
+            saveState();
+            renderWithTransition("#manageBody");
+        };
+    });
     $("#deleteSelectedChapters")?.addEventListener(
         "click",
         deleteSelectedChapters,
@@ -5370,6 +5518,9 @@ function openEntityModal(type, id = null, opts = null) {
             } else if (type === "item") {
                 x.name = fd.get("name").trim();
                 x.description = fd.get("description").trim();
+                x.acquisition = fd.get("acquisition") || "";
+                x.recipe = fd.get("recipe") || "";
+                x.requirements = fd.get("requirements") || "";
                 x.tags = fd
                     .get("tags")
                     .split(",")
@@ -6411,7 +6562,7 @@ function entityForm(type, x, b) {
     if (type === "ability")
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label>${tagComboHTML("abilityTags", ABILITY_TAG_OPTIONS, (x.tags || []).join(", "))}</div><div class="field" ${hideSkillsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.ability_skillsets", "Đến từ bộ kỹ năng")}</label>${(b.skillsets || []).length ? `<div class="dyn-list" data-dynlist="skillsets">${(x.skillsetIds || []).map((sid) => skillsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="skillsets">${tFn("creator.f.add_skillset", "＋ Thêm bộ kỹ năng")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.skillset_none_hint", "Chưa có bộ kỹ năng nào — hãy thêm ở tab Bộ kỹ năng.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "item")
-        return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"><div class="genre-popular">${itemCatTogglesHTML(x)}</div></div><div class="field" ${hideChars ? 'style="display:none"' : ""}><label>${tFn("creator.f.owners", "Người sở hữu")}</label>${(b.characters || []).length ? `<div class="dyn-list" data-dynlist="owners">${(x.ownerIds || []).map((cid) => ownerPickRowHTML(b, cid)).join("")}<button type="button" class="btn small secondary" data-dynadd="owners">${tFn("creator.f.add_owner", "＋ Thêm người sở hữu")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.owner_none_hint", "Chưa có nhân vật nào — hãy tạo nhân vật trước.")}</div>`}</div><div class="field" ${hideItemsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.item_sets", "Thuộc bộ vật phẩm")}</label>${(b.itemsets || []).length ? `<div class="dyn-list" data-dynlist="itemsetpicks">${(x.itemsetIds || []).map((sid) => itemsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="itemsetpicks">${tFn("creator.f.add_item_set", "＋ Thêm bộ vật phẩm")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.itemset_none_hint", "Chưa có bộ vật phẩm nào — hãy thêm ở tab Bộ vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
+        return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"><div class="genre-popular">${itemCatTogglesHTML(x)}</div></div><div class="field"><label>${tFn("creator.f.item_acquisition", "Phương pháp có thể nhận")}</label><textarea name="acquisition" placeholder="${tFn("creator.f.item_acquisition_ph", "VD: Nhặt từ xác Boss, mua ở cửa hàng, thưởng nhiệm vụ...")}">${esc(x.acquisition || "")}</textarea></div><div class="field"><label>${tFn("creator.f.item_recipe", "Công thức")}</label><textarea name="recipe" placeholder="${tFn("creator.f.item_recipe_ph", "VD: 2x Quặng sắt + 1x Da — nếu có")}">${esc(x.recipe || "")}</textarea></div><div class="field"><label>${tFn("creator.f.item_requirements", "Yêu cầu")}</label><textarea name="requirements" placeholder="${tFn("creator.f.item_requirements_ph", "VD: Cấp 20+, kinh hệ Kim, danh vọng Võ đoàn...")}">${esc(x.requirements || "")}</textarea></div><div class="field" ${hideChars ? 'style="display:none"' : ""}><label>${tFn("creator.f.owners", "Người sở hữu")}</label>${(b.characters || []).length ? `<div class="dyn-list" data-dynlist="owners">${(x.ownerIds || []).map((cid) => ownerPickRowHTML(b, cid)).join("")}<button type="button" class="btn small secondary" data-dynadd="owners">${tFn("creator.f.add_owner", "＋ Thêm người sở hữu")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.owner_none_hint", "Chưa có nhân vật nào — hãy tạo nhân vật trước.")}</div>`}</div><div class="field" ${hideItemsets ? 'style="display:none"' : ""}><label>${tFn("creator.f.item_sets", "Thuộc bộ vật phẩm")}</label>${(b.itemsets || []).length ? `<div class="dyn-list" data-dynlist="itemsetpicks">${(x.itemsetIds || []).map((sid) => itemsetPickRowHTML(b, sid)).join("")}<button type="button" class="btn small secondary" data-dynadd="itemsetpicks">${tFn("creator.f.add_item_set", "＋ Thêm bộ vật phẩm")}</button></div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.itemset_none_hint", "Chưa có bộ vật phẩm nào — hãy thêm ở tab Bộ vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "itemset")
         return `<form id="entityForm" class="form"><div class="field"><label>${tFn("creator.f.name", "Tên *")}</label><input name="name" value="${esc(x.name || "")}" required></div><div class="field"><label>${tFn("creator.form.desc", "Mô tả")}</label><textarea name="description">${esc(x.description || "")}</textarea></div><div class="field"><label>${tFn("creator.f.tags", "Tags")}</label><input name="tags" value="${esc((x.tags || []).join(", "))}" placeholder="${tFn("creator.f.tags_ph", "Rare, Quest, Boss...")}"></div><div class="field" ${hideItems ? 'style="display:none"' : ""}><label>${tFn("creator.f.items", "Danh sách vật phẩm của bộ")}</label><div class="dyn-list" data-dynlist="items">${(x.items || []).map((s) => itemPickRowHTML(b, s)).join("")}<button type="button" class="btn small secondary" data-dynadd="items">${tFn("creator.f.add_item", "＋ Thêm vật phẩm")}</button></div>${(b.items || []).length ? `<div class="muted" style="font-size:12px">${tFn("creator.f.item_pick_hint", "Chọn từ danh sách Vật phẩm đã tạo.")}</div>` : `<div class="muted" style="font-size:12px">${tFn("creator.f.item_none_hint", "Chưa có vật phẩm nào — hãy thêm ở tab Vật phẩm.")}</div>`}</div><div class="modal-foot"><button class="btn primary">${tFn("creator.f.save", "Lưu")}</button></div></form>`;
     if (type === "rule") {
@@ -7762,7 +7913,13 @@ function relationDiagramHTML(b) {
     <div class="rel-detail" id="relDetail"></div>`;
 }
 function relationsSectionHTML(b) {
-    const rels = b.relations || [];
+    const relSort = entSortMode("relations");
+    const rels = creatorSortList(
+        b.relations || [],
+        relSort,
+        (x) => `${x.from || ""} ${x.to || ""}`,
+        entSortDesc("relations"),
+    );
     const subs = [
         ["list", tFn("creator.sub.list", "Danh sách")],
         ["diagram", tFn("creator.rel.diagram_title", "Sơ đồ quan hệ")],
@@ -7770,13 +7927,13 @@ function relationsSectionHTML(b) {
     const body =
         state.relTab === "diagram"
             ? `<div class="card" style="padding:0">${relationDiagramHTML(b)}</div>`
-            : `<div class="grid cards" data-draglist="relations">${
+            : `<div class="grid cards${relSort !== "default" ? " drag-lock" : ""}" data-draglist="relations">${
                   rels
                       .map((x) => dragRowHTML(relationCard(b, x), x.id))
                       .join("") ||
                   `<div class="card empty" style="grid-column:1/-1"><strong>${tFn("creator.tab.relations", "Mối quan hệ")}</strong>${tFn("creator.ent.empty_hint", "Thêm dữ liệu để xây dựng thế giới truyện.")}</div>`
               }${rels.length ? `<div class="ent-nomatch" hidden>${tFn("creator.ent.no_result", "Không tìm thấy kết quả nào.")}</div>` : ""}</div>`;
-    return `<div class="toolbar"><div><h2 style="margin:0">${tFn("creator.tab.relations", "Mối quan hệ")}</h2><div class="muted">${rels.length} ${tFn("creator.ent.count", "mục")} · ${tFn("creator.rel.diagram_hint2", "nót = nhân vật / thế lực, cạnh = quan hệ theo chương / arc")}</div></div>${state.relTab === "list" ? `<input class="ent-search" type="search" data-entsearch placeholder="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}" aria-label="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}">` : ""}<button class="btn primary" data-add="relation">${tFn("creator.ent.add", "＋ Thêm")}</button></div><div class="tabs subtabs">${subs
+    return `<div class="toolbar"><div><h2 style="margin:0">${tFn("creator.tab.relations", "Mối quan hệ")}</h2><div class="muted">${rels.length} ${tFn("creator.ent.count", "mục")} · ${tFn("creator.rel.diagram_hint2", "nót = nhân vật / thế lực, cạnh = quan hệ theo chương / arc")}</div></div>${state.relTab === "list" ? `<input class="ent-search" type="search" data-entsearch placeholder="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}" aria-label="${tFn("creator.ent.search_ph", "Tìm theo tên / thẻ...")}">${entSortControlHTML("relations")}` : ""}<button class="btn primary" data-add="relation">${tFn("creator.ent.add", "＋ Thêm")}</button></div><div class="tabs subtabs">${subs
         .map(
             ([k, t]) =>
                 `<button class="tab ${state.relTab === k ? "active" : ""}" data-reltab="${k}">${t}</button>`,
@@ -10700,7 +10857,9 @@ async function creatorRefreshI18n() {
     }
     const liveValues = creatorCaptureModalInputs(content);
     const searchValues = creatorI18nCaptureSearchValues(content);
+    const tabsScroll = creatorCaptureTabsScroll(document);
     content.innerHTML = html;
+    creatorRestoreTabsScroll(document, tabsScroll);
     creatorRestoreModalInputs(content, liveValues);
     bindPage();
     bindRelationDiagram();

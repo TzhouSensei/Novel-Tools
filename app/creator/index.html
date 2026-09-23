@@ -1177,6 +1177,41 @@
             body.theme-image .tabs {
                 padding: 10px 12px;
             }
+
+            /* Animation "co cụm": khi bật nền hình ảnh, các khối vẫn dùng
+               màu nền của theme (page-head/toolbar/tabs/card/stat/modal)
+               thu gọn lại vào vị trí; bản thân nền trang không chạy hiệu ứng. */
+            body.theme-image .page-head,
+            body.theme-image .toolbar,
+            body.theme-image .tabs,
+            body.theme-image .card,
+            body.theme-image .stat,
+            body.theme-image .modal-card {
+                animation: creatorThemeGather 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+            }
+            @keyframes creatorThemeGather {
+                from {
+                    transform: scale(0.965);
+                    opacity: 0.35;
+                }
+                60% {
+                    opacity: 1;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                body.theme-image .page-head,
+                body.theme-image .toolbar,
+                body.theme-image .tabs,
+                body.theme-image .card,
+                body.theme-image .stat,
+                body.theme-image .modal-card {
+                    animation: none;
+                }
+            }
             .tab {
                 border: 0;
                 background: transparent;
@@ -1745,6 +1780,46 @@
                 opacity: 1;
                 transform: scale(1.15) rotate(90deg);
             }
+            .ent-sort {
+                display: inline-flex;
+                flex: none;
+                align-items: center;
+                gap: 4px;
+                padding: 3px;
+                border: 1.5px solid var(--border);
+                border-radius: 10px;
+                background-color: var(--card-bg);
+            }
+            .ent-sort-btn {
+                border: 0;
+                background: transparent;
+                color: var(--text-muted);
+                font-family: inherit;
+                font-size: 12.5px;
+                font-weight: 700;
+                line-height: 1;
+                padding: 7px 9px;
+                border-radius: 7px;
+                cursor: pointer;
+                white-space: nowrap;
+                transition:
+                    background-color 0.18s ease,
+                    color 0.18s ease;
+            }
+            .ent-sort-btn:hover {
+                background: var(--hover-bg);
+                color: var(--text);
+            }
+            .ent-sort-btn.active {
+                background: var(--primary);
+                color: #fff;
+            }
+            .drag-lock .drag-handle {
+                display: none !important;
+            }
+            .drag-lock .col-drag {
+                display: none;
+            }
             .ent-nomatch {
                 text-align: center;
                 color: var(--text-muted);
@@ -1758,14 +1833,33 @@
                 display: none !important;
             }
             @media (max-width: 640px) {
-                .ent-actions {
-                    margin-left: 56px;
+                .toolbar {
+                    flex-wrap: wrap;
                 }
                 .ent-search {
-                    flex: 1 1 auto;
+                    order: 2;
+                    flex: 1 1 100%;
                     max-width: 100%;
                     min-width: 0;
                     margin-left: 0;
+                }
+                .ent-search ~ .btn.primary {
+                    order: 3;
+                    margin-left: auto;
+                }
+                .ent-search ~ .ent-sort {
+                    order: 3;
+                }
+                .ent-search ~ .actions {
+                    order: 3;
+                    flex: 1 1 100%;
+                    justify-content: flex-end;
+                }
+                .ent-actions {
+                    margin-left: auto;
+                }
+                .entity-collapse-inner > .actions:last-of-type {
+                    justify-content: flex-end;
                 }
             }
 
