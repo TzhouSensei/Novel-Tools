@@ -80,6 +80,12 @@
             nav: "creator",
             frame: "app/creator/index.html",
         },
+        {
+            path: "about",
+            i18n: "spa.nav.about",
+            nav: "about",
+            frame: "app/about/index.html",
+        },
     ];
 
     const ROUTE_TITLES = {
@@ -96,6 +102,7 @@
         converter: "🔁 Converter EPUB ➜ TXT",
         infoeditor: "✍️ EPUB Info Editor",
         creator: "✦ Story Studio",
+        about: "ℹ️ About & Donate",
     };
 
     const $ = (s) => document.querySelector(s);
@@ -243,6 +250,7 @@
         converter: "",
         infoeditor: "",
         creator: "",
+        about: "",
     };
     function applyTopbarVisibility(route) {
         const readerView = !!(
@@ -455,6 +463,14 @@
                 "spa.home.desc.creation",
                 "Công cụ tạo EPUB",
                 "Cấu hình & sinh file EPUB từ MDT",
+            ) +
+            homeCard(
+                "about",
+                "ℹ️",
+                "spa.nav.about",
+                "spa.home.desc.about",
+                "About & Donate",
+                "Thông tin dự án và cách ủng hộ",
             ) +
             "</div>";
         applyShellI18n();

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#f5f7fa" />
+        <title data-i18n="about.title">About & Donate — NovelTool</title>
+        <link rel="stylesheet" href="../../libs/theme/theme.css" />
+        <link rel="stylesheet" href="../../libs/i18n/language.css" />
+        <script src="../../libs/theme/theme.js"></script>
+        <script src="../../libs/capacitor/native-bridge.js"></script>
+        <script src="../../libs/i18n/lang.js"></script>
+        <script src="../../libs/i18n/i18n.js"></script>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                font-family:
+                    Inter,
+                    ui-sans-serif,
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                background: var(--bg);
+                color: var(--text);
+            }
+            a {
+                color: inherit;
+            }
+            .topbar {
+                height: 60px;
+                background: var(--card-bg);
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 max(18px, var(--safe-right)) 0
+                    max(18px, var(--safe-left));
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 800;
+                text-decoration: none;
+            }
+            .brand-mark {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+                display: grid;
+                place-items: center;
+                background: var(--primary);
+                color: #fff;
+                font-size: 17px;
+                box-shadow: var(--shadow-pop);
+            }
+            .brand-sub {
+                font-size: 12px;
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+            .top-actions {
+                display: flex;
+                gap: 8px;
+            }
+            .btn {
+                border: 0;
+                border-radius: 9px;
+                padding: 9px 14px;
+                font: inherit;
+                font-weight: 700;
+                cursor: pointer;
+            }
+            .btn.secondary {
+                background: var(--hover-bg);
+                color: var(--primary);
+            }
+            .btn.primary {
+                background: var(--primary);
+                color: #fff;
+            }
+            .wrap {
+                width: min(1120px, 100%);
+                margin: auto;
+                padding: 42px 22px 70px;
+            }
+            .hero {
+                display: grid;
+                grid-template-columns: 1.25fr 0.75fr;
+                gap: 22px;
+                align-items: stretch;
+            }
+            .card {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                box-shadow: var(--shadow);
+                padding: 28px;
+            }
+            .hero-main {
+                padding: 42px;
+            }
+            .eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                padding: 6px 10px;
+                border-radius: 999px;
+                background: var(--hover-bg);
+                color: var(--primary);
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+            h1 {
+                font-size: clamp(34px, 5vw, 58px);
+                line-height: 1.02;
+                margin: 18px 0 14px;
+                letter-spacing: -0.04em;
+            }
+            h2 {
+                margin: 0 0 12px;
+                font-size: 23px;
+            }
+            p {
+                line-height: 1.7;
+            }
+            .lead {
+                font-size: 17px;
+                color: var(--text-muted);
+                max-width: 720px;
+            }
+            .meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 24px;
+            }
+            .pill {
+                padding: 7px 10px;
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                color: var(--text-muted);
+                font-size: 13px;
+            }
+            .donate {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-height: 100%;
+            }
+            .donate-icon {
+                font-size: 42px;
+                margin-bottom: 18px;
+            }
+            .donate-copy {
+                color: var(--text-muted);
+            }
+            .donate-actions {
+                display: grid;
+                gap: 10px;
+                margin-top: 22px;
+            }
+            .donate-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+            .section {
+                margin-top: 22px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+            }
+            .feature {
+                padding: 22px;
+            }
+            .feature-icon {
+                font-size: 25px;
+                margin-bottom: 13px;
+            }
+            .feature p {
+                margin: 0;
+                color: var(--text-muted);
+                font-size: 14px;
+            }
+            .tech {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 22px;
+            }
+            .list {
+                display: grid;
+                gap: 10px;
+                margin-top: 16px;
+            }
+            .list-item {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--primary);
+                margin-top: 8px;
+                flex: none;
+            }
+            .footer {
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 13px;
+                margin-top: 30px;
+            }
+            .footer a {
+                color: var(--primary);
+                text-decoration: none;
+            }
+            .donate-modal {
+                position: fixed; inset: 0; z-index: 100;
+                background: rgba(0,0,0,.58); display: none;
+                align-items: center; justify-content: center; padding: 20px;
+                backdrop-filter: blur(5px);
+            }
+            .donate-modal.open { display: flex; }
+            .donate-dialog {
+                width: min(980px,100%); max-height: min(900px,calc(100vh - 40px));
+                overflow: auto; background: var(--card-bg); border: 1px solid var(--border);
+                border-radius: 20px; box-shadow: 0 24px 80px rgba(0,0,0,.28); padding: 24px;
+            }
+            .donate-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:20px; }
+            .donate-dialog-head h2 { margin:0 0 5px; }
+            .donate-dialog-head p { margin:0; color:var(--text-muted); font-size:14px; }
+            .modal-close { border:0; background:var(--hover-bg); color:var(--text); width:38px; height:38px; border-radius:10px; font-size:22px; cursor:pointer; }
+            .donate-levels { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+            .donate-level { border:1px solid var(--border); background:var(--bg); border-radius:16px; padding:14px; cursor:pointer; text-align:left; color:var(--text); font:inherit; }
+            .donate-level:hover,.donate-level.active { border-color:var(--primary); box-shadow:var(--shadow-pop); }
+            .donate-level strong { display:block; font-size:16px; margin-bottom:4px; }
+            .donate-level span { font-size:12px; color:var(--text-muted); }
+            .donate-preview { margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+            .payment-card { margin:0; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--bg); }
+            .payment-card h3 { font-size:14px; margin:0; padding:12px 14px; border-bottom:1px solid var(--border); }
+            .payment-card img { display:block; width:100%; height:min(48vh,520px); object-fit:contain; background:#fff; padding:10px; }
+            .payment-card figcaption { padding:9px 14px; color:var(--text-muted); font-size:12px; }
+            @media(max-width:760px) {
+                .donate-levels { grid-template-columns:repeat(2,1fr); }
+                .donate-preview { grid-template-columns:1fr; }
+                .payment-card img { height:360px; }
+                .donate-dialog { padding:18px; }
+            }
+            @media (max-width: 800px) {
+                .hero,
+                .tech,
+                .grid {
+                    grid-template-columns: 1fr;
+                }
+                .hero-main {
+                    padding: 30px;
+                }
+                .wrap {
+                    padding-top: 24px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="wrap">
+            <section class="hero">
+                <article class="card hero-main">
+                    <span class="eyebrow" data-i18n="about.eyebrow">About NovelTool</span>
+                    <h1><span data-i18n="about.hero.line1">Viết truyện.</span><br /><span data-i18n="about.hero.line2">Quản lý thế giới.</span><br /><span data-i18n="about.hero.line3">Xuất bản.</span></h1>
+                    <p class="lead" data-i18n="about.lead">
+                        NovelTool là một bộ công cụ offline dành cho người viết
+                        truyện: từ xây dựng nhân vật và thế giới, quản lý
+                        chương, quan hệ và timeline, cho tới chuyển đổi và xuất
+                        bản nội dung.
+                    </p>
+                    <div class="meta">
+                        <span class="pill" data-i18n="about.pill.offline">Offline-first</span>
+                        <span class="pill" data-i18n="about.pill.local">Local data</span>
+                        <span class="pill" data-i18n="about.pill.epub">EPUB / TXT</span>
+                        <span class="pill" data-i18n="about.pill.workflow">Open workflow</span>
+                    </div>
+                </article>
+
+                <aside class="card donate">
+                    <div>
+                        <div class="donate-icon">☕</div>
+                        <h2 data-i18n="about.donate.title">Ủng hộ dự án</h2>
+                        <p class="donate-copy" data-i18n="about.donate.copy">
+                            Nếu NovelTool giúp bạn viết được thêm một chương,
+                            một thế giới, hay đơn giản là đỡ đau đầu hơn một
+                            chút — bạn có thể ủng hộ tác giả một ly cà phê.
+                        </p>
+                    </div>
+                    <div class="donate-actions">
+                        <button class="btn primary" type="button" data-i18n="about.donate.button" onclick="openDonateModal()">
+                            ☕ Donate
+                        </button>
+                        <button
+                            class="btn secondary"
+                            onclick="alert(t('about.github_demo', 'Demo: đặt link GitHub của dự án tại đây.'))"
+                        >
+                            GitHub
+                        </button>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="section grid">
+                <article class="card feature">
+                    <div class="feature-icon">📚</div>
+                    <h2>Creator</h2>
+                    <p data-i18n="about.feature.creator_desc">
+                        Quản lý sách, chương, nhân vật, phe phái, thế giới, địa
+                        điểm, vật phẩm, kỹ năng và lore trong một workspace.
+                    </p>
+                </article>
+                <article class="card feature">
+                    <div class="feature-icon">🧩</div>
+                    <h2>Converter</h2>
+                    <p data-i18n="about.feature.converter_desc">
+                        Chuyển EPUB thành TXT theo các pipeline khác nhau, hỗ
+                        trợ delimiter và xử lý nội dung theo cấu trúc.
+                    </p>
+                </article>
+                <article class="card feature">
+                    <div class="feature-icon">📖</div>
+                    <h2>Reader</h2>
+                    <p data-i18n="about.feature.reader_desc">
+                        Đọc và quản lý chương với giao diện tập trung vào nội
+                        dung, tối ưu cho những bộ truyện dài.
+                    </p>
+                </article>
+            </section>
+
+            <section class="section tech">
+                <article class="card">
+                    <h2 data-i18n="about.philosophy.title">Triết lý dự án</h2>
+                    <p class="donate-copy" data-i18n="about.philosophy.copy">
+                        NovelTool được xây dựng theo hướng local-first: dữ liệu
+                        của người viết nằm trên thiết bị, công cụ hoạt động
+                        offline và các định dạng xuất được thiết kế để dễ mang
+                        đi.
+                    </p>
+                    <div class="list">
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.philosophy.no_server">Không phụ thuộc server</b><br /><span
+                                    class="donate-copy"
+                                    data-i18n="about.philosophy.no_server_desc"
+                                    >Phù hợp với workflow viết truyện cá
+                                    nhân.</span
+                                ></span
+                            >
+                        </div>
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.philosophy.structured">Dữ liệu có cấu trúc</b><br /><span
+                                    class="donate-copy"
+                                    data-i18n="about.philosophy.structured_desc"
+                                    >Worldbuilding và story data có thể được
+                                    lưu, xuất và tái sử dụng.</span
+                                ></span
+                            >
+                        </div>
+                    </div>
+                </article>
+                <article class="card">
+                    <h2 data-i18n="about.info.title">Thông tin</h2>
+                    <div class="list">
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.info.project">Project</b><br /><span class="donate-copy"
+                                    >NovelTool</span
+                                ></span
+                            >
+                        </div>
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.info.author">Author</b><br /><span class="donate-copy"
+                                    >TzhouSensei</span
+                                ></span
+                            >
+                        </div>
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.info.version">Version</b><br /><span class="donate-copy"
+                                    data-i18n="about.info.version_value"
+                                    >Prototype page</span
+                                ></span
+                            >
+                        </div>
+                        <div class="list-item">
+                            <span class="dot"></span
+                            ><span
+                                ><b data-i18n="about.info.license">License / links</b><br /><span
+                                    class="donate-copy"
+                                    data-i18n="about.info.license_desc"
+                                    >Có thể nối vào thông tin chính thức của
+                                    project sau.</span
+                                ></span
+                            >
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <div class="footer" data-i18n="about.footer">
+                Made with ❤️ for people who spend way too much time building
+                fictional worlds.
+            </div>
+        </main>
+        <div class="donate-modal" id="donateModal" role="dialog" aria-modal="true" aria-labelledby="donateModalTitle" aria-hidden="true">
+            <div class="donate-dialog" role="document">
+                <div class="donate-dialog-head">
+                    <div>
+                        <h2 id="donateModalTitle" data-i18n="about.donate.modal_title">Chọn mức ủng hộ</h2>
+                        <p data-i18n="about.donate.modal_desc">Mỗi mức gồm một mã MB Bank và một mã MoMo.</p>
+                    </div>
+                    <button class="modal-close" type="button" aria-label="Đóng" onclick="closeDonateModal()">×</button>
+                </div>
+                <div class="donate-levels" role="tablist" aria-label="Mức ủng hộ">
+                    <button class="donate-level active" type="button" data-donate-level="small" onclick="selectDonateLevel('small')"><strong>☕ Small Cafe</strong><span data-i18n="about.donate.level_small">Ủng hộ nhỏ</span></button>
+                    <button class="donate-level" type="button" data-donate-level="cafe" onclick="selectDonateLevel('cafe')"><strong>☕ Cafe</strong><span data-i18n="about.donate.level_cafe">Một ly cafe</span></button>
+                    <button class="donate-level" type="button" data-donate-level="big" onclick="selectDonateLevel('big')"><strong>☕ Big Cafe</strong><span data-i18n="about.donate.level_big">Ủng hộ lớn hơn</span></button>
+                    <button class="donate-level" type="button" data-donate-level="mega" onclick="selectDonateLevel('mega')"><strong>☕ Mega Cafe</strong><span data-i18n="about.donate.level_mega">Ủng hộ siêu to</span></button>
+                </div>
+                <div class="donate-preview">
+                    <figure class="payment-card"><h3>MB Bank</h3><img id="donateMbImage" src="../../libs/donate/smalldntmb.png" alt="Mã QR MB Bank - Small Cafe"><figcaption id="donateMbCaption">Small Cafe · MB Bank</figcaption></figure>
+                    <figure class="payment-card"><h3>MoMo</h3><img id="donateMomoImage" src="../../libs/donate/momosmall.jpg" alt="Mã QR MoMo - Small Cafe"><figcaption id="donateMomoCaption">Small Cafe · MoMo</figcaption></figure>
+                </div>
+            </div>
+        </div>
+        <script>
+            const DONATE_LEVELS = {
+                small: { label: "Small Cafe", mb: "../../libs/donate/smalldntmb.png", momo: "../../libs/donate/momosmall.jpg" },
+                cafe: { label: "Cafe", mb: "../../libs/donate/cafedntmb.png", momo: "../../libs/donate/momocafe.jpg" },
+                big: { label: "Big Cafe", mb: "../../libs/donate/bigdntmb.png", momo: "../../libs/donate/momobig.jpg" },
+                mega: { label: "Mega Cafe", mb: "../../libs/donate/megadntmb.png", momo: "../../libs/donate/momomega.jpg" },
+            };
+            function selectDonateLevel(level) {
+                const item = DONATE_LEVELS[level];
+                if (!item) return;
+                document.querySelectorAll(".donate-level").forEach((btn) => btn.classList.toggle("active", btn.dataset.donateLevel === level));
+                document.getElementById("donateMbImage").src = item.mb;
+                document.getElementById("donateMbImage").alt = "Mã QR MB Bank - " + item.label;
+                document.getElementById("donateMomoImage").src = item.momo;
+                document.getElementById("donateMomoImage").alt = "Mã QR MoMo - " + item.label;
+                document.getElementById("donateMbCaption").textContent = item.label + " · MB Bank";
+                document.getElementById("donateMomoCaption").textContent = item.label + " · MoMo";
+            }
+            function openDonateModal() {
+                const modal = document.getElementById("donateModal");
+                selectDonateLevel("small");
+                modal.classList.add("open");
+                modal.setAttribute("aria-hidden", "false");
+                document.body.style.overflow = "hidden";
+            }
+            function closeDonateModal() {
+                const modal = document.getElementById("donateModal");
+                modal.classList.remove("open");
+                modal.setAttribute("aria-hidden", "true");
+                document.body.style.overflow = "";
+            }
+            document.getElementById("donateModal").addEventListener("click", (event) => {
+                if (event.target.id === "donateModal") closeDonateModal();
+            });
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") closeDonateModal();
+            });
+        </script>
+    </body>
+</html>
