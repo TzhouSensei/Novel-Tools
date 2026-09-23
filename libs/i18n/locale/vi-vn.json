@@ -1043,6 +1043,7 @@
         "nav.converter": "Bộ chuyển đổi EPUB ➜ TXT",
         "nav.infoeditor": "Trình chỉnh sửa thông tin EPUB",
         "nav.creator": "Story Studio",
+        "nav.about": "Giới thiệu & Ủng hộ",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Chọn một công cụ để bắt đầu",
@@ -1053,6 +1054,7 @@
         "home.desc.creator": "Tạo & quản lý truyện (SPA)",
         "home.desc.stv": "Chuyển đổi hàng loạt thư mục HTML sang EPUB",
         "home.desc.creation": "Cấu hình & tạo EPUB từ MDT",
+        "home.desc.about": "Thông tin dự án và cách ủng hộ",
         "pin.title": "Ghim thanh bên",
         "pin.unpin": "Bỏ ghim thanh bên",
         "footer.local": "Phiên bản cục bộ"

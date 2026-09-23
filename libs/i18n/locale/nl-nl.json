@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT-converter",
         "nav.infoeditor": "EPUB-info-editor",
         "nav.creator": "Story Studio",
+        "nav.about": "Over & doneren",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Kies een hulpmiddel om te starten",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Verhalen maken \u0026 beheren (SPA)",
         "home.desc.stv": "HTML-mappen in bulk naar EPUB omzetten",
         "home.desc.creation": "EPUB uit MDT configureren \u0026 genereren",
+        "home.desc.about": "Projectinfo \u0026 ondersteunen",
         "pin.title": "Zijbalk vastzetten",
         "pin.unpin": "Zijbalk losmaken",
         "footer.local": "Lokale versie"

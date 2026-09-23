@@ -595,6 +595,7 @@
         "nav.converter": "แปลง EPUB ➜ TXT",
         "nav.infoeditor": "ตัวแก้ไขข้อมูล EPUB",
         "nav.creator": "สตูดิโอเรื่องราว",
+        "nav.about": "เกี่ยวกับ & สนับสนุน",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "เครื่องมือนวนิยาย",
         "home.subtitle": "เลือกเครื่องมือเพื่อเริ่มต้น",
@@ -605,6 +606,7 @@
         "home.desc.creator": "สร้างและจัดการเรื่องราว (SPA)",
         "home.desc.stv": "แปลงโฟลเดอร์ HTML เป็น EPUB เป็นกลุ่ม",
         "home.desc.creation": "ตั้งค่าและสร้าง EPUB จาก MDT",
+        "home.desc.about": "ข้อมูลโครงการและวิธีสนับสนุน",
         "pin.title": "ปักหมุดแถบข้าง",
         "pin.unpin": "เลิกปักหมุดแถบข้าง",
         "footer.local": "เวอร์ชันท้องถิ่น"

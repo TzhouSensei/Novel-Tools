@@ -595,6 +595,7 @@
         "nav.converter": "Converter EPUB ➜ TXT",
         "nav.infoeditor": "Editor notitiarum EPUB",
         "nav.creator": "Studio Fabularum",
+        "nav.about": "De Programmate & Donatione",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Instrumenta Fabularum",
         "home.subtitle": "Elige instrumentum ut incipias",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Fabulas condere et curare (SPA)",
         "home.desc.stv": "Pelliculas HTML ad EPUB convertere",
         "home.desc.creation": "EPUB ex MDT configurare et generare",
+        "home.desc.about": "De incepto notitia et auxilio",
         "pin.title": "Laterculum figere",
         "pin.unpin": "Laterculum solvere",
         "footer.local": "Versio localis"

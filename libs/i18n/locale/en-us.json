@@ -1041,6 +1041,7 @@
         "nav.converter": "Converter EPUB ➜ TXT",
         "nav.infoeditor": "EPUB Info Editor",
         "nav.creator": "Story Studio",
+        "nav.about": "About & Donate",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Select a tool to get started",
@@ -1051,6 +1052,7 @@
         "home.desc.creator": "Create \u0026 manage novels (SPA)",
         "home.desc.stv": "Batch convert HTML directories to EPUB",
         "home.desc.creation": "Configure \u0026 generate EPUB from MDT",
+        "home.desc.about": "Project info \u0026 how to support",
         "pin.title": "Pin Sidebar",
         "pin.unpin": "Unpin Sidebar",
         "footer.local": "Local Version"

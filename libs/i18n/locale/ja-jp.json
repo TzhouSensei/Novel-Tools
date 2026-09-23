@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT 変換",
         "nav.infoeditor": "EPUB情報エディター",
         "nav.creator": "ストーリースタジオ",
+        "nav.about": "情報 & 支援",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "ノベルツール",
         "home.subtitle": "始めるツールを選んでください",
@@ -605,6 +606,7 @@
         "home.desc.creator": "小説の作成・管理（SPA）",
         "home.desc.stv": "HTMLフォルダーをEPUBに一括変換",
         "home.desc.creation": "MDTからEPUBを設定・生成",
+        "home.desc.about": "プロジェクト情報と支援方法",
         "pin.title": "サイドバーを固定",
         "pin.unpin": "サイドバーの固定を解除",
         "footer.local": "ローカル版"

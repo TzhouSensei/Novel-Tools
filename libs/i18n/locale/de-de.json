@@ -595,6 +595,7 @@
         "nav.converter": "Converter EPUB ➜ TXT",
         "nav.infoeditor": "EPUB-Info-Editor",
         "nav.creator": "Story Studio",
+        "nav.about": "Über & Spenden",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Wähle ein Werkzeug zum Start",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Geschichten erstellen \u0026 verwalten (SPA)",
         "home.desc.stv": "HTML-Ordner stapelweise zu EPUB konvertieren",
         "home.desc.creation": "EPUB aus MDT konfigurieren \u0026 erzeugen",
+        "home.desc.about": "Projektinfos \u0026 Unterstützung",
         "pin.title": "Sidebar anheften",
         "pin.unpin": "Sidebar lösen",
         "footer.local": "Lokale Version"

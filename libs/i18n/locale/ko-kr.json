@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT 변환기",
         "nav.infoeditor": "EPUB 정보 편집기",
         "nav.creator": "스토리 스튜디오",
+        "nav.about": "소개 & 후원",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "소설 도구",
         "home.subtitle": "시작할 도구를 선택하세요",
@@ -605,6 +606,7 @@
         "home.desc.creator": "소설 생성 및 관리(SPA)",
         "home.desc.stv": "HTML 폴더를 EPUB으로 일괄 변환",
         "home.desc.creation": "MDT에서 EPUB 구성 및 생성",
+        "home.desc.about": "프로젝트 정보 및 후원 방법",
         "pin.title": "사이드바 고정",
         "pin.unpin": "사이드바 고정 해제",
         "footer.local": "로컬 버전"

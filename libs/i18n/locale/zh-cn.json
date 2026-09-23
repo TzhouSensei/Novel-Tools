@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT 转换器",
         "nav.infoeditor": "EPUB 信息编辑器",
         "nav.creator": "故事工作室",
+        "nav.about": "关于 & 赞助",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "小说工具",
         "home.subtitle": "选择一个工具开始",
@@ -605,6 +606,7 @@
         "home.desc.creator": "创建与管理故事（SPA）",
         "home.desc.stv": "将 HTML 文件夹批量转为 EPUB",
         "home.desc.creation": "从 MDT 配置并生成 EPUB",
+        "home.desc.about": "项目信息与支持方式",
         "pin.title": "固定侧边栏",
         "pin.unpin": "取消固定侧边栏",
         "footer.local": "本地版本"

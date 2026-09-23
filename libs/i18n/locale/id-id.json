@@ -589,6 +589,7 @@
         "nav.converter": "Konverter EPUB ➜ TXT",
         "nav.infoeditor": "Editor Info EPUB",
         "nav.creator": "Story Studio",
+        "nav.about": "Tentang & Donasi",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Pilih alat untuk memulai",
@@ -599,6 +600,7 @@
         "home.desc.creator": "Buat \u0026 kelola cerita (SPA)",
         "home.desc.stv": "Ubah folder HTML menjadi EPUB massal",
         "home.desc.creation": "Konfigurasi \u0026 buat EPUB dari MDT",
+        "home.desc.about": "Info proyek \u0026 cara mendukung",
         "pin.title": "Sematkan sidebar",
         "pin.unpin": "Lepas sidebar",
         "footer.local": "Versi lokal"

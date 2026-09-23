@@ -595,6 +595,7 @@
         "nav.converter": "Конвертер EPUB ➜ TXT",
         "nav.infoeditor": "Редактор информации EPUB",
         "nav.creator": "Студия историй",
+        "nav.about": "О проекте и поддержке",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Инструменты для романов",
         "home.subtitle": "Выберите инструмент для начала",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Создание и управление историями (SPA)",
         "home.desc.stv": "Пакетное преобразование папок HTML в EPUB",
         "home.desc.creation": "Настройка и генерация EPUB из MDT",
+        "home.desc.about": "Информация о проекте и поддержка",
         "pin.title": "Закрепить боковую панель",
         "pin.unpin": "Открепить боковую панель",
         "footer.local": "Локальная версия"

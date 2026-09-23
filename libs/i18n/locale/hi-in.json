@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT कनवर्टर",
         "nav.infoeditor": "EPUB जानकारी संपादक",
         "nav.creator": "स्टोरी स्टूडियो",
+        "nav.about": "परिचय और दान",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "नॉवेल टूल्स",
         "home.subtitle": "शुरू करने के लिए एक उपकरण चुनें",
@@ -605,6 +606,7 @@
         "home.desc.creator": "कहानियाँ बनाएँ और प्रबंधित करें (SPA)",
         "home.desc.stv": "HTML फ़ोल्डरों को EPUB में बदलें",
         "home.desc.creation": "MDT से EPUB कॉन्फ़िगर और जनरेट करें",
+        "home.desc.about": "परियोजना की जानकारी और समर्थन का तरीका",
         "pin.title": "साइडबार पिन करें",
         "pin.unpin": "साइडबार हटाएं",
         "footer.local": "स्थानीय संस्करण"

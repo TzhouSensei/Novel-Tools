@@ -595,6 +595,7 @@
         "nav.converter": "EPUB ➜ TXT dönüştürücü",
         "nav.infoeditor": "EPUB bilgi düzenleyici",
         "nav.creator": "Hikâye Stüdyosu",
+        "nav.about": "Hakkında & Bağış",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Roman Araçları",
         "home.subtitle": "Başlamak için bir araç seçin",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Hikâyeler oluştur ve yönet (SPA)",
         "home.desc.stv": "HTML klasörlerini toplu EPUB\u0027a çevir",
         "home.desc.creation": "MDT\u0027den EPUB yapılandır ve üret",
+        "home.desc.about": "Proje bilgisi ve destek",
         "pin.title": "Kenar çubuğunu sabitle",
         "pin.unpin": "Kenar çubuğunu serbest bırak",
         "footer.local": "Yerel sürüm"

@@ -595,6 +595,7 @@
         "nav.converter": "Convertisseur EPUB ➜ TXT",
         "nav.infoeditor": "Éditeur Info EPUB",
         "nav.creator": "Story Studio",
+        "nav.about": "À propos & don",
         "nav.stv": "HTML ➜ EPUB",
         "home.title": "Novel Tools",
         "home.subtitle": "Choisissez un outil pour commencer",
@@ -605,6 +606,7 @@
         "home.desc.creator": "Créez et gérez des histoires (SPA)",
         "home.desc.stv": "Convertissez des dossiers HTML en EPUB",
         "home.desc.creation": "Configurez et générez des EPUB depuis MDT",
+        "home.desc.about": "Informations sur le projet et comment le soutenir",
         "pin.title": "Épingler la barre latérale",
         "pin.unpin": "Détacher la barre latérale",
         "footer.local": "Version locale"
