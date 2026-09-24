@@ -186,6 +186,26 @@
     function applyTheme(theme, opts) {
         opts = opts || {};
         var valid = normalizeTheme(theme);
+
+        function run() {
+            return applyThemeState(valid, opts);
+        }
+
+        if (
+            opts.animate !== false &&
+            document.readyState !== "loading" &&
+            typeof document.startViewTransition === "function" &&
+            !prefersReducedMotion()
+        ) {
+            var transition = document.startViewTransition(run);
+            transition.finished.catch(function () {});
+            return transition.finished;
+        }
+
+        return run();
+    }
+
+    function applyThemeState(valid, opts) {
         var root = document.documentElement;
         var body = document.body;
         var i;
@@ -202,30 +222,31 @@
             if (valid) body.classList.add(valid);
         }
 
-        applyThemeLevel(valid);
-        syncSelects(valid);
-        updateLevelSelects(valid);
-        updateLevelSelectVisibility(valid);
-        updateThemeColor(valid);
+        return applyThemeLevel(valid).then(function () {
+            syncSelects(valid);
+            updateLevelSelects(valid);
+            updateLevelSelectVisibility(valid);
+            updateThemeColor(valid);
 
-        if (opts.persist) {
-            try {
-                if (valid) localStorage.setItem(STORAGE_KEY, valid);
-                else localStorage.removeItem(STORAGE_KEY);
-            } catch (e) {}
-        }
+            if (opts.persist) {
+                try {
+                    if (valid) localStorage.setItem(STORAGE_KEY, valid);
+                    else localStorage.removeItem(STORAGE_KEY);
+                } catch (e) {}
+            }
 
-        if (opts.broadcast && broadcast) {
-            try {
-                broadcast.postMessage(valid);
-            } catch (e) {}
-        }
+            if (opts.broadcast && broadcast) {
+                try {
+                    broadcast.postMessage(valid);
+                } catch (e) {}
+            }
 
-        for (i = 0; i < listeners.length; i++) {
-            try {
-                listeners[i](valid);
-            } catch (e) {}
-        }
+            for (i = 0; i < listeners.length; i++) {
+                try {
+                    listeners[i](valid);
+                } catch (e) {}
+            }
+        });
     }
 
     function prefersReducedMotion() {
@@ -264,25 +285,35 @@
 
     function applyThemeLevel(theme) {
         var body = document.body;
-        if (!body) return;
+        if (!body) return Promise.resolve();
+
         var showImage = hasImage(theme) && getLevel() === "image";
         var path = showImage ? getImagePath(theme) : null;
         clearLevelTransition();
+
         if (showImage && path) {
-            var preload = new Image();
-            preload.onload = function () {
-                if (getImagePath(getTheme()) !== path) return;
-                if (!(hasImage(getTheme()) && getLevel() === "image")) return;
-                fadeInThemeImage(body, path);
-            };
-            preload.onerror = function () {
-                if (getImagePath(getTheme()) !== path) return;
-                if (!(hasImage(getTheme()) && getLevel() === "image")) return;
-                fadeInThemeImage(body, path);
-            };
-            preload.src = path;
-            return;
+            return new Promise(function (resolve) {
+                var preload = new Image();
+
+                function finish() {
+                    if (getImagePath(getTheme()) !== path) {
+                        resolve();
+                        return;
+                    }
+                    if (!(hasImage(getTheme()) && getLevel() === "image")) {
+                        resolve();
+                        return;
+                    }
+                    fadeInThemeImage(body, path);
+                    resolve();
+                }
+
+                preload.onload = finish;
+                preload.onerror = finish;
+                preload.src = path;
+            });
         }
+
         if (body.classList.contains("theme-image")) {
             fadeOutThemeImage(body, function () {
                 var current = document.body;
@@ -290,9 +321,11 @@
                 if (hasImage(getTheme()) && getLevel() === "image") return;
                 removeThemeImage(current);
             });
-            return;
+            return Promise.resolve();
         }
+
         removeThemeImage(body);
+        return Promise.resolve();
     }
 
     function updateLevelSelects(theme) {
@@ -362,11 +395,11 @@
         }
     }
 
-    applyTheme(getTheme());
+    applyTheme(getTheme(), { animate: false });
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", function () {
-            applyTheme(getTheme());
+            applyTheme(getTheme(), { animate: false });
             bindSelects();
             bindLevelSelects();
         });

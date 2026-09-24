@@ -808,6 +808,41 @@ body.theme-image {
     background: var(--theme-image-url) center center / cover no-repeat fixed !important;
 }
 
+/* Theme changes use the browser's document transition instead of a z-index overlay. */
+@media (prefers-reduced-motion: no-preference) {
+    @supports (view-transition-name: root) {
+        :root {
+            view-transition-name: root;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 360ms;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: novel-theme-view-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: novel-theme-view-in;
+        }
+
+        @keyframes novel-theme-view-out {
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes novel-theme-view-in {
+            from {
+                opacity: 0;
+            }
+        }
+    }
+}
+
 html {
     min-height: 100%;
 }

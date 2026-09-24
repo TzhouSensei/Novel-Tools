@@ -28,6 +28,7 @@
     };
     let searchQuery = "";
     let sortMode = "recent";
+    let renderVersion = 0;
 
     function tFn(key, fallback) {
         return typeof t === "function" ? t(key, fallback) : fallback;
@@ -44,9 +45,11 @@
 
     async function renderStories() {
         const list = document.getElementById("stories-list");
+        const currentRender = ++renderVersion;
         list.innerHTML = "";
 
         let books = await mdtGetAllBooks();
+        if (currentRender !== renderVersion) return;
 
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
@@ -254,7 +257,7 @@
         });
 
         document
-            .getElementById("createStoryBtn")
+            .getElementById("new-chapter-btn")
             .addEventListener("click", showCreateModal);
         document
             .getElementById("create-cancel")
